@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Preview Suite — Curated Tablescapes</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="The Preview Suite home">
+      <div class="brand__mark" aria-hidden="true"></div>
+      <div class="brand__text">
+        <div class="brand__name">The Preview Suite</div>
+        <div class="brand__tag">Curated Tablescapes</div>
+      </div>
+    </a>
+
+    <nav class="main-nav" aria-label="Primary">
+      <a href="index.html">Home</a>
+      <a href="tablescape.html">Tablescape Builder</a>
+      <a href="experience.html">Experiences</a>
+    </nav>
+
+    <a class="btn" href="tablescape.html">Back to Modes</a>
+  </header>
+
+  <main class="page">
+    <section class="card placeholder-card">
+      <p class="eyebrow">MVP Placeholder</p>
+      <h1>Coming soon: curated designs via vibes</h1>
+      <p class="subtle">Soon you'll be able to describe your mood and get tailored tablescape concepts instantly.</p>
+      <a class="btn" href="tablescape.html">Choose another flow</a>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>© <span id="year"></span> The Preview Suite</span>
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = String(new Date().getFullYear());
+  </script>
+</body>
+</html>
