@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Preview Suite — Tablescape Builder</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="The Preview Suite home">
+      <div class="brand__mark" aria-hidden="true"></div>
+      <div class="brand__text">
+        <div class="brand__name">The Preview Suite</div>
+        <div class="brand__tag">Tablescape Builder</div>
+      </div>
+    </a>
+
+    <nav class="main-nav" aria-label="Primary">
+      <a href="index.html">Home</a>
+      <a href="index.html#pricing">Pricing</a>
+      <a href="index.html#faq">FAQ</a>
+      <a href="index.html#contact">Contact</a>
+    </nav>
+
+    <a class="btn" href="experience.html">Select Experience</a>
+  </header>
+
+  <main class="shell">
+    <!-- LEFT: Builder -->
+    <section class="panel panel--builder" aria-label="Tablescape Builder">
+      <div class="panel__header">
+        <div class="builder-head">
+          <div>
+            <h1 class="h1">Build your tablescape</h1>
+            <p class="subtle">Select options on the left — preview updates live on the right.</p>
+          </div>
+          <div class="builder-head__actions">
+            <button id="btnReset" class="btn btn--ghost" type="button">Reset</button>
+            <button id="btnExport" class="btn" type="button">Export Materials</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="steps" id="steps">
+        <!-- Step 1 -->
+        <div class="step" data-step="table">
+          <div class="step__top">
+            <div>
+              <div class="step__title">1) Table shape</div>
+              <div class="step__hint">Pick the table type.</div>
+            </div>
+            <span class="pill" id="pillTable">Round</span>
+          </div>
+
+          <div class="options">
+            <label class="opt">
+              <input type="radio" name="tableShape" value="Round" checked />
+              <span>Round (60")</span>
+            </label>
+            <label class="opt">
+              <input type="radio" name="tableShape" value="Rectangle" />
+              <span>Rectangle (8 ft)</span>
+            </label>
+            <label class="opt">
+              <input type="radio" name="tableShape" value="Oval" />
+              <span>Oval</span>
+            </label>
+            <label class="opt">
+              <input type="radio" name="tableShape" value="Square" />
+              <span>Square</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="step" data-step="settings">
+          <div class="step__top">
+            <div>
+              <div class="step__title">2) Place settings</div>
+              <div class="step__hint">How many guests at this table?</div>
+            </div>
+            <span class="pill" id="pillSettings">8</span>
+          </div>
+
+          <div class="row">
+            <input id="placeSettings" class="range" type="range" min="2" max="12" value="8" />
+            <div class="range__labels">
+              <span>2</span><span>12</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step" data-step="cloth">
+          <div class="step__top">
+            <div>
+              <div class="step__title">3) Tablecloth</div>
+              <div class="step__hint">Choose a color.</div>
+            </div>
+            <span class="pill" id="pillCloth">Ivory</span>
+          </div>
+
+          <div class="swatches">
+            <button class="swatch" type="button" data-cloth="Ivory" data-color="#F6F0E6" aria-label="Ivory"></button>
+            <button class="swatch" type="button" data-cloth="White" data-color="#FFFFFF" aria-label="White"></button>
+            <button class="swatch" type="button" data-cloth="Blush" data-color="#F4D7DF" aria-label="Blush"></button>
+            <button class="swatch" type="button" data-cloth="Sage" data-color="#CFE0D6" aria-label="Sage"></button>
+            <button class="swatch" type="button" data-cloth="Navy" data-color="#1F2A44" aria-label="Navy"></button>
+            <button class="swatch" type="button" data-cloth="Black" data-color="#111111" aria-label="Black"></button>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="step" data-step="charger">
+          <div class="step__top">
+            <div>
+              <div class="step__title">4) Charger plate</div>
+              <div class="step__hint">Choose a finish.</div>
+            </div>
+            <span class="pill" id="pillCharger">Gold</span>
+          </div>
+
+          <div class="options">
+            <label class="opt">
+              <input type="radio" name="charger" value="Gold" checked />
+              <span>Gold</span>
+            </label>
+            <label class="opt">
+              <input type="radio" name="charger" value="Silver" />
+              <span>Silver</span>
+            </label>
+            <label class="opt">
+              <input type="radio" name="charger" value="Pearl" />
+              <span>Pearl</span>
+            </label>
+            <label class="opt">
+              <input type="radio" name="charger" value="Black" />
+              <span>Black</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="step" data-step="napkin">
+          <div class="step__top">
+            <div>
+              <div class="step__title">5) Napkin</div>
+              <div class="step__hint">Choose napkin color.</div>
+            </div>
+            <span class="pill" id="pillNapkin">White</span>
+          </div>
+
+          <div class="swatches">
+            <button class="swatch swatch--sm" type="button" data-napkin="White" data-color="#FFFFFF" aria-label="Napkin white"></button>
+            <button class="swatch swatch--sm" type="button" data-napkin="Black" data-color="#0F0F10" aria-label="Napkin black"></button>
+            <button class="swatch swatch--sm" type="button" data-napkin="Blush" data-color="#F2C9D8" aria-label="Napkin blush"></button>
+            <button class="swatch swatch--sm" type="button" data-napkin="Sage" data-color="#BFD6C8" aria-label="Napkin sage"></button>
+            <button class="swatch swatch--sm" type="button" data-napkin="Navy" data-color="#1E2B4A" aria-label="Napkin navy"></button>
+            <button class="swatch swatch--sm" type="button" data-napkin="Gold" data-color="#C9A44A" aria-label="Napkin gold"></button>
+          </div>
+        </div>
+
+        <!-- Step 6 -->
+        <div class="step" data-step="napkinStyle">
+          <div class="step__top">
+            <div>
+              <div class="step__title">6) Napkin style</div>
+              <div class="step__hint">Fold or holder.</div>
+            </div>
+            <span class="pill" id="pillNapkinStyle">Classic Fold</span>
+          </div>
+
+          <div class="options">
+            <label class="opt">
+              <input type="radio" name="napkinStyle" value="Classic Fold" checked />
+              <span>Classic Fold</span>
+            </label>
+            <label class="opt">
+              <input type="radio" name="napkinStyle" value="Pocket Fold" />
+              <span>Pocket Fold</span>
+            </label>
+            <label class="opt">
+              <input type="radio" name="napkinStyle" value="Napkin Ring" />
+              <span>Napkin Ring</span>
+            </label>
+            <label class="opt">
+              <input type="radio" name="napkinStyle" value="Bow Tie" />
+              <span>Bow Tie</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Step 7 -->
+        <div class="step" data-step="centerpiece">
+          <div class="step__top">
+            <div>
+              <div class="step__title">7) Centerpiece</div>
+              <div class="step__hint">Choose a focal piece.</div>
+            </div>
+            <span class="pill" id="pillCenterpiece">Low Florals</span>
+          </div>
+
+          <div class="options">
+            <label class="opt">
+              <input type="radio" name="centerpiece" value="Low Florals" checked />
+              <span>Low Florals</span>
+            </label>
+            <label class="opt">
+              <input type="radio" name="centerpiece" value="Tall Florals" />
+              <span>Tall Florals</span>
+            </label>
+            <label class="opt">
+              <input type="radio" name="centerpiece" value="Candles" />
+              <span>Candles</span>
+            </label>
+            <label class="opt">
+              <input type="radio" name="centerpiece" value="Minimal Greenery" />
+              <span>Minimal Greenery</span>
+            </label>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- RIGHT: Preview -->
+    <section class="panel panel--preview" aria-label="Live Preview">
+      <div class="panel__header">
+        <h2 class="h2">Live preview</h2>
+        <p class="subtle">A simple visual mock (MVP) — enough to prove the experience.</p>
+      </div>
+
+      <div class="preview">
+        <div class="preview__stage" id="stage">
+          <div class="table" id="table">
+            <div class="centerpiece" id="centerpieceEl" aria-hidden="true"></div>
+
+            <div class="settings" id="settingsEl" aria-label="Place settings">
+              <!-- JS inserts place settings -->
+            </div>
+          </div>
+        </div>
+
+        <div class="summary">
+          <div class="summary__title">Your selections</div>
+          <dl class="summary__grid">
+            <div class="kv"><dt>Table</dt><dd id="sumTable">Round (60")</dd></div>
+            <div class="kv"><dt>Settings</dt><dd id="sumSettings">8</dd></div>
+            <div class="kv"><dt>Tablecloth</dt><dd id="sumCloth">Ivory</dd></div>
+            <div class="kv"><dt>Charger</dt><dd id="sumCharger">Gold</dd></div>
+            <div class="kv"><dt>Napkin</dt><dd id="sumNapkin">White</dd></div>
+            <div class="kv"><dt>Napkin Style</dt><dd id="sumNapkinStyle">Classic Fold</dd></div>
+            <div class="kv"><dt>Centerpiece</dt><dd id="sumCenterpiece">Low Florals</dd></div>
+          </dl>
+
+          <div class="note" id="exportNote" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>© <span id="year"></span> The Preview Suite</span>
+    <span class="dot">•</span>
+    <span class="subtle">Local MVP demo (no backend)</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

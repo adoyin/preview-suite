@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Preview Suite — Select Experience</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="The Preview Suite home">
+      <div class="brand__mark" aria-hidden="true"></div>
+      <div class="brand__text">
+        <div class="brand__name">The Preview Suite</div>
+        <div class="brand__tag">Select Experience</div>
+      </div>
+    </a>
+
+    <nav class="main-nav" aria-label="Primary">
+      <a href="index.html">Home</a>
+      <a href="index.html#pricing">Pricing</a>
+      <a href="index.html#faq">FAQ</a>
+      <a href="index.html#contact">Contact</a>
+    </nav>
+
+    <a class="btn" href="tablescape.html">Start Designing</a>
+  </header>
+
+  <main class="page page--experience">
+    <section class="card page-heading">
+      <p class="eyebrow">Design Studio</p>
+      <h1>Choose your design experience</h1>
+      <p class="subtle">Pick the visualizer you want to launch for this client presentation.</p>
+    </section>
+
+    <section class="experience-grid">
+      <a class="experience-card" href="tablescape.html">
+        <p class="eyebrow">Interactive Builder</p>
+        <h2>Tablescape Builder</h2>
+        <p class="subtle">Build place settings, linens, and centerpiece combinations in a live luxury preview.</p>
+      </a>
+
+      <a class="experience-card" href="focalwall.html">
+        <p class="eyebrow">Designer Preview</p>
+        <h2>Focal Walls</h2>
+        <p class="subtle">Explore backdrop concepts, layered textures, and premium statement installations.</p>
+      </a>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>© <span id="year"></span> The Preview Suite</span>
+    <span class="dot">•</span>
+    <span class="subtle">Use direct links to share each experience</span>
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = String(new Date().getFullYear());
+  </script>
+</body>
+</html>

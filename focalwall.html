@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Preview Suite — Focal Walls</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="The Preview Suite home">
+      <div class="brand__mark" aria-hidden="true"></div>
+      <div class="brand__text">
+        <div class="brand__name">The Preview Suite</div>
+        <div class="brand__tag">Focal Wall Designer</div>
+      </div>
+    </a>
+
+    <nav class="main-nav" aria-label="Primary">
+      <a href="index.html">Home</a>
+      <a href="index.html#pricing">Pricing</a>
+      <a href="index.html#faq">FAQ</a>
+      <a href="index.html#contact">Contact</a>
+    </nav>
+
+    <a class="btn" href="experience.html">Back to Experiences</a>
+  </header>
+
+  <main class="page page--placeholder">
+    <section class="card placeholder-card">
+      <p class="eyebrow">Coming Soon</p>
+      <h1>Focal Wall Designer</h1>
+      <p class="subtle">We're crafting a premium wall design tool with customizable structures, florals, signage, and lighting scenes.</p>
+      <a class="btn" href="experience.html">Explore Current Experiences</a>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>© <span id="year"></span> The Preview Suite</span>
+    <span class="dot">•</span>
+    <span class="subtle">Focal Wall Designer is currently in development</span>
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = String(new Date().getFullYear());
+  </script>
+</body>
+</html>
