@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Preview Suite — Tablescape Wizard</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="The Preview Suite home">
+      <div class="brand__mark" aria-hidden="true"></div>
+      <div class="brand__text">
+        <div class="brand__name">The Preview Suite</div>
+        <div class="brand__tag">Tablescape Wizard</div>
+      </div>
+    </a>
+
+    <nav class="main-nav" aria-label="Primary">
+      <a href="index.html">Home</a>
+      <a href="tablescape.html">Tablescape Modes</a>
+      <a href="experience.html">Experiences</a>
+    </nav>
+
+    <a class="btn" href="tablescape.html">Change Mode</a>
+  </header>
+
+  <main class="shell">
+    <section class="panel panel--builder" aria-label="Tablescape wizard controls">
+      <div class="panel__header">
+        <div class="builder-head builder-head--stack">
+          <div>
+            <h1 class="h1">I know what I want</h1>
+            <p class="subtle">Answer one question per step. Your preview updates live as you go.</p>
+          </div>
+          <div class="wizard-progress-wrap">
+            <p class="wizard-progress" id="wizardProgress">Step 1 of 8</p>
+            <div class="progress-track" aria-hidden="true">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step__top">
+            <div>
+              <div class="step__title" id="stepTitle">Table shape + size</div>
+              <div class="step__hint" id="stepHint">Pick the table type.</div>
+            </div>
+            <span class="pill" id="stepValue">Round (60")</span>
+          </div>
+
+          <div id="stepContent"></div>
+
+          <div class="wizard-controls">
+            <button id="btnBack" class="btn btn--ghost" type="button">Back</button>
+            <div class="wizard-controls__right">
+              <button id="btnReset" class="btn btn--ghost" type="button">Reset</button>
+              <button id="btnNext" class="btn" type="button">Next</button>
+            </div>
+          </div>
+          <p class="note" id="exportNote" aria-live="polite"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Live preview">
+      <div class="panel__header">
+        <h2 class="h2">Live Preview</h2>
+        <p class="subtle">Visual response updates with each selection.</p>
+      </div>
+
+      <div class="preview">
+        <div class="preview__stage">
+          <div id="table" class="table" aria-hidden="true">
+            <div id="centerpieceEl" class="centerpiece"></div>
+            <div id="settingsEl" class="settings"></div>
+          </div>
+        </div>
+
+        <div class="summary">
+          <div class="summary__title">Selections</div>
+          <dl class="summary__grid kv" id="summaryGrid">
+            <div><dt>Table</dt><dd id="sumTable"></dd></div>
+            <div><dt>Place Settings</dt><dd id="sumSettings"></dd></div>
+            <div><dt>Tablecloth</dt><dd id="sumCloth"></dd></div>
+            <div><dt>Charger</dt><dd id="sumCharger"></dd></div>
+            <div><dt>Napkin</dt><dd id="sumNapkin"></dd></div>
+            <div><dt>Napkin Style</dt><dd id="sumNapkinStyle"></dd></div>
+            <div><dt>Centerpiece</dt><dd id="sumCenterpiece"></dd></div>
+          </dl>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>© <span id="year"></span> The Preview Suite</span>
+    <span class="dot">•</span>
+    <span class="subtle">Material export available in final review step</span>
+  </footer>
+
+  <script src="tablescape.js"></script>
+</body>
+</html>
