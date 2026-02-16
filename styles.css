@@ -424,6 +424,24 @@ a:focus-visible{
   gap: 12px;
 }
 
+.preview-status{
+  border: 1px solid var(--stroke-soft);
+  border-radius: 14px;
+  background: var(--surface);
+  padding: 10px 12px;
+  display: grid;
+  gap: 2px;
+}
+
+.preview-status__line,
+.preview-status__next{
+  margin: 0;
+  font-size: 12px;
+}
+
+.preview-status__line{ color: var(--text-soft); }
+.preview-status__next{ color: var(--text-faint); }
+
 .preview__stage{
   border: 1px solid var(--stroke);
   border-radius: var(--radius);
@@ -446,7 +464,7 @@ a:focus-visible{
   background-color: #F6F0E6;
   background-size: cover;
   background-position: center;
-  transition: border-radius .18s ease, width .18s ease, height .18s ease, background-color .18s ease;
+  transition: border-radius .18s ease, width .18s ease, height .18s ease, background-color .18s ease, opacity .22s ease, transform .22s ease;
   overflow: hidden;
 }
 
@@ -459,11 +477,11 @@ a:focus-visible{
 }
 
 .centerpiece{ position:absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 160px; height: 120px; z-index: 4; }
-.centerpiece__image{ width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 12px 20px rgba(0,0,0,0.25)); }
-.centerpiece__candle{ position: absolute; width: 34px; height: 50px; bottom: -8px; transform: translateX(-50%) rotate(-6deg); filter: drop-shadow(0 8px 12px rgba(0,0,0,0.25)); }
+.centerpiece__image{ width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 12px 20px rgba(0,0,0,0.25)); animation: preview-fade-in .26s ease both; }
+.centerpiece__candle{ position: absolute; width: 34px; height: 50px; bottom: -8px; transform: translateX(-50%) rotate(-6deg); filter: drop-shadow(0 8px 12px rgba(0,0,0,0.25)); animation: preview-fade-in .26s ease both; }
 
 .settings{ position:absolute; inset: 0; z-index: 5; }
-.setting{ position:absolute; width: 138px; height: 138px; transform: translate(-50%, -50%) rotate(var(--rot)); transform-origin: 50% 50%; }
+.setting{ position:absolute; width: 138px; height: 138px; transform: translate(-50%, -50%) rotate(var(--rot)); transform-origin: 50% 50%; animation: preview-fade-in .26s ease both; }
 .setting img{ position:absolute; pointer-events:none; user-select:none; filter: drop-shadow(0 8px 10px rgba(0,0,0,0.2)); }
 .setting__charger{ width: 72px; height: 72px; left: 34px; top: 40px; }
 .setting__plate{ width: 58px; height: 58px; left: 41px; top: 47px; }
@@ -473,6 +491,17 @@ a:focus-visible{
 .setting__spoon{ width: 12px; height: 44px; left: 117px; top: 57px; }
 .setting__glass{ width: 32px; height: 42px; left: 93px; top: 24px; filter: drop-shadow(0 6px 10px rgba(0,0,0,0.2)); }
 
+
+
+.table.is-refreshing{
+  opacity: 0.86;
+  transform: scale(0.992);
+}
+
+@keyframes preview-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 .summary{
   border-radius: var(--radius-sm);
   padding: 14px;
