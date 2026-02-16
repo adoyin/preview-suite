@@ -41,6 +41,18 @@ const initialState = {
 const state = { ...initialState };
 let currentStep = 1;
 
+const stepSequence = [
+  "Table shape",
+  "Table size",
+  "Number of place settings",
+  "Tablecloth color",
+  "Charger plate",
+  "Napkin color",
+  "Napkin style",
+  "Centerpiece",
+  "Review + Export",
+];
+
 const el = (id) => document.getElementById(id);
 
 const refs = {
@@ -58,6 +70,9 @@ const refs = {
   btnNext: el("btnNext"),
   btnReset: el("btnReset"),
   exportNote: el("exportNote"),
+  previewStatusLine: el("previewStatusLine"),
+  previewNextHint: el("previewNextHint"),
+  previewSummary: el("previewSummary"),
   summary: {
     table: el("sumTable"),
     settings: el("sumSettings"),
@@ -273,7 +288,21 @@ function renderSummary() {
   refs.summary.centerpiece.textContent = state.centerpiece;
 }
 
+function renderPreviewStatus() {
+  const isReviewStep = currentStep === TOTAL_STEPS;
+  const nextLabel = stepSequence[currentStep] || "Export materials";
+
+  refs.previewStatusLine.textContent = isReviewStep
+    ? "Reviewing your table — Final step"
+    : `Designing your table — Step ${currentStep} of ${TOTAL_STEPS}`;
+  refs.previewNextHint.textContent = isReviewStep ? "Next: Export materials" : `Next: ${nextLabel}`;
+  refs.previewSummary.hidden = !isReviewStep;
+}
+
 function renderPreview() {
+  refs.table.classList.add("is-refreshing");
+  requestAnimationFrame(() => refs.table.classList.remove("is-refreshing"));
+
   refs.table.style.backgroundColor = state.clothColor;
   refs.table.style.backgroundImage = `url(${ASSET_BASE}/tablecloth-texture.svg)`;
   refs.table.style.backgroundSize = "cover";
@@ -289,6 +318,7 @@ function renderPreview() {
   }
 
   renderSummary();
+  renderPreviewStatus();
 }
 
 function renderVisualOptionCards({ name, options, selectedValue, onSelect }) {
