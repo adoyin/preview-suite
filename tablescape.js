@@ -1,4 +1,5 @@
 const PLACEHOLDER_ASSET = "./assets/placeholders/ref-card.svg";
+const TABLECLOTH_FALLBACK_ASSET = "./assets/tablescape/tablecloth-texture.svg";
 
 const tableShapeOptions = [
   { value: "round", label: "Round" },
@@ -23,12 +24,34 @@ const tableSizeOptions = {
   ],
 };
 
+const tableclothTextureOptions = [
+  { value: "linen", label: "Linen", thumbnail: "./assets/tablecloths/linen/ivory.jpg" },
+  { value: "satin", label: "Satin", thumbnail: "./assets/tablecloths/satin/ivory.jpg" },
+  { value: "velvet", label: "Velvet", thumbnail: "./assets/tablecloths/velvet/ivory.jpg" },
+];
+
+const tableclothColorOptions = [
+  { value: "ivory", label: "Ivory" },
+  { value: "white", label: "White" },
+  { value: "champagne", label: "Champagne" },
+  { value: "blush", label: "Blush" },
+  { value: "dusty-rose", label: "Dusty Rose" },
+  { value: "sage", label: "Sage" },
+  { value: "emerald", label: "Emerald" },
+  { value: "navy", label: "Navy" },
+  { value: "french-blue", label: "French Blue" },
+  { value: "burgundy", label: "Burgundy" },
+  { value: "terracotta", label: "Terracotta" },
+  { value: "black", label: "Black" },
+];
+
 const initialState = {
   tableShape: "round",
   tableSize: '60"',
+  tableclothTexture: "linen",
+  tableclothColor: "ivory",
+  customTableclothColor: "",
   placeSettings: 8,
-  clothName: "Ivory",
-  clothColor: "#F6F0E6",
   charger: "Gold",
   napkinName: "White",
   napkinColor: "#FFFFFF",
@@ -39,8 +62,9 @@ const initialState = {
 const stepSequence = [
   "Table shape",
   "Table size",
-  "Number of place settings",
+  "Tablecloth texture",
   "Tablecloth color",
+  "Number of place settings",
   "Charger plate",
   "Napkin color",
   "Napkin style",
@@ -58,6 +82,7 @@ const el = (id) => document.getElementById(id);
 const refs = {
   year: el("year"),
   table: el("table"),
+  tableclothLayer: el("tableclothLayer"),
   settings: el("settingsEl"),
   centerpiece: el("centerpieceEl"),
   stepTitle: el("stepTitle"),
@@ -115,6 +140,22 @@ const centerpieceAssetMap = {
   Candles: `${ASSET_BASE}/centerpiece-candles.svg`,
   "Minimal Greenery": `${ASSET_BASE}/centerpiece-minimal-greenery.svg`,
 };
+
+function getTableclothAssetPath(texture, color) {
+  return `./assets/tablecloths/${texture}/${color}.jpg`;
+}
+
+function attachImageFallbacks(root = document) {
+  root.querySelectorAll("img[data-fallback-src]").forEach((image) => {
+    image.onerror = () => {
+      const fallbackSrc = image.getAttribute("data-fallback-src");
+      if (fallbackSrc && image.getAttribute("src") !== fallbackSrc) {
+        image.src = fallbackSrc;
+      }
+      image.onerror = null;
+    };
+  });
+}
 
 function formatTableShape(shape) {
   const selected = tableShapeOptions.find((option) => option.value === shape);
@@ -281,7 +322,7 @@ function renderCenterpiece() {
 function renderSummary() {
   refs.summary.table.textContent = formatTableSelection(state.tableShape, state.tableSize);
   refs.summary.settings.textContent = String(state.placeSettings);
-  refs.summary.cloth.textContent = state.clothName;
+  refs.summary.cloth.textContent = `${state.tableclothTexture[0].toUpperCase()}${state.tableclothTexture.slice(1)} — ${tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory"}`;
   refs.summary.charger.textContent = state.charger;
   refs.summary.napkin.textContent = state.napkinName;
   refs.summary.napkinStyle.textContent = state.napkinStyle;
@@ -302,13 +343,20 @@ function renderPreview() {
   refs.table.classList.add("is-refreshing");
   requestAnimationFrame(() => refs.table.classList.remove("is-refreshing"));
 
-  refs.table.style.backgroundColor = state.clothColor;
-  refs.table.style.backgroundImage = `url(${ASSET_BASE}/tablecloth-texture.svg)`;
-  refs.table.style.backgroundSize = "cover";
+  refs.tableclothLayer.classList.add("table__cloth--changing");
+  refs.tableclothLayer.src = getTableclothAssetPath(state.tableclothTexture, state.tableclothColor);
+  refs.tableclothLayer.alt = `${state.tableclothTexture} ${state.tableclothColor} tablecloth`;
+  requestAnimationFrame(() => refs.tableclothLayer.classList.remove("table__cloth--changing"));
+
+  refs.tableclothLayer.onerror = () => {
+    refs.tableclothLayer.src = TABLECLOTH_FALLBACK_ASSET;
+    refs.tableclothLayer.onerror = null;
+  };
+
   applyTableShape(state.tableShape, state.tableSize);
 
   const currentStepNumber = currentStepIndex + 1;
-  const isTableOnlyPreviewStep = currentStepNumber <= 2;
+  const isTableOnlyPreviewStep = currentStepNumber <= 4;
   refs.centerpiece.innerHTML = "";
   refs.settings.innerHTML = "";
 
@@ -327,7 +375,7 @@ function renderVisualOptionCards({ name, options, selectedValue, onSelect }) {
       ${options.map((option) => `
         <label class="option-card ${selectedValue === option.value ? "option-card--selected" : ""}">
           <input type="radio" name="${name}" value="${option.value}" ${selectedValue === option.value ? "checked" : ""} />
-          <img class="option-card__image" src="${PLACEHOLDER_ASSET}" alt="Image coming soon" loading="lazy" />
+          <img class="option-card__image" src="${option.thumbnail || PLACEHOLDER_ASSET}" data-fallback-src="${PLACEHOLDER_ASSET}" alt="${option.label}" loading="lazy" />
           <span class="option-card__title">${option.label}</span>
         </label>
       `).join("")}
@@ -337,6 +385,8 @@ function renderVisualOptionCards({ name, options, selectedValue, onSelect }) {
   document.querySelectorAll(`input[name="${name}"]`).forEach((radio) => {
     radio.addEventListener("change", (event) => onSelect(event.target.value));
   });
+
+  attachImageFallbacks(refs.stepContent);
 }
 
 function getStepMeta() {
@@ -345,13 +395,14 @@ function getStepMeta() {
   switch (currentStepNumber) {
     case 1: return { title: "Table shape", hint: "Choose the base table shape.", value: formatTableShape(state.tableShape) };
     case 2: return { title: "Table size", hint: "Choose a size for the selected shape.", value: state.tableSize };
-    case 3: return { title: "Number of place settings", hint: "How many guests are you planning for?", value: String(state.placeSettings) };
-    case 4: return { title: "Tablecloth color", hint: "Pick a table linen tone.", value: state.clothName };
-    case 5: return { title: "Charger plate", hint: "Select a metallic or neutral charger.", value: state.charger };
-    case 6: return { title: "Napkin color", hint: "Choose the napkin color.", value: state.napkinName };
-    case 7: return { title: "Napkin style", hint: "Define the napkin presentation style.", value: state.napkinStyle };
-    case 8: return { title: "Centerpiece", hint: "Select the tabletop focal element.", value: state.centerpiece };
-    case 9: return { title: "Review + Export", hint: "Review all selections and export materials.", value: "Ready" };
+    case 3: return { title: "Tablecloth texture", hint: "Choose a fabric.", value: state.tableclothTexture[0].toUpperCase() + state.tableclothTexture.slice(1) };
+    case 4: return { title: "Tablecloth color", hint: "Choose a color.", value: tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory" };
+    case 5: return { title: "Number of place settings", hint: "How many guests are you planning for?", value: String(state.placeSettings) };
+    case 6: return { title: "Charger plate", hint: "Select a metallic or neutral charger.", value: state.charger };
+    case 7: return { title: "Napkin color", hint: "Choose the napkin color.", value: state.napkinName };
+    case 8: return { title: "Napkin style", hint: "Define the napkin presentation style.", value: state.napkinStyle };
+    case 9: return { title: "Centerpiece", hint: "Select the tabletop focal element.", value: state.centerpiece };
+    case 10: return { title: "Review + Export", hint: "Review all selections and export materials.", value: "Ready" };
     default: return { title: "", hint: "", value: "" };
   }
 }
@@ -401,6 +452,49 @@ function renderStepContent() {
   }
 
   if (currentStepNumber === 3) {
+    renderVisualOptionCards({
+      name: "tableclothTexture",
+      options: tableclothTextureOptions,
+      selectedValue: state.tableclothTexture,
+      onSelect: (value) => {
+        state.tableclothTexture = value;
+        updateUI();
+      },
+    });
+  }
+
+  if (currentStepNumber === 4) {
+    refs.stepContent.innerHTML = `
+      <div class="cloth-color-grid">
+        ${tableclothColorOptions.map((option) => `
+          <button class="cloth-color-card ${state.tableclothColor === option.value ? "cloth-color-card--selected" : ""}" type="button" data-cloth-color="${option.value}">
+            <img class="cloth-color-card__image" src="${getTableclothAssetPath(state.tableclothTexture, option.value)}" data-fallback-src="${PLACEHOLDER_ASSET}" alt="${option.label} tablecloth" loading="lazy" />
+            <span class="cloth-color-card__label">${option.label}</span>
+          </button>
+        `).join("")}
+      </div>
+      <div class="custom-color-note">
+        <label for="customClothColor" class="custom-color-note__label">Custom color (coming soon)</label>
+        <input id="customClothColor" class="custom-color-note__input" type="text" placeholder="#A36F5A" value="${state.customTableclothColor}" />
+        <p class="custom-color-note__text">We'll support matching custom colors soon.</p>
+      </div>
+    `;
+
+    document.querySelectorAll("[data-cloth-color]").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.tableclothColor = button.getAttribute("data-cloth-color");
+        updateUI();
+      });
+    });
+
+    el("customClothColor").addEventListener("input", (event) => {
+      state.customTableclothColor = event.target.value;
+    });
+
+    attachImageFallbacks(refs.stepContent);
+  }
+
+  if (currentStepNumber === 5) {
     refs.stepContent.innerHTML = `
       <div class="row">
         <input id="placeSettings" class="range" type="range" min="2" max="12" value="${state.placeSettings}" />
@@ -413,31 +507,7 @@ function renderStepContent() {
     });
   }
 
-  if (currentStepNumber === 4) {
-    const clothOptions = [
-      ["Ivory", "#F6F0E6"],
-      ["White", "#FFFFFF"],
-      ["Champagne", "#E9D7B5"],
-      ["Mocha", "#8B6F5A"],
-      ["Black", "#1D1D1F"],
-      ["Sage", "#A8B8A0"],
-    ];
-
-    refs.stepContent.innerHTML = `<div class="swatches">${clothOptions.map(([name, color]) => (
-      `<button class="swatch" type="button" data-cloth="${name}" data-color="${color}" aria-label="${name}" style="background:${color}"></button>`
-    )).join("")}</div>`;
-
-    document.querySelectorAll("[data-cloth]").forEach((button) => {
-      button.addEventListener("click", () => {
-        state.clothName = button.getAttribute("data-cloth");
-        state.clothColor = button.getAttribute("data-color");
-        updateUI();
-      });
-    });
-    setActiveButtons("[data-cloth]", "data-cloth", state.clothName);
-  }
-
-  if (currentStepNumber === 5) {
+  if (currentStepNumber === 6) {
     refs.stepContent.innerHTML = `
       <div class="options">
         ${["Gold", "Silver", "Pearl", "Black"].map((option) => `
@@ -456,7 +526,7 @@ function renderStepContent() {
     });
   }
 
-  if (currentStepNumber === 6) {
+  if (currentStepNumber === 7) {
     const napkinOptions = [
       ["White", "#FFFFFF"],
       ["Sand", "#E7D8C3"],
@@ -480,7 +550,7 @@ function renderStepContent() {
     setActiveButtons("[data-napkin]", "data-napkin", state.napkinName);
   }
 
-  if (currentStepNumber === 7) {
+  if (currentStepNumber === 8) {
     refs.stepContent.innerHTML = `
       <div class="options">
         ${["Classic Fold", "Pocket Fold", "Napkin Ring", "Bow Tie"].map((style) => `
@@ -499,7 +569,7 @@ function renderStepContent() {
     });
   }
 
-  if (currentStepNumber === 8) {
+  if (currentStepNumber === 9) {
     refs.stepContent.innerHTML = `
       <div class="options">
         ${["Low Florals", "Tall Florals", "Candles", "Minimal Greenery"].map((style) => `
@@ -518,13 +588,13 @@ function renderStepContent() {
     });
   }
 
-  if (currentStepNumber === 9) {
+  if (currentStepNumber === 10) {
     refs.stepContent.innerHTML = `
       <div class="review-card">
         <dl class="summary__grid kv">
           <div><dt>Table</dt><dd>${formatTableSelection(state.tableShape, state.tableSize)}</dd></div>
           <div><dt>Place Settings</dt><dd>${state.placeSettings}</dd></div>
-          <div><dt>Tablecloth</dt><dd>${state.clothName}</dd></div>
+          <div><dt>Tablecloth</dt><dd>${state.tableclothTexture} - ${tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory"}</dd></div>
           <div><dt>Charger</dt><dd>${state.charger}</dd></div>
           <div><dt>Napkin</dt><dd>${state.napkinName}</dd></div>
           <div><dt>Napkin Style</dt><dd>${state.napkinStyle}</dd></div>
@@ -544,7 +614,7 @@ function exportMaterials() {
     "--------------------------------",
     `Table: ${formatTableSelection(state.tableShape, state.tableSize)}`,
     `Place settings: ${state.placeSettings}`,
-    `Tablecloth: ${state.clothName}`,
+    `Tablecloth: ${state.tableclothTexture} - ${tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory"}`,
     `Charger: ${state.charger}`,
     `Napkin: ${state.napkinName}`,
     `Napkin style: ${state.napkinStyle}`,
@@ -615,6 +685,10 @@ function init() {
   refs.btnBack.addEventListener("click", prevStep);
   refs.btnNext.addEventListener("click", nextStep);
   refs.btnReset.addEventListener("click", resetWizard);
+
+  refs.tableclothLayer.addEventListener("error", () => {
+    refs.tableclothLayer.src = TABLECLOTH_FALLBACK_ASSET;
+  });
 
   goToStep(currentStepIndex);
 }
