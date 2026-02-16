@@ -66,12 +66,13 @@ const initialState = {
   tableclothTexture: "linen",
   tableclothColor: "ivory",
   customTableclothColor: "",
-  placeSettings: 8,
-  charger: "Gold",
-  napkinName: "White",
+  placeSettingsCount: null,
+  chargerType: null,
+  napkinType: null,
+  flatwareType: null,
+  centerpieceType: null,
+  napkinStyle: null,
   napkinColor: "#FFFFFF",
-  napkinStyle: "Classic Fold",
-  centerpiece: "Low Florals",
 };
 
 const stepSequence = [
@@ -224,7 +225,7 @@ function applyTableShape(shape, size) {
 }
 
 function getNapkinAsset() {
-  const color = napkinColorSlugMap[state.napkinName] || "white";
+  const color = napkinColorSlugMap[state.napkinType] || "white";
   const style = napkinStyleSlugMap[state.napkinStyle] || "classic-fold";
   return `${ASSET_BASE}/napkin-${color}-${style}.svg`;
 }
@@ -321,8 +322,12 @@ function getSeatRotationJitter(tableType, seatIndex) {
 
 function renderPlaceSettings(count) {
   refs.settings.innerHTML = "";
+  if (count == null) {
+    return;
+  }
+
   const rect = refs.table.getBoundingClientRect();
-  const chargerAsset = chargerAssetMap[state.charger] || chargerAssetMap.Gold;
+  const chargerAsset = state.chargerType ? chargerAssetMap[state.chargerType] : null;
   const napkinAsset = getNapkinAsset();
   const positions = getSettingPositions(state.tableShape, count, rect.width, rect.height);
   const tableType = `${state.tableShape}-${state.tableSize}`;
@@ -337,33 +342,45 @@ function renderPlaceSettings(count) {
     setting.style.top = `${position.y}px`;
     setting.style.setProperty("--rot", `${facing + jitter}deg`);
 
-    setting.appendChild(createLayer("setting__charger", chargerAsset, `${state.charger} charger`));
+    if (state.chargerType && chargerAsset) {
+      setting.appendChild(createLayer("setting__charger", chargerAsset, `${state.chargerType} charger`));
+    }
 
     const plateWrap = document.createElement("div");
     plateWrap.className = "setting__plate-wrap";
     plateWrap.appendChild(createLayer("setting__plate", `${ASSET_BASE}/dinner-plate.svg`, "Dinner plate"));
     setting.appendChild(plateWrap);
 
-    setting.appendChild(createLayer("setting__napkin", napkinAsset, `${state.napkinName} ${state.napkinStyle} napkin`));
-    setting.appendChild(createLayer("setting__fork", `${ASSET_BASE}/cutlery-fork.svg`, "Fork"));
-    setting.appendChild(createLayer("setting__knife", `${ASSET_BASE}/cutlery-knife.svg`, "Knife"));
-    setting.appendChild(createLayer("setting__spoon", `${ASSET_BASE}/cutlery-spoon.svg`, "Spoon"));
-    setting.appendChild(createLayer("setting__glass", `${ASSET_BASE}/glass.svg`, "Glass"));
+    if (state.napkinType) {
+      setting.appendChild(createLayer("setting__napkin", napkinAsset, `${state.napkinType} napkin`));
+    }
+
+    if (state.flatwareType) {
+      setting.appendChild(createLayer("setting__fork", `${ASSET_BASE}/cutlery-fork.svg`, "Fork"));
+      setting.appendChild(createLayer("setting__knife", `${ASSET_BASE}/cutlery-knife.svg`, "Knife"));
+      setting.appendChild(createLayer("setting__spoon", `${ASSET_BASE}/cutlery-spoon.svg`, "Spoon"));
+      setting.appendChild(createLayer("setting__glass", `${ASSET_BASE}/glass.svg`, "Glass"));
+    }
 
     refs.settings.appendChild(setting);
   });
 }
 
 function renderCenterpiece() {
+  if (!state.centerpieceType) {
+    refs.centerpiece.innerHTML = "";
+    return;
+  }
+
   refs.centerpiece.innerHTML = "";
   const centerImage = createLayer(
     "centerpiece__image",
-    centerpieceAssetMap[state.centerpiece] || centerpieceAssetMap["Low Florals"],
-    `${state.centerpiece} centerpiece`
+    centerpieceAssetMap[state.centerpieceType],
+    `${state.centerpieceType} centerpiece`
   );
   refs.centerpiece.appendChild(centerImage);
 
-  if (state.centerpiece === "Candles") {
+  if (state.centerpieceType === "Candles") {
     ["-44px", "44px"].forEach((offset) => {
       const candle = createLayer("centerpiece__candle", `${ASSET_BASE}/candle-single.svg`, "Accent candle");
       candle.style.left = `calc(50% + ${offset})`;
@@ -374,12 +391,12 @@ function renderCenterpiece() {
 
 function renderSummary() {
   refs.summary.table.textContent = formatTableSelection(state.tableShape, state.tableSize);
-  refs.summary.settings.textContent = String(state.placeSettings);
+  refs.summary.settings.textContent = state.placeSettingsCount == null ? "—" : String(state.placeSettingsCount);
   refs.summary.cloth.textContent = `${state.tableclothTexture[0].toUpperCase()}${state.tableclothTexture.slice(1)} — ${tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory"}`;
-  refs.summary.charger.textContent = state.charger;
-  refs.summary.napkin.textContent = state.napkinName;
-  refs.summary.napkinStyle.textContent = state.napkinStyle;
-  refs.summary.centerpiece.textContent = state.centerpiece;
+  refs.summary.charger.textContent = state.chargerType || "—";
+  refs.summary.napkin.textContent = state.napkinType || "—";
+  refs.summary.napkinStyle.textContent = state.napkinStyle || "—";
+  refs.summary.centerpiece.textContent = state.centerpieceType || "—";
 }
 
 function updatePreviewStatus() {
@@ -409,14 +426,11 @@ function renderPreview() {
   applyTableShape(state.tableShape, state.tableSize);
 
   const currentStepNumber = currentStepIndex + 1;
-  const isTableOnlyPreviewStep = currentStepNumber <= 4;
   refs.centerpiece.innerHTML = "";
   refs.settings.innerHTML = "";
 
-  if (!isTableOnlyPreviewStep) {
-    renderCenterpiece();
-    requestAnimationFrame(() => renderPlaceSettings(state.placeSettings));
-  }
+  renderCenterpiece();
+  requestAnimationFrame(() => renderPlaceSettings(state.placeSettingsCount));
 
   renderSummary();
   updatePreviewStatus();
@@ -450,11 +464,11 @@ function getStepMeta() {
     case 2: return { title: "Table size", hint: "Choose a size for the selected shape.", value: state.tableSize };
     case 3: return { title: "Tablecloth texture", hint: "Choose a fabric.", value: state.tableclothTexture[0].toUpperCase() + state.tableclothTexture.slice(1) };
     case 4: return { title: "Tablecloth color", hint: "Choose a color.", value: tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory" };
-    case 5: return { title: "Number of place settings", hint: "How many guests are you planning for?", value: String(state.placeSettings) };
-    case 6: return { title: "Charger plate", hint: "Select a metallic or neutral charger.", value: state.charger };
-    case 7: return { title: "Napkin color", hint: "Choose the napkin color.", value: state.napkinName };
-    case 8: return { title: "Napkin style", hint: "Define the napkin presentation style.", value: state.napkinStyle };
-    case 9: return { title: "Centerpiece", hint: "Select the tabletop focal element.", value: state.centerpiece };
+    case 5: return { title: "Number of place settings", hint: "How many guests are you planning for?", value: state.placeSettingsCount == null ? "Not selected" : String(state.placeSettingsCount) };
+    case 6: return { title: "Charger plate", hint: "Select a metallic or neutral charger.", value: state.chargerType || "Not selected" };
+    case 7: return { title: "Napkin color", hint: "Choose the napkin color.", value: state.napkinType || "Not selected" };
+    case 8: return { title: "Napkin style", hint: "Define the napkin presentation style.", value: state.napkinStyle || "Not selected" };
+    case 9: return { title: "Centerpiece", hint: "Select the tabletop focal element.", value: state.centerpieceType || "Not selected" };
     case 10: return { title: "Review + Export", hint: "Review all selections and export materials.", value: "Ready" };
     default: return { title: "", hint: "", value: "" };
   }
@@ -776,12 +790,18 @@ function renderStepContent() {
   if (currentStepNumber === 5) {
     refs.stepContent.innerHTML = `
       <div class="row">
-        <input id="placeSettings" class="range" type="range" min="2" max="12" value="${state.placeSettings}" />
-        <div class="range__labels"><span>2</span><span>12</span></div>
+        <label class="field" for="placeSettings">Select place settings</label>
+        <select id="placeSettings" class="input select">
+          <option value="">Choose a number</option>
+          ${Array.from({ length: 11 }, (_, index) => {
+            const count = index + 2;
+            return `<option value="${count}" ${state.placeSettingsCount === count ? "selected" : ""}>${count}</option>`;
+          }).join("")}
+        </select>
       </div>
     `;
-    el("placeSettings").addEventListener("input", (event) => {
-      state.placeSettings = Number(event.target.value);
+    el("placeSettings").addEventListener("change", (event) => {
+      state.placeSettingsCount = event.target.value === "" ? null : Number(event.target.value);
       updateUI();
     });
   }
@@ -791,7 +811,7 @@ function renderStepContent() {
       <div class="options">
         ${["Gold", "Silver", "Pearl", "Black"].map((option) => `
           <label class="opt">
-            <input type="radio" name="charger" value="${option}" ${state.charger === option ? "checked" : ""} />
+            <input type="radio" name="charger" value="${option}" ${state.chargerType === option ? "checked" : ""} />
             <span>${option}</span>
           </label>
         `).join("")}
@@ -799,7 +819,7 @@ function renderStepContent() {
     `;
     document.querySelectorAll('input[name="charger"]').forEach((radio) => {
       radio.addEventListener("change", (event) => {
-        state.charger = event.target.value;
+        state.chargerType = event.target.value;
         updateUI();
       });
     });
@@ -821,12 +841,12 @@ function renderStepContent() {
 
     document.querySelectorAll("[data-napkin]").forEach((button) => {
       button.addEventListener("click", () => {
-        state.napkinName = button.getAttribute("data-napkin");
+        state.napkinType = button.getAttribute("data-napkin");
         state.napkinColor = button.getAttribute("data-color");
         updateUI();
       });
     });
-    setActiveButtons("[data-napkin]", "data-napkin", state.napkinName);
+    setActiveButtons("[data-napkin]", "data-napkin", state.napkinType);
   }
 
   if (currentStepNumber === 8) {
@@ -853,7 +873,7 @@ function renderStepContent() {
       <div class="options">
         ${["Low Florals", "Tall Florals", "Candles", "Minimal Greenery"].map((style) => `
           <label class="opt">
-            <input type="radio" name="centerpiece" value="${style}" ${state.centerpiece === style ? "checked" : ""} />
+            <input type="radio" name="centerpiece" value="${style}" ${state.centerpieceType === style ? "checked" : ""} />
             <span>${style}</span>
           </label>
         `).join("")}
@@ -861,7 +881,7 @@ function renderStepContent() {
     `;
     document.querySelectorAll('input[name="centerpiece"]').forEach((radio) => {
       radio.addEventListener("change", (event) => {
-        state.centerpiece = event.target.value;
+        state.centerpieceType = event.target.value;
         updateUI();
       });
     });
@@ -872,12 +892,12 @@ function renderStepContent() {
       <div class="review-card">
         <dl class="summary__grid kv">
           <div><dt>Table</dt><dd>${formatTableSelection(state.tableShape, state.tableSize)}</dd></div>
-          <div><dt>Place Settings</dt><dd>${state.placeSettings}</dd></div>
+          <div><dt>Place Settings</dt><dd>${state.placeSettingsCount == null ? "—" : state.placeSettingsCount}</dd></div>
           <div><dt>Tablecloth</dt><dd>${state.tableclothTexture} - ${tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory"}</dd></div>
-          <div><dt>Charger</dt><dd>${state.charger}</dd></div>
-          <div><dt>Napkin</dt><dd>${state.napkinName}</dd></div>
-          <div><dt>Napkin Style</dt><dd>${state.napkinStyle}</dd></div>
-          <div><dt>Centerpiece</dt><dd>${state.centerpiece}</dd></div>
+          <div><dt>Charger</dt><dd>${state.chargerType || "—"}</dd></div>
+          <div><dt>Napkin</dt><dd>${state.napkinType || "—"}</dd></div>
+          <div><dt>Napkin Style</dt><dd>${state.napkinStyle || "—"}</dd></div>
+          <div><dt>Centerpiece</dt><dd>${state.centerpieceType || "—"}</dd></div>
         </dl>
         <button id="btnExport" class="btn review-card__export" type="button">Export Materials</button>
       </div>
@@ -892,12 +912,12 @@ function exportMaterials() {
     "The Preview Suite — Materials List",
     "--------------------------------",
     `Table: ${formatTableSelection(state.tableShape, state.tableSize)}`,
-    `Place settings: ${state.placeSettings}`,
+    `Place settings: ${state.placeSettingsCount == null ? "—" : state.placeSettingsCount}`,
     `Tablecloth: ${state.tableclothTexture} - ${tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory"}`,
-    `Charger: ${state.charger}`,
-    `Napkin: ${state.napkinName}`,
-    `Napkin style: ${state.napkinStyle}`,
-    `Centerpiece: ${state.centerpiece}`,
+    `Charger: ${state.chargerType || "—"}`,
+    `Napkin: ${state.napkinType || "—"}`,
+    `Napkin style: ${state.napkinStyle || "—"}`,
+    `Centerpiece: ${state.centerpieceType || "—"}`,
   ];
 
   const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
