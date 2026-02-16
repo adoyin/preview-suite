@@ -41,12 +41,15 @@
             <div class="progress-track" aria-hidden="true">
               <div class="progress-fill" id="progressFill"></div>
             </div>
+            <div class="wizard-progress-actions">
+              <button id="btnJumpTo" class="btn btn--ghost btn--sm" type="button">Jump to…</button>
+            </div>
           </div>
         </div>
       </div>
 
       <div class="steps">
-        <div class="step">
+        <div class="step" id="wizardStepCard">
           <div class="step__top">
             <div>
               <div class="step__title" id="stepTitle">Table shape</div>
@@ -68,6 +71,17 @@
         </div>
       </div>
     </section>
+
+    <div class="jump-modal" id="jumpModal" hidden>
+      <div class="jump-modal__backdrop" id="jumpBackdrop"></div>
+      <section class="jump-modal__panel" role="dialog" aria-modal="true" aria-labelledby="jumpModalTitle">
+        <div class="jump-modal__header">
+          <h3 id="jumpModalTitle">Jump to step</h3>
+          <button id="jumpClose" class="btn btn--ghost btn--sm" type="button" aria-label="Close jump to step dialog">Close</button>
+        </div>
+        <div class="jump-modal__content" id="jumpStepList"></div>
+      </section>
+    </div>
 
     <section class="panel" aria-label="Live preview">
       <div class="panel__header">

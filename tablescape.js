@@ -88,10 +88,19 @@ const stepSequence = [
   "Review + Export",
 ];
 
+const stepSections = [
+  { label: "Table", steps: [0, 1] },
+  { label: "Tablecloth", steps: [2, 3] },
+  { label: "Place Settings", steps: [4, 5, 6, 7] },
+  { label: "Centerpiece", steps: [8] },
+  { label: "Review", steps: [9] },
+];
+
 const TOTAL_STEPS = stepSequence.length;
 
 const state = { ...initialState };
 let currentStepIndex = 0;
+let maxStepReached = 0;
 
 const el = (id) => document.getElementById(id);
 
@@ -105,8 +114,14 @@ const refs = {
   stepHint: el("stepHint"),
   stepValue: el("stepValue"),
   stepContent: el("stepContent"),
+  stepCard: el("wizardStepCard"),
   wizardProgress: el("wizardProgress"),
   progressFill: el("progressFill"),
+  btnJumpTo: el("btnJumpTo"),
+  jumpModal: el("jumpModal"),
+  jumpBackdrop: el("jumpBackdrop"),
+  jumpClose: el("jumpClose"),
+  jumpStepList: el("jumpStepList"),
   btnBack: el("btnBack"),
   btnNext: el("btnNext"),
   btnReset: el("btnReset"),
@@ -407,6 +422,56 @@ function updatePreviewStatus() {
   refs.previewStepText.textContent = `Designing your table — Step ${currentStepNumber} of ${totalSteps}`;
   refs.previewNextText.textContent = `Next: ${nextLabel}`;
   refs.previewSummary.hidden = currentStepNumber !== totalSteps;
+}
+
+function renderJumpStepList() {
+  refs.jumpStepList.innerHTML = stepSections.map((section) => {
+    const rows = section.steps.map((stepIndex) => {
+      const isCurrent = stepIndex === currentStepIndex;
+      const isCompleted = stepIndex < currentStepIndex;
+      const isUnlocked = stepIndex <= maxStepReached;
+      const label = stepSequence[stepIndex];
+
+      return `
+        <button
+          class="jump-step ${isCurrent ? "jump-step--current" : ""} ${isCompleted ? "jump-step--completed" : ""}"
+          type="button"
+          data-jump-step="${stepIndex}"
+          ${isUnlocked ? "" : "disabled"}
+          aria-current="${isCurrent ? "step" : "false"}"
+        >
+          <span class="jump-step__label">${label}</span>
+          <span class="jump-step__meta">${isCompleted ? "✓ Completed" : (isCurrent ? "Current" : (isUnlocked ? "Available" : "Locked"))}</span>
+        </button>
+      `;
+    }).join("");
+
+    return `
+      <div class="jump-group">
+        <h4 class="jump-group__title">${section.label}</h4>
+        <div class="jump-group__steps">${rows}</div>
+      </div>
+    `;
+  }).join("");
+
+  refs.jumpStepList.querySelectorAll("[data-jump-step]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const stepIndex = Number(button.getAttribute("data-jump-step"));
+      if (Number.isInteger(stepIndex) && stepIndex <= maxStepReached) {
+        goToStep(stepIndex, { smoothScroll: true });
+        closeJumpModal();
+      }
+    });
+  });
+}
+
+function openJumpModal() {
+  renderJumpStepList();
+  refs.jumpModal.hidden = false;
+}
+
+function closeJumpModal() {
+  refs.jumpModal.hidden = true;
 }
 
 function renderPreview() {
@@ -948,23 +1013,37 @@ function updateUI() {
   refs.btnNext.disabled = currentStepNumber === TOTAL_STEPS;
   refs.btnNext.textContent = currentStepNumber === TOTAL_STEPS ? "Complete" : "Next";
 
+  if (!refs.jumpModal.hidden) {
+    renderJumpStepList();
+  }
+
   renderStepContent();
   renderPreview();
 }
 
-function goToStep(index) {
+function goToStep(index, options = {}) {
+  const { allowFuture = false, smoothScroll = false } = options;
   const boundedIndex = Math.max(0, Math.min(index, TOTAL_STEPS - 1));
+  const nextIndex = allowFuture ? boundedIndex : Math.min(boundedIndex, maxStepReached);
 
-  if (currentStepIndex !== boundedIndex) {
-    currentStepIndex = boundedIndex;
+  if (nextIndex > maxStepReached) {
+    maxStepReached = nextIndex;
+  }
+
+  if (currentStepIndex !== nextIndex) {
+    currentStepIndex = nextIndex;
     refs.exportNote.textContent = "";
+  }
+
+  if (smoothScroll && refs.stepCard) {
+    refs.stepCard.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   updateUI();
 }
 
 function nextStep() {
-  goToStep(currentStepIndex + 1);
+  goToStep(currentStepIndex + 1, { allowFuture: true });
 }
 
 function prevStep() {
@@ -974,8 +1053,9 @@ function prevStep() {
 function resetWizard() {
   Object.assign(state, initialState);
   currentStepIndex = 0;
+  maxStepReached = 0;
   refs.exportNote.textContent = "";
-  goToStep(0);
+  goToStep(0, { allowFuture: true });
 }
 
 function init() {
@@ -984,12 +1064,20 @@ function init() {
   refs.btnBack.addEventListener("click", prevStep);
   refs.btnNext.addEventListener("click", nextStep);
   refs.btnReset.addEventListener("click", resetWizard);
+  refs.btnJumpTo.addEventListener("click", openJumpModal);
+  refs.jumpClose.addEventListener("click", closeJumpModal);
+  refs.jumpBackdrop.addEventListener("click", closeJumpModal);
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !refs.jumpModal.hidden) {
+      closeJumpModal();
+    }
+  });
 
   refs.tableclothLayer.addEventListener("error", () => {
     refs.tableclothLayer.src = TABLECLOTH_FALLBACK_ASSET;
   });
 
-  goToStep(currentStepIndex);
+  goToStep(currentStepIndex, { allowFuture: true });
 }
 
 document.addEventListener("DOMContentLoaded", init);
