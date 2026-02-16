@@ -43,25 +43,37 @@ const refs = {
   },
 };
 
-function chargerColor(name) {
-  switch (name) {
-    case "Gold": return "#C9A44A";
-    case "Silver": return "#B9C0C9";
-    case "Pearl": return "#E8E2D6";
-    case "Black": return "#1A1A1B";
-    default: return "#C9A44A";
-  }
-}
+const ASSET_BASE = "./assets/tablescape";
 
-function centerStyle(name) {
-  switch (name) {
-    case "Low Florals": return { w: 92, h: 72, r: 18, bg: "rgba(255,255,255,0.16)" };
-    case "Tall Florals": return { w: 66, h: 120, r: 18, bg: "rgba(255,255,255,0.14)" };
-    case "Candles": return { w: 96, h: 56, r: 999, bg: "rgba(255,255,255,0.12)" };
-    case "Minimal Greenery": return { w: 88, h: 52, r: 14, bg: "rgba(255,255,255,0.10)" };
-    default: return { w: 92, h: 72, r: 18, bg: "rgba(255,255,255,0.16)" };
-  }
-}
+const chargerAssetMap = {
+  Gold: `${ASSET_BASE}/charger-gold.svg`,
+  Silver: `${ASSET_BASE}/charger-silver.svg`,
+  Pearl: `${ASSET_BASE}/charger-pearl.svg`,
+  Black: `${ASSET_BASE}/charger-black.svg`,
+};
+
+const napkinColorSlugMap = {
+  White: "white",
+  Sand: "sand",
+  "Dusty Rose": "dusty-rose",
+  Navy: "navy",
+  Charcoal: "charcoal",
+  Sage: "sage",
+};
+
+const napkinStyleSlugMap = {
+  "Classic Fold": "classic-fold",
+  "Pocket Fold": "pocket-fold",
+  "Napkin Ring": "napkin-ring",
+  "Bow Tie": "bow-tie",
+};
+
+const centerpieceAssetMap = {
+  "Low Florals": `${ASSET_BASE}/centerpiece-low-florals.svg`,
+  "Tall Florals": `${ASSET_BASE}/centerpiece-tall-florals.svg`,
+  Candles: `${ASSET_BASE}/centerpiece-candles.svg`,
+  "Minimal Greenery": `${ASSET_BASE}/centerpiece-minimal-greenery.svg`,
+};
 
 function formatTable(shape) {
   if (shape === "Round") return 'Round (60")';
@@ -70,67 +82,140 @@ function formatTable(shape) {
 }
 
 function applyTableShape(shape) {
+  refs.table.classList.remove("table--round", "table--rectangle", "table--oval", "table--square");
+
   if (shape === "Round") {
     refs.table.style.width = "320px";
     refs.table.style.height = "320px";
     refs.table.style.borderRadius = "999px";
+    refs.table.classList.add("table--round");
   } else if (shape === "Rectangle") {
     refs.table.style.width = "380px";
     refs.table.style.height = "260px";
     refs.table.style.borderRadius = "26px";
+    refs.table.classList.add("table--rectangle");
   } else if (shape === "Oval") {
     refs.table.style.width = "380px";
     refs.table.style.height = "280px";
     refs.table.style.borderRadius = "999px";
+    refs.table.classList.add("table--oval");
   } else if (shape === "Square") {
     refs.table.style.width = "300px";
     refs.table.style.height = "300px";
     refs.table.style.borderRadius = "26px";
+    refs.table.classList.add("table--square");
   }
+}
+
+function getNapkinAsset() {
+  const color = napkinColorSlugMap[state.napkinName] || "white";
+  const style = napkinStyleSlugMap[state.napkinStyle] || "classic-fold";
+  return `${ASSET_BASE}/napkin-${color}-${style}.svg`;
+}
+
+function createLayer(className, src, alt = "") {
+  const image = document.createElement("img");
+  image.className = className;
+  image.src = src;
+  image.alt = alt;
+  image.loading = "lazy";
+  return image;
+}
+
+function getCircularPositions(shape, count, width, height) {
+  const inset = shape === "Round" ? 18 : 24;
+  const rx = (width / 2) - inset;
+  const ry = (height / 2) - inset;
+
+  return Array.from({ length: count }, (_, i) => {
+    const angle = (i / count) * Math.PI * 2 - Math.PI / 2;
+    return {
+      x: (width / 2) + rx * Math.cos(angle),
+      y: (height / 2) + ry * Math.sin(angle),
+      angle,
+    };
+  });
+}
+
+function getPerimeterPositions(count, width, height) {
+  const pad = 24;
+  const corners = [
+    { x: pad, y: pad },
+    { x: width - pad, y: pad },
+    { x: width - pad, y: height - pad },
+    { x: pad, y: height - pad },
+  ];
+
+  const segments = corners.map((point, index) => {
+    const next = corners[(index + 1) % corners.length];
+    return { start: point, end: next };
+  });
+
+  return Array.from({ length: count }, (_, i) => {
+    const progress = i / count;
+    const segmentIndex = Math.floor(progress * segments.length) % segments.length;
+    const localProgress = (progress * segments.length) % 1;
+    const segment = segments[segmentIndex];
+    const x = segment.start.x + (segment.end.x - segment.start.x) * localProgress;
+    const y = segment.start.y + (segment.end.y - segment.start.y) * localProgress;
+    const angle = Math.atan2(y - (height / 2), x - (width / 2));
+
+    return { x, y, angle };
+  });
+}
+
+function getSettingPositions(shape, count, width, height) {
+  if (shape === "Rectangle" || shape === "Square") {
+    return getPerimeterPositions(count, width, height);
+  }
+  return getCircularPositions(shape, count, width, height);
 }
 
 function renderPlaceSettings(count) {
   refs.settings.innerHTML = "";
   const rect = refs.table.getBoundingClientRect();
-  const rx = (rect.width / 2) - 28;
-  const ry = (rect.height / 2) - 28;
+  const chargerAsset = chargerAssetMap[state.charger] || chargerAssetMap.Gold;
+  const napkinAsset = getNapkinAsset();
+  const positions = getSettingPositions(state.tableShape, count, rect.width, rect.height);
 
-  for (let i = 0; i < count; i += 1) {
-    const angle = (i / count) * Math.PI * 2 - Math.PI / 2;
-    const x = (rect.width / 2) + rx * Math.cos(angle);
-    const y = (rect.height / 2) + ry * Math.sin(angle);
+  positions.forEach((position, index) => {
+    const setting = document.createElement("div");
+    setting.className = "setting";
 
-    const place = document.createElement("div");
-    place.className = "place";
-    place.style.left = `${x - 17}px`;
-    place.style.top = `${y - 17}px`;
+    const facing = (position.angle * 180) / Math.PI + 90;
+    const jitter = ((index % 5) - 2) * 1.2;
+    setting.style.left = `${position.x}px`;
+    setting.style.top = `${position.y}px`;
+    setting.style.setProperty("--rot", `${facing + jitter}deg`);
 
-    const plate = document.createElement("div");
-    plate.className = "plate";
-    plate.style.background = chargerColor(state.charger);
+    setting.appendChild(createLayer("setting__charger", chargerAsset, `${state.charger} charger`));
+    setting.appendChild(createLayer("setting__plate", `${ASSET_BASE}/dinner-plate.svg`, "Dinner plate"));
+    setting.appendChild(createLayer("setting__napkin", napkinAsset, `${state.napkinName} ${state.napkinStyle} napkin`));
+    setting.appendChild(createLayer("setting__fork", `${ASSET_BASE}/cutlery-fork.svg`, "Fork"));
+    setting.appendChild(createLayer("setting__knife", `${ASSET_BASE}/cutlery-knife.svg`, "Knife"));
+    setting.appendChild(createLayer("setting__spoon", `${ASSET_BASE}/cutlery-spoon.svg`, "Spoon"));
+    setting.appendChild(createLayer("setting__glass", `${ASSET_BASE}/glass.svg`, "Glass"));
 
-    const napkin = document.createElement("div");
-    napkin.className = "napkin";
-    napkin.style.background = state.napkinColor;
-    napkin.style.transform = "none";
-    napkin.style.borderRadius = "4px";
-
-    if (state.napkinStyle === "Napkin Ring") napkin.style.borderRadius = "999px";
-    if (state.napkinStyle === "Pocket Fold") napkin.style.borderRadius = "2px";
-    if (state.napkinStyle === "Bow Tie") napkin.style.transform = "rotate(12deg)";
-
-    place.appendChild(plate);
-    place.appendChild(napkin);
-    refs.settings.appendChild(place);
-  }
+    refs.settings.appendChild(setting);
+  });
 }
 
 function renderCenterpiece() {
-  const s = centerStyle(state.centerpiece);
-  refs.centerpiece.style.width = `${s.w}px`;
-  refs.centerpiece.style.height = `${s.h}px`;
-  refs.centerpiece.style.borderRadius = `${s.r}px`;
-  refs.centerpiece.style.background = s.bg;
+  refs.centerpiece.innerHTML = "";
+  const centerImage = createLayer(
+    "centerpiece__image",
+    centerpieceAssetMap[state.centerpiece] || centerpieceAssetMap["Low Florals"],
+    `${state.centerpiece} centerpiece`
+  );
+  refs.centerpiece.appendChild(centerImage);
+
+  if (state.centerpiece === "Candles") {
+    ["-44px", "44px"].forEach((offset) => {
+      const candle = createLayer("centerpiece__candle", `${ASSET_BASE}/candle-single.svg`, "Accent candle");
+      candle.style.left = `calc(50% + ${offset})`;
+      refs.centerpiece.appendChild(candle);
+    });
+  }
 }
 
 function renderSummary() {
@@ -144,7 +229,9 @@ function renderSummary() {
 }
 
 function renderPreview() {
-  refs.table.style.background = state.clothColor;
+  refs.table.style.backgroundColor = state.clothColor;
+  refs.table.style.backgroundImage = `url(${ASSET_BASE}/tablecloth-texture.svg)`;
+  refs.table.style.backgroundSize = "cover";
   applyTableShape(state.tableShape);
   renderCenterpiece();
   requestAnimationFrame(() => renderPlaceSettings(state.placeSettings));
