@@ -1,7 +1,33 @@
-const TOTAL_STEPS = 8;
+const TOTAL_STEPS = 9;
+
+const PLACEHOLDER_ASSET = "./assets/placeholders/ref-card.svg";
+
+const tableShapeOptions = [
+  { value: "round", label: "Round" },
+  { value: "rectangle", label: "Rectangle" },
+  { value: "square", label: "Square" },
+];
+
+const tableSizeOptions = {
+  round: [
+    { value: '60"', label: 'Round 60"' },
+    { value: '90"', label: 'Round 90"' },
+  ],
+  rectangle: [
+    { value: "6ft", label: "Rectangle 6 ft" },
+    { value: "8ft", label: "Rectangle 8 ft" },
+    { value: "9ft", label: "Rectangle 9 ft" },
+  ],
+  square: [
+    { value: "8ft", label: "Square 8 ft" },
+    { value: "9ft", label: "Square 9 ft" },
+    { value: "10ft", label: "Square 10 ft" },
+  ],
+};
 
 const initialState = {
-  tableShape: "Round",
+  tableShape: "round",
+  tableSize: '60"',
   placeSettings: 8,
   clothName: "Ivory",
   clothColor: "#F6F0E6",
@@ -75,33 +101,52 @@ const centerpieceAssetMap = {
   "Minimal Greenery": `${ASSET_BASE}/centerpiece-minimal-greenery.svg`,
 };
 
-function formatTable(shape) {
-  if (shape === "Round") return 'Round (60")';
-  if (shape === "Rectangle") return "Rectangle (8 ft)";
-  return shape;
+function formatTableShape(shape) {
+  const selected = tableShapeOptions.find((option) => option.value === shape);
+  return selected ? selected.label : shape;
 }
 
-function applyTableShape(shape) {
+function formatTableSelection(shape, size) {
+  return `${formatTableShape(shape)} — ${size}`;
+}
+
+function applyTableShape(shape, size) {
   refs.table.classList.remove("table--round", "table--rectangle", "table--oval", "table--square");
 
-  if (shape === "Round") {
-    refs.table.style.width = "320px";
-    refs.table.style.height = "320px";
+  if (shape === "round") {
+    if (size === '90"') {
+      refs.table.style.width = "360px";
+      refs.table.style.height = "360px";
+    } else {
+      refs.table.style.width = "300px";
+      refs.table.style.height = "300px";
+    }
     refs.table.style.borderRadius = "999px";
     refs.table.classList.add("table--round");
-  } else if (shape === "Rectangle") {
-    refs.table.style.width = "380px";
-    refs.table.style.height = "260px";
+  } else if (shape === "rectangle") {
+    if (size === "6ft") {
+      refs.table.style.width = "320px";
+      refs.table.style.height = "220px";
+    } else if (size === "9ft") {
+      refs.table.style.width = "410px";
+      refs.table.style.height = "250px";
+    } else {
+      refs.table.style.width = "370px";
+      refs.table.style.height = "240px";
+    }
     refs.table.style.borderRadius = "26px";
     refs.table.classList.add("table--rectangle");
-  } else if (shape === "Oval") {
-    refs.table.style.width = "380px";
-    refs.table.style.height = "280px";
-    refs.table.style.borderRadius = "999px";
-    refs.table.classList.add("table--oval");
-  } else if (shape === "Square") {
-    refs.table.style.width = "300px";
-    refs.table.style.height = "300px";
+  } else if (shape === "square") {
+    if (size === "10ft") {
+      refs.table.style.width = "350px";
+      refs.table.style.height = "350px";
+    } else if (size === "9ft") {
+      refs.table.style.width = "320px";
+      refs.table.style.height = "320px";
+    } else {
+      refs.table.style.width = "290px";
+      refs.table.style.height = "290px";
+    }
     refs.table.style.borderRadius = "26px";
     refs.table.classList.add("table--square");
   }
@@ -165,7 +210,7 @@ function getPerimeterPositions(count, width, height) {
 }
 
 function getSettingPositions(shape, count, width, height) {
-  if (shape === "Rectangle" || shape === "Square") {
+  if (shape === "rectangle" || shape === "square") {
     return getPerimeterPositions(count, width, height);
   }
   return getCircularPositions(shape, count, width, height);
@@ -219,7 +264,7 @@ function renderCenterpiece() {
 }
 
 function renderSummary() {
-  refs.summary.table.textContent = formatTable(state.tableShape);
+  refs.summary.table.textContent = formatTableSelection(state.tableShape, state.tableSize);
   refs.summary.settings.textContent = String(state.placeSettings);
   refs.summary.cloth.textContent = state.clothName;
   refs.summary.charger.textContent = state.charger;
@@ -232,22 +277,49 @@ function renderPreview() {
   refs.table.style.backgroundColor = state.clothColor;
   refs.table.style.backgroundImage = `url(${ASSET_BASE}/tablecloth-texture.svg)`;
   refs.table.style.backgroundSize = "cover";
-  applyTableShape(state.tableShape);
-  renderCenterpiece();
-  requestAnimationFrame(() => renderPlaceSettings(state.placeSettings));
+  applyTableShape(state.tableShape, state.tableSize);
+
+  const isTableOnlyPreviewStep = currentStep <= 2;
+  refs.centerpiece.innerHTML = "";
+  refs.settings.innerHTML = "";
+
+  if (!isTableOnlyPreviewStep) {
+    renderCenterpiece();
+    requestAnimationFrame(() => renderPlaceSettings(state.placeSettings));
+  }
+
   renderSummary();
+}
+
+function renderVisualOptionCards({ name, options, selectedValue, onSelect }) {
+  refs.stepContent.innerHTML = `
+    <div class="option-cards">
+      ${options.map((option) => `
+        <label class="option-card ${selectedValue === option.value ? "option-card--selected" : ""}">
+          <input type="radio" name="${name}" value="${option.value}" ${selectedValue === option.value ? "checked" : ""} />
+          <img class="option-card__image" src="${PLACEHOLDER_ASSET}" alt="Image coming soon" loading="lazy" />
+          <span class="option-card__title">${option.label}</span>
+        </label>
+      `).join("")}
+    </div>
+  `;
+
+  document.querySelectorAll(`input[name="${name}"]`).forEach((radio) => {
+    radio.addEventListener("change", (event) => onSelect(event.target.value));
+  });
 }
 
 function getStepMeta() {
   switch (currentStep) {
-    case 1: return { title: "Table shape + size", hint: "Choose the base table profile.", value: formatTable(state.tableShape) };
-    case 2: return { title: "Number of place settings", hint: "How many guests are you planning for?", value: String(state.placeSettings) };
-    case 3: return { title: "Tablecloth color", hint: "Pick a table linen tone.", value: state.clothName };
-    case 4: return { title: "Charger plate", hint: "Select a metallic or neutral charger.", value: state.charger };
-    case 5: return { title: "Napkin color", hint: "Choose the napkin color.", value: state.napkinName };
-    case 6: return { title: "Napkin style", hint: "Define the napkin presentation style.", value: state.napkinStyle };
-    case 7: return { title: "Centerpiece", hint: "Select the tabletop focal element.", value: state.centerpiece };
-    case 8: return { title: "Review + Export", hint: "Review all selections and export materials.", value: "Ready" };
+    case 1: return { title: "Table shape", hint: "Choose the base table shape.", value: formatTableShape(state.tableShape) };
+    case 2: return { title: "Table size", hint: "Choose a size for the selected shape.", value: state.tableSize };
+    case 3: return { title: "Number of place settings", hint: "How many guests are you planning for?", value: String(state.placeSettings) };
+    case 4: return { title: "Tablecloth color", hint: "Pick a table linen tone.", value: state.clothName };
+    case 5: return { title: "Charger plate", hint: "Select a metallic or neutral charger.", value: state.charger };
+    case 6: return { title: "Napkin color", hint: "Choose the napkin color.", value: state.napkinName };
+    case 7: return { title: "Napkin style", hint: "Define the napkin presentation style.", value: state.napkinStyle };
+    case 8: return { title: "Centerpiece", hint: "Select the tabletop focal element.", value: state.centerpiece };
+    case 9: return { title: "Review + Export", hint: "Review all selections and export materials.", value: "Ready" };
     default: return { title: "", hint: "", value: "" };
   }
 }
@@ -263,25 +335,39 @@ function renderStepContent() {
   refs.stepContent.innerHTML = "";
 
   if (currentStep === 1) {
-    refs.stepContent.innerHTML = `
-      <div class="options">
-        ${["Round", "Rectangle", "Oval", "Square"].map((shape) => `
-          <label class="opt">
-            <input type="radio" name="tableShape" value="${shape}" ${state.tableShape === shape ? "checked" : ""} />
-            <span>${formatTable(shape)}</span>
-          </label>
-        `).join("")}
-      </div>
-    `;
-    document.querySelectorAll('input[name="tableShape"]').forEach((radio) => {
-      radio.addEventListener("change", (event) => {
-        state.tableShape = event.target.value;
+    renderVisualOptionCards({
+      name: "tableShape",
+      options: tableShapeOptions,
+      selectedValue: state.tableShape,
+      onSelect: (value) => {
+        if (state.tableShape !== value) {
+          state.tableShape = value;
+          const shapeSizes = tableSizeOptions[value] || [];
+          state.tableSize = shapeSizes[0]?.value || "";
+        }
         updateUI();
-      });
+      },
     });
   }
 
   if (currentStep === 2) {
+    const shapeSizes = tableSizeOptions[state.tableShape] || [];
+    if (!shapeSizes.some((option) => option.value === state.tableSize)) {
+      state.tableSize = shapeSizes[0]?.value || "";
+    }
+
+    renderVisualOptionCards({
+      name: "tableSize",
+      options: shapeSizes,
+      selectedValue: state.tableSize,
+      onSelect: (value) => {
+        state.tableSize = value;
+        updateUI();
+      },
+    });
+  }
+
+  if (currentStep === 3) {
     refs.stepContent.innerHTML = `
       <div class="row">
         <input id="placeSettings" class="range" type="range" min="2" max="12" value="${state.placeSettings}" />
@@ -294,7 +380,7 @@ function renderStepContent() {
     });
   }
 
-  if (currentStep === 3) {
+  if (currentStep === 4) {
     const clothOptions = [
       ["Ivory", "#F6F0E6"],
       ["White", "#FFFFFF"],
@@ -318,7 +404,7 @@ function renderStepContent() {
     setActiveButtons("[data-cloth]", "data-cloth", state.clothName);
   }
 
-  if (currentStep === 4) {
+  if (currentStep === 5) {
     refs.stepContent.innerHTML = `
       <div class="options">
         ${["Gold", "Silver", "Pearl", "Black"].map((option) => `
@@ -337,7 +423,7 @@ function renderStepContent() {
     });
   }
 
-  if (currentStep === 5) {
+  if (currentStep === 6) {
     const napkinOptions = [
       ["White", "#FFFFFF"],
       ["Sand", "#E7D8C3"],
@@ -361,7 +447,7 @@ function renderStepContent() {
     setActiveButtons("[data-napkin]", "data-napkin", state.napkinName);
   }
 
-  if (currentStep === 6) {
+  if (currentStep === 7) {
     refs.stepContent.innerHTML = `
       <div class="options">
         ${["Classic Fold", "Pocket Fold", "Napkin Ring", "Bow Tie"].map((style) => `
@@ -380,7 +466,7 @@ function renderStepContent() {
     });
   }
 
-  if (currentStep === 7) {
+  if (currentStep === 8) {
     refs.stepContent.innerHTML = `
       <div class="options">
         ${["Low Florals", "Tall Florals", "Candles", "Minimal Greenery"].map((style) => `
@@ -399,11 +485,11 @@ function renderStepContent() {
     });
   }
 
-  if (currentStep === 8) {
+  if (currentStep === 9) {
     refs.stepContent.innerHTML = `
       <div class="review-card">
         <dl class="summary__grid kv">
-          <div><dt>Table</dt><dd>${formatTable(state.tableShape)}</dd></div>
+          <div><dt>Table</dt><dd>${formatTableSelection(state.tableShape, state.tableSize)}</dd></div>
           <div><dt>Place Settings</dt><dd>${state.placeSettings}</dd></div>
           <div><dt>Tablecloth</dt><dd>${state.clothName}</dd></div>
           <div><dt>Charger</dt><dd>${state.charger}</dd></div>
@@ -423,7 +509,7 @@ function exportMaterials() {
   const lines = [
     "The Preview Suite — Materials List",
     "--------------------------------",
-    `Table: ${formatTable(state.tableShape)}`,
+    `Table: ${formatTableSelection(state.tableShape, state.tableSize)}`,
     `Place settings: ${state.placeSettings}`,
     `Tablecloth: ${state.clothName}`,
     `Charger: ${state.charger}`,
