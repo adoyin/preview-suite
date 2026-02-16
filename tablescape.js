@@ -238,6 +238,24 @@ function createLayer(className, src, alt = "") {
   return image;
 }
 
+function createPlateLayer(src, alt = "") {
+  const plateWrap = document.createElement("div");
+  plateWrap.className = "plate-wrap setting__plate";
+
+  const contactShadow = document.createElement("div");
+  contactShadow.className = "plate-contact-shadow";
+
+  const plate = createLayer("plate", src, alt);
+
+  plateWrap.append(contactShadow, plate);
+
+  requestAnimationFrame(() => {
+    plateWrap.classList.add("is-visible");
+  });
+
+  return plateWrap;
+}
+
 function getCircularPositions(shape, count, width, height) {
   const inset = shape === "Round" ? 18 : 24;
   const rx = (width / 2) - inset;
