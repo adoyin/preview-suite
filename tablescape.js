@@ -101,6 +101,7 @@ const TOTAL_STEPS = stepSequence.length;
 const state = { ...initialState };
 let currentStepIndex = 0;
 let maxStepReached = 0;
+let isJumpModalOpen = false;
 
 const el = (id) => document.getElementById(id);
 
@@ -458,20 +459,27 @@ function renderJumpStepList() {
     button.addEventListener("click", () => {
       const stepIndex = Number(button.getAttribute("data-jump-step"));
       if (Number.isInteger(stepIndex) && stepIndex <= maxStepReached) {
-        goToStep(stepIndex, { smoothScroll: true });
         closeJumpModal();
+        goToStep(stepIndex, { smoothScroll: true });
       }
     });
   });
 }
 
+function setJumpModalOpen(isOpen) {
+  isJumpModalOpen = isOpen;
+  refs.jumpModal.hidden = !isOpen;
+  refs.jumpModal.classList.toggle("is-hidden", !isOpen);
+  refs.jumpModal.setAttribute("aria-hidden", String(!isOpen));
+}
+
 function openJumpModal() {
   renderJumpStepList();
-  refs.jumpModal.hidden = false;
+  setJumpModalOpen(true);
 }
 
 function closeJumpModal() {
-  refs.jumpModal.hidden = true;
+  setJumpModalOpen(false);
 }
 
 function renderPreview() {
@@ -1013,7 +1021,7 @@ function updateUI() {
   refs.btnNext.disabled = currentStepNumber === TOTAL_STEPS;
   refs.btnNext.textContent = currentStepNumber === TOTAL_STEPS ? "Complete" : "Next";
 
-  if (!refs.jumpModal.hidden) {
+  if (isJumpModalOpen) {
     renderJumpStepList();
   }
 
@@ -1023,6 +1031,10 @@ function updateUI() {
 
 function goToStep(index, options = {}) {
   const { allowFuture = false, smoothScroll = false } = options;
+
+  if (isJumpModalOpen) {
+    closeJumpModal();
+  }
   const boundedIndex = Math.max(0, Math.min(index, TOTAL_STEPS - 1));
   const nextIndex = allowFuture ? boundedIndex : Math.min(boundedIndex, maxStepReached);
 
@@ -1068,7 +1080,7 @@ function init() {
   refs.jumpClose.addEventListener("click", closeJumpModal);
   refs.jumpBackdrop.addEventListener("click", closeJumpModal);
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && !refs.jumpModal.hidden) {
+    if (event.key === "Escape" && isJumpModalOpen) {
       closeJumpModal();
     }
   });
@@ -1077,6 +1089,7 @@ function init() {
     refs.tableclothLayer.src = TABLECLOTH_FALLBACK_ASSET;
   });
 
+  setJumpModalOpen(false);
   goToStep(currentStepIndex, { allowFuture: true });
 }
 
