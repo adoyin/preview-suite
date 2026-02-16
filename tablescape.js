@@ -45,6 +45,21 @@ const tableclothColorOptions = [
   { value: "black", label: "Black" },
 ];
 
+const clothPalette = {
+  ivory: "#F6F1E8",
+  white: "#FFFFFF",
+  champagne: "#F1E3C6",
+  blush: "#E8C7C8",
+  "dusty-rose": "#CFA1A3",
+  sage: "#A8B5A2",
+  emerald: "#1F6A5A",
+  navy: "#1C2A44",
+  "french-blue": "#4F6D8A",
+  burgundy: "#6B1F2A",
+  terracotta: "#C46A4A",
+  black: "#111111",
+};
+
 const initialState = {
   tableShape: "round",
   tableSize: '60"',
@@ -414,6 +429,145 @@ function setActiveButtons(selector, attrName, value) {
   });
 }
 
+function normalizeHex(value) {
+  const cleaned = value.trim().replace(/^#/, "");
+  return /^[0-9a-fA-F]{6}$/.test(cleaned) ? `#${cleaned.toUpperCase()}` : "";
+}
+
+function hexToRgb(hex) {
+  const normalizedHex = normalizeHex(hex);
+  if (!normalizedHex) {
+    return null;
+  }
+
+  const colorNumber = Number.parseInt(normalizedHex.slice(1), 16);
+  return {
+    r: (colorNumber >> 16) & 255,
+    g: (colorNumber >> 8) & 255,
+    b: colorNumber & 255,
+  };
+}
+
+function getColorDistance(first, second) {
+  return Math.sqrt(
+    ((second.r - first.r) ** 2)
+    + ((second.g - first.g) ** 2)
+    + ((second.b - first.b) ** 2)
+  );
+}
+
+function findClosestClothMatches(inputHex, limit = 3) {
+  const inputRgb = hexToRgb(inputHex);
+  if (!inputRgb) {
+    return [];
+  }
+
+  return tableclothColorOptions
+    .map((option) => {
+      const paletteHex = clothPalette[option.value];
+      const paletteRgb = hexToRgb(paletteHex);
+      return {
+        ...option,
+        hex: paletteHex,
+        distance: paletteRgb ? getColorDistance(inputRgb, paletteRgb) : Number.POSITIVE_INFINITY,
+      };
+    })
+    .sort((a, b) => a.distance - b.distance)
+    .slice(0, limit);
+}
+
+function extractDominantHexFromFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const image = new Image();
+      image.onload = () => {
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d", { willReadFrequently: true });
+
+        if (!context) {
+          reject(new Error("Unable to read image file."));
+          return;
+        }
+
+        const maxDimension = 80;
+        const scale = Math.min(maxDimension / image.width, maxDimension / image.height, 1);
+        const width = Math.max(1, Math.round(image.width * scale));
+        const height = Math.max(1, Math.round(image.height * scale));
+
+        canvas.width = width;
+        canvas.height = height;
+        context.drawImage(image, 0, 0, width, height);
+
+        const { data } = context.getImageData(0, 0, width, height);
+        let totalRed = 0;
+        let totalGreen = 0;
+        let totalBlue = 0;
+        let countedPixels = 0;
+
+        for (let index = 0; index < data.length; index += 4) {
+          const alpha = data[index + 3];
+          if (alpha === 0) {
+            continue;
+          }
+
+          totalRed += data[index];
+          totalGreen += data[index + 1];
+          totalBlue += data[index + 2];
+          countedPixels += 1;
+        }
+
+        if (!countedPixels) {
+          reject(new Error("Unable to detect colors from this image."));
+          return;
+        }
+
+        const toHex = (value) => Math.round(value).toString(16).padStart(2, "0").toUpperCase();
+        const dominantHex = `#${toHex(totalRed / countedPixels)}${toHex(totalGreen / countedPixels)}${toHex(totalBlue / countedPixels)}`;
+        resolve(dominantHex);
+      };
+      image.onerror = () => reject(new Error("Unable to read this image."));
+      image.src = reader.result;
+    };
+    reader.onerror = () => reject(new Error("Unable to open this image."));
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderClothMatches(container, matches) {
+  if (!container) {
+    return;
+  }
+
+  if (!matches.length) {
+    container.innerHTML = "";
+    return;
+  }
+
+  container.innerHTML = `
+    <p class="match-results__title">We found the closest real cloth colors</p>
+    <div class="match-results__grid">
+      ${matches.map((match) => `
+        <article class="match-card">
+          <img class="match-card__image" src="${getTableclothAssetPath(state.tableclothTexture, match.value)}" data-fallback-src="${PLACEHOLDER_ASSET}" alt="${match.label} tablecloth" loading="lazy" />
+          <div class="match-card__body">
+            <p class="match-card__name">${match.label}</p>
+            <button class="btn btn--ghost match-card__select" type="button" data-cloth-match="${match.value}">Select</button>
+          </div>
+        </article>
+      `).join("")}
+    </div>
+  `;
+
+  attachImageFallbacks(container);
+  container.querySelectorAll("[data-cloth-match]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.tableclothColor = button.getAttribute("data-cloth-match");
+      updateUI();
+    });
+  });
+}
+
 function renderStepContent() {
   const currentStepNumber = currentStepIndex + 1;
   refs.stepContent.innerHTML = "";
@@ -464,6 +618,8 @@ function renderStepContent() {
   }
 
   if (currentStepNumber === 4) {
+    const defaultHex = clothPalette[state.tableclothColor] || "#FFFFFF";
+
     refs.stepContent.innerHTML = `
       <div class="cloth-color-grid">
         ${tableclothColorOptions.map((option) => `
@@ -473,10 +629,37 @@ function renderStepContent() {
           </button>
         `).join("")}
       </div>
-      <div class="custom-color-note">
-        <label for="customClothColor" class="custom-color-note__label">Custom color (coming soon)</label>
-        <input id="customClothColor" class="custom-color-note__input" type="text" placeholder="#A36F5A" value="${state.customTableclothColor}" />
-        <p class="custom-color-note__text">We'll support matching custom colors soon.</p>
+      <div class="similar-color-finder">
+        <hr class="similar-color-finder__divider" />
+        <h3 class="similar-color-finder__title">Can’t find your exact color?</h3>
+        <div class="similar-color-finder__actions">
+          <button class="btn btn--ghost" type="button" data-match-mode="hex">Pick a Color</button>
+          <button class="btn btn--ghost" type="button" data-match-mode="upload">Upload Image</button>
+        </div>
+
+        <div class="similar-color-finder__panel" id="similarColorPanel" hidden>
+          <div class="similar-color-finder__content" id="hexTool" hidden>
+            <div class="similar-color-finder__inputs">
+              <input id="hexColorInput" class="custom-color-note__input" type="text" value="${defaultHex}" placeholder="#RRGGBB" maxlength="7" />
+              <input id="hexColorPicker" class="similar-color-finder__picker" type="color" value="${defaultHex}" />
+            </div>
+            <button class="btn" type="button" id="findHexMatches">Find Closest Matches</button>
+          </div>
+
+          <div class="similar-color-finder__content" id="uploadTool" hidden>
+            <label class="custom-color-note__label" for="imageColorUpload">Upload an image</label>
+            <input id="imageColorUpload" class="custom-color-note__input" type="file" accept="image/*" />
+          </div>
+
+          <p class="custom-color-note__text" id="matchStatusText"></p>
+          <div id="matchResults"></div>
+
+          <div class="custom-color-note similar-color-finder__teaser">
+            <p class="similar-color-finder__coming-soon">✨ Coming Soon</p>
+            <p class="custom-color-note__text">Upload your invitation or stationery<br />We’ll extract your event palette and suggest real linens and decor.</p>
+            <button class="btn btn--ghost" type="button" disabled>Upload Invitation (Coming Soon)</button>
+          </div>
+        </div>
       </div>
     `;
 
@@ -487,8 +670,66 @@ function renderStepContent() {
       });
     });
 
-    el("customClothColor").addEventListener("input", (event) => {
-      state.customTableclothColor = event.target.value;
+    const matchModeButtons = refs.stepContent.querySelectorAll("[data-match-mode]");
+    const similarColorPanel = el("similarColorPanel");
+    const hexTool = el("hexTool");
+    const uploadTool = el("uploadTool");
+    const hexColorInput = el("hexColorInput");
+    const hexColorPicker = el("hexColorPicker");
+    const findHexMatchesButton = el("findHexMatches");
+    const imageColorUpload = el("imageColorUpload");
+    const matchResults = el("matchResults");
+    const matchStatusText = el("matchStatusText");
+
+    const setMatchMode = (mode) => {
+      similarColorPanel.hidden = false;
+      hexTool.hidden = mode !== "hex";
+      uploadTool.hidden = mode !== "upload";
+      matchStatusText.textContent = "";
+      renderClothMatches(matchResults, []);
+    };
+
+    matchModeButtons.forEach((button) => {
+      button.addEventListener("click", () => setMatchMode(button.getAttribute("data-match-mode")));
+    });
+
+    hexColorPicker.addEventListener("input", (event) => {
+      hexColorInput.value = event.target.value.toUpperCase();
+    });
+
+    findHexMatchesButton.addEventListener("click", () => {
+      const normalizedHex = normalizeHex(hexColorInput.value);
+      if (!normalizedHex) {
+        matchStatusText.textContent = "Please enter a valid hex color (example: #A36F5A).";
+        renderClothMatches(matchResults, []);
+        return;
+      }
+
+      hexColorInput.value = normalizedHex;
+      hexColorPicker.value = normalizedHex;
+      const matches = findClosestClothMatches(normalizedHex, 3);
+      renderClothMatches(matchResults, matches);
+      matchStatusText.textContent = "";
+    });
+
+    imageColorUpload.addEventListener("change", async (event) => {
+      const [file] = event.target.files || [];
+      if (!file) {
+        return;
+      }
+
+      matchStatusText.textContent = "Analyzing image color…";
+      renderClothMatches(matchResults, []);
+
+      try {
+        const extractedHex = await extractDominantHexFromFile(file);
+        const matches = findClosestClothMatches(extractedHex, 3);
+        matchStatusText.textContent = `Detected dominant color: ${extractedHex}`;
+        renderClothMatches(matchResults, matches);
+      } catch (error) {
+        matchStatusText.textContent = error.message;
+        renderClothMatches(matchResults, []);
+      }
     });
 
     attachImageFallbacks(refs.stepContent);
