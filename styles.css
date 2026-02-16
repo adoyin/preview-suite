@@ -324,6 +324,53 @@ a:focus-visible{
   gap: 10px;
 }
 
+
+.option-cards{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.option-card{
+  border: 1px solid var(--stroke);
+  background: var(--surface-strong);
+  border-radius: 14px;
+  padding: 10px;
+  display:flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor:pointer;
+  user-select:none;
+  transition: background .12s ease, border-color .12s ease, box-shadow .12s ease;
+}
+
+.option-card:hover{ background: var(--surface-soft); }
+
+.option-card input{
+  position:absolute;
+  opacity:0;
+  pointer-events:none;
+}
+
+.option-card--selected{
+  border-color: rgba(182, 154, 112, 0.7);
+  box-shadow: 0 0 0 3px rgba(215,198,163,0.35);
+}
+
+.option-card__image{
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  border-radius: 10px;
+  border: 1px solid var(--stroke);
+  background: #e9e4dd;
+  object-fit: cover;
+}
+
+.option-card__title{
+  font-size: 13px;
+  font-weight: 500;
+}
+
 .opt{
   border: 1px solid var(--stroke);
   background: var(--surface-strong);
@@ -466,6 +513,7 @@ a:focus-visible{
   .hero__copy{ margin-left: 0; }
   .hero__actions{ justify-content: flex-start; }
   .h2{ font-size: 32px; }
+  .option-cards{ grid-template-columns: 1fr; }
 }
 
 .builder-head--stack{ flex-direction: column; align-items: stretch; }
