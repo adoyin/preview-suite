@@ -287,25 +287,45 @@ function getSettingPositions(shape, count, width, height) {
   return getCircularPositions(shape, count, width, height);
 }
 
+function hashString(value) {
+  let hash = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = ((hash << 5) - hash) + value.charCodeAt(index);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+
+function getSeatRotationJitter(tableType, seatIndex) {
+  const seededValue = hashString(`${tableType}:${seatIndex}`);
+  return ((seededValue % 401) / 100) - 2;
+}
+
 function renderPlaceSettings(count) {
   refs.settings.innerHTML = "";
   const rect = refs.table.getBoundingClientRect();
   const chargerAsset = chargerAssetMap[state.charger] || chargerAssetMap.Gold;
   const napkinAsset = getNapkinAsset();
   const positions = getSettingPositions(state.tableShape, count, rect.width, rect.height);
+  const tableType = `${state.tableShape}-${state.tableSize}`;
 
   positions.forEach((position, index) => {
     const setting = document.createElement("div");
     setting.className = "setting";
 
     const facing = (position.angle * 180) / Math.PI + 90;
-    const jitter = ((index % 5) - 2) * 1.2;
+    const jitter = getSeatRotationJitter(tableType, index);
     setting.style.left = `${position.x}px`;
     setting.style.top = `${position.y}px`;
     setting.style.setProperty("--rot", `${facing + jitter}deg`);
 
     setting.appendChild(createLayer("setting__charger", chargerAsset, `${state.charger} charger`));
-    setting.appendChild(createLayer("setting__plate", `${ASSET_BASE}/dinner-plate.svg`, "Dinner plate"));
+
+    const plateWrap = document.createElement("div");
+    plateWrap.className = "setting__plate-wrap";
+    plateWrap.appendChild(createLayer("setting__plate", `${ASSET_BASE}/dinner-plate.svg`, "Dinner plate"));
+    setting.appendChild(plateWrap);
+
     setting.appendChild(createLayer("setting__napkin", napkinAsset, `${state.napkinName} ${state.napkinStyle} napkin`));
     setting.appendChild(createLayer("setting__fork", `${ASSET_BASE}/cutlery-fork.svg`, "Fork"));
     setting.appendChild(createLayer("setting__knife", `${ASSET_BASE}/cutlery-knife.svg`, "Knife"));
