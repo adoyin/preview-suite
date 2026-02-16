@@ -565,9 +565,80 @@ a:focus-visible{
 
 .builder-head--stack{ flex-direction: column; align-items: stretch; }
 .wizard-progress-wrap{ display: grid; gap: 8px; }
+.wizard-progress-actions{ display: flex; justify-content: flex-end; }
 .wizard-progress{ margin: 0; font-size: 12px; color: var(--text-soft); }
 .progress-track{ width: 100%; height: 7px; border-radius: 999px; border: 1px solid var(--stroke); background: var(--surface-soft); overflow: hidden; }
 .progress-fill{ width: 12.5%; height: 100%; background: linear-gradient(90deg, rgba(182,154,112,0.9), rgba(182,154,112,0.45)); transition: width .2s ease; }
+
+.btn--sm{ padding: 7px 10px; font-size: 12px; }
+
+.jump-modal{
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.jump-modal__backdrop{
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 10, 10, 0.35);
+  backdrop-filter: blur(2px);
+}
+
+.jump-modal__panel{
+  position: relative;
+  width: min(540px, 96vw);
+  max-height: min(640px, 88vh);
+  overflow: auto;
+  border-radius: 14px;
+  border: 1px solid var(--stroke);
+  background: var(--surface-strong);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.24);
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.jump-modal__header{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.jump-modal__header h3{
+  margin: 0;
+  font-size: 18px;
+}
+
+.jump-modal__content{ display: grid; gap: 12px; }
+.jump-group{ display: grid; gap: 8px; }
+.jump-group__title{ margin: 0; font-size: 12px; text-transform: uppercase; color: var(--text-faint); letter-spacing: .06em; }
+.jump-group__steps{ display: grid; gap: 7px; }
+
+.jump-step{
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--stroke);
+  border-radius: 10px;
+  background: var(--surface);
+  padding: 10px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.jump-step:hover{ border-color: rgba(182,154,112,0.65); }
+.jump-step:disabled{ cursor: not-allowed; opacity: 0.6; }
+.jump-step--current{ border-color: rgba(182,154,112,0.85); box-shadow: 0 0 0 2px rgba(182,154,112,0.2); }
+.jump-step__label{ font-weight: 500; color: var(--text); }
+.jump-step__meta{ font-size: 12px; color: var(--text-soft); }
+.jump-step--completed .jump-step__meta{ color: #3f7c52; }
 
 .wizard-controls{ display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 18px; }
 .wizard-controls__right{ display: flex; gap: 10px; }
