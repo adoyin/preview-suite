@@ -238,6 +238,24 @@ function createLayer(className, src, alt = "") {
   return image;
 }
 
+function createPlateLayer(src, alt = "") {
+  const plateWrap = document.createElement("div");
+  plateWrap.className = "plate-wrap setting__plate";
+
+  const contactShadow = document.createElement("div");
+  contactShadow.className = "plate-contact-shadow";
+
+  const plate = createLayer("plate", src, alt);
+
+  plateWrap.append(contactShadow, plate);
+
+  requestAnimationFrame(() => {
+    plateWrap.classList.add("is-visible");
+  });
+
+  return plateWrap;
+}
+
 function getCircularPositions(shape, count, width, height) {
   const inset = shape === "Round" ? 18 : 24;
   const rx = (width / 2) - inset;
@@ -305,7 +323,7 @@ function renderPlaceSettings(count) {
     setting.style.setProperty("--rot", `${facing + jitter}deg`);
 
     setting.appendChild(createLayer("setting__charger", chargerAsset, `${state.charger} charger`));
-    setting.appendChild(createLayer("setting__plate", `${ASSET_BASE}/dinner-plate.svg`, "Dinner plate"));
+    setting.appendChild(createPlateLayer(`${ASSET_BASE}/dinner-plate.svg`, "Dinner plate"));
     setting.appendChild(createLayer("setting__napkin", napkinAsset, `${state.napkinName} ${state.napkinStyle} napkin`));
     setting.appendChild(createLayer("setting__fork", `${ASSET_BASE}/cutlery-fork.svg`, "Fork"));
     setting.appendChild(createLayer("setting__knife", `${ASSET_BASE}/cutlery-knife.svg`, "Knife"));
