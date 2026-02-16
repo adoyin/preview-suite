@@ -1,5 +1,3 @@
-const TOTAL_STEPS = 9;
-
 const PLACEHOLDER_ASSET = "./assets/placeholders/ref-card.svg";
 
 const tableShapeOptions = [
@@ -38,9 +36,6 @@ const initialState = {
   centerpiece: "Low Florals",
 };
 
-const state = { ...initialState };
-let currentStep = 1;
-
 const stepSequence = [
   "Table shape",
   "Table size",
@@ -52,6 +47,11 @@ const stepSequence = [
   "Centerpiece",
   "Review + Export",
 ];
+
+const TOTAL_STEPS = stepSequence.length;
+
+const state = { ...initialState };
+let currentStepIndex = 0;
 
 const el = (id) => document.getElementById(id);
 
@@ -70,8 +70,8 @@ const refs = {
   btnNext: el("btnNext"),
   btnReset: el("btnReset"),
   exportNote: el("exportNote"),
-  previewStatusLine: el("previewStatusLine"),
-  previewNextHint: el("previewNextHint"),
+  previewStepText: el("previewStepText") || el("previewStatusLine"),
+  previewNextText: el("previewNextText") || el("previewNextHint"),
   previewSummary: el("previewSummary"),
   summary: {
     table: el("sumTable"),
@@ -288,15 +288,14 @@ function renderSummary() {
   refs.summary.centerpiece.textContent = state.centerpiece;
 }
 
-function renderPreviewStatus() {
-  const isReviewStep = currentStep === TOTAL_STEPS;
-  const nextLabel = stepSequence[currentStep] || "Export materials";
+function updatePreviewStatus() {
+  const currentStepNumber = currentStepIndex + 1;
+  const totalSteps = stepSequence.length;
+  const nextLabel = stepSequence[currentStepIndex + 1] || "Review";
 
-  refs.previewStatusLine.textContent = isReviewStep
-    ? "Reviewing your table — Final step"
-    : `Designing your table — Step ${currentStep} of ${TOTAL_STEPS}`;
-  refs.previewNextHint.textContent = isReviewStep ? "Next: Export materials" : `Next: ${nextLabel}`;
-  refs.previewSummary.hidden = !isReviewStep;
+  refs.previewStepText.textContent = `Designing your table — Step ${currentStepNumber} of ${totalSteps}`;
+  refs.previewNextText.textContent = `Next: ${nextLabel}`;
+  refs.previewSummary.hidden = currentStepNumber !== totalSteps;
 }
 
 function renderPreview() {
@@ -308,7 +307,8 @@ function renderPreview() {
   refs.table.style.backgroundSize = "cover";
   applyTableShape(state.tableShape, state.tableSize);
 
-  const isTableOnlyPreviewStep = currentStep <= 2;
+  const currentStepNumber = currentStepIndex + 1;
+  const isTableOnlyPreviewStep = currentStepNumber <= 2;
   refs.centerpiece.innerHTML = "";
   refs.settings.innerHTML = "";
 
@@ -318,7 +318,7 @@ function renderPreview() {
   }
 
   renderSummary();
-  renderPreviewStatus();
+  updatePreviewStatus();
 }
 
 function renderVisualOptionCards({ name, options, selectedValue, onSelect }) {
@@ -340,7 +340,9 @@ function renderVisualOptionCards({ name, options, selectedValue, onSelect }) {
 }
 
 function getStepMeta() {
-  switch (currentStep) {
+  const currentStepNumber = currentStepIndex + 1;
+
+  switch (currentStepNumber) {
     case 1: return { title: "Table shape", hint: "Choose the base table shape.", value: formatTableShape(state.tableShape) };
     case 2: return { title: "Table size", hint: "Choose a size for the selected shape.", value: state.tableSize };
     case 3: return { title: "Number of place settings", hint: "How many guests are you planning for?", value: String(state.placeSettings) };
@@ -362,9 +364,10 @@ function setActiveButtons(selector, attrName, value) {
 }
 
 function renderStepContent() {
+  const currentStepNumber = currentStepIndex + 1;
   refs.stepContent.innerHTML = "";
 
-  if (currentStep === 1) {
+  if (currentStepNumber === 1) {
     renderVisualOptionCards({
       name: "tableShape",
       options: tableShapeOptions,
@@ -380,7 +383,7 @@ function renderStepContent() {
     });
   }
 
-  if (currentStep === 2) {
+  if (currentStepNumber === 2) {
     const shapeSizes = tableSizeOptions[state.tableShape] || [];
     if (!shapeSizes.some((option) => option.value === state.tableSize)) {
       state.tableSize = shapeSizes[0]?.value || "";
@@ -397,7 +400,7 @@ function renderStepContent() {
     });
   }
 
-  if (currentStep === 3) {
+  if (currentStepNumber === 3) {
     refs.stepContent.innerHTML = `
       <div class="row">
         <input id="placeSettings" class="range" type="range" min="2" max="12" value="${state.placeSettings}" />
@@ -410,7 +413,7 @@ function renderStepContent() {
     });
   }
 
-  if (currentStep === 4) {
+  if (currentStepNumber === 4) {
     const clothOptions = [
       ["Ivory", "#F6F0E6"],
       ["White", "#FFFFFF"],
@@ -434,7 +437,7 @@ function renderStepContent() {
     setActiveButtons("[data-cloth]", "data-cloth", state.clothName);
   }
 
-  if (currentStep === 5) {
+  if (currentStepNumber === 5) {
     refs.stepContent.innerHTML = `
       <div class="options">
         ${["Gold", "Silver", "Pearl", "Black"].map((option) => `
@@ -453,7 +456,7 @@ function renderStepContent() {
     });
   }
 
-  if (currentStep === 6) {
+  if (currentStepNumber === 6) {
     const napkinOptions = [
       ["White", "#FFFFFF"],
       ["Sand", "#E7D8C3"],
@@ -477,7 +480,7 @@ function renderStepContent() {
     setActiveButtons("[data-napkin]", "data-napkin", state.napkinName);
   }
 
-  if (currentStep === 7) {
+  if (currentStepNumber === 7) {
     refs.stepContent.innerHTML = `
       <div class="options">
         ${["Classic Fold", "Pocket Fold", "Napkin Ring", "Bow Tie"].map((style) => `
@@ -496,7 +499,7 @@ function renderStepContent() {
     });
   }
 
-  if (currentStep === 8) {
+  if (currentStepNumber === 8) {
     refs.stepContent.innerHTML = `
       <div class="options">
         ${["Low Florals", "Tall Florals", "Candles", "Minimal Greenery"].map((style) => `
@@ -515,7 +518,7 @@ function renderStepContent() {
     });
   }
 
-  if (currentStep === 9) {
+  if (currentStepNumber === 9) {
     refs.stepContent.innerHTML = `
       <div class="review-card">
         <dl class="summary__grid kv">
@@ -562,51 +565,58 @@ function exportMaterials() {
 }
 
 function updateUI() {
-  refs.wizardProgress.textContent = `Step ${currentStep} of ${TOTAL_STEPS}`;
-  refs.progressFill.style.width = `${(currentStep / TOTAL_STEPS) * 100}%`;
+  const currentStepNumber = currentStepIndex + 1;
+
+  refs.wizardProgress.textContent = `Step ${currentStepNumber} of ${TOTAL_STEPS}`;
+  refs.progressFill.style.width = `${(currentStepNumber / TOTAL_STEPS) * 100}%`;
 
   const meta = getStepMeta();
   refs.stepTitle.textContent = meta.title;
   refs.stepHint.textContent = meta.hint;
   refs.stepValue.textContent = meta.value;
 
-  refs.btnBack.disabled = currentStep === 1;
-  refs.btnNext.disabled = currentStep === TOTAL_STEPS;
-  refs.btnNext.textContent = currentStep === TOTAL_STEPS ? "Complete" : "Next";
+  refs.btnBack.disabled = currentStepNumber === 1;
+  refs.btnNext.disabled = currentStepNumber === TOTAL_STEPS;
+  refs.btnNext.textContent = currentStepNumber === TOTAL_STEPS ? "Complete" : "Next";
 
   renderStepContent();
   renderPreview();
 }
 
-function resetState() {
-  Object.assign(state, initialState);
-  currentStep = 1;
-  refs.exportNote.textContent = "";
+function goToStep(index) {
+  const boundedIndex = Math.max(0, Math.min(index, TOTAL_STEPS - 1));
+
+  if (currentStepIndex !== boundedIndex) {
+    currentStepIndex = boundedIndex;
+    refs.exportNote.textContent = "";
+  }
+
   updateUI();
+}
+
+function nextStep() {
+  goToStep(currentStepIndex + 1);
+}
+
+function prevStep() {
+  goToStep(currentStepIndex - 1);
+}
+
+function resetWizard() {
+  Object.assign(state, initialState);
+  currentStepIndex = 0;
+  refs.exportNote.textContent = "";
+  goToStep(0);
 }
 
 function init() {
   refs.year.textContent = String(new Date().getFullYear());
 
-  refs.btnBack.addEventListener("click", () => {
-    if (currentStep > 1) {
-      currentStep -= 1;
-      refs.exportNote.textContent = "";
-      updateUI();
-    }
-  });
+  refs.btnBack.addEventListener("click", prevStep);
+  refs.btnNext.addEventListener("click", nextStep);
+  refs.btnReset.addEventListener("click", resetWizard);
 
-  refs.btnNext.addEventListener("click", () => {
-    if (currentStep < TOTAL_STEPS) {
-      currentStep += 1;
-      refs.exportNote.textContent = "";
-      updateUI();
-    }
-  });
-
-  refs.btnReset.addEventListener("click", resetState);
-
-  updateUI();
+  goToStep(currentStepIndex);
 }
 
 document.addEventListener("DOMContentLoaded", init);
