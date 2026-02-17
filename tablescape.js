@@ -55,9 +55,27 @@ const tableSizeOptions = {
     },
   ],
   square: [
-    { value: "8ft", label: "Square 8 ft" },
-    { value: "9ft", label: "Square 9 ft" },
-    { value: "10ft", label: "Square 10 ft" },
+    {
+      value: 36,
+      label: '36" Square',
+      descriptor: "Cozy",
+      helperText: "Often styled for intimate layouts and smaller group seating",
+      thumbnail: "./assets/descriptors/table-shapes/square.png",
+    },
+    {
+      value: 48,
+      label: '48" Square',
+      descriptor: "Social",
+      helperText: "A flexible choice for most small celebrations and gatherings",
+      thumbnail: "./assets/descriptors/table-shapes/square.png",
+    },
+    {
+      value: 60,
+      label: '60" Square',
+      descriptor: "Statement",
+      helperText: "Ideal for fuller table styling and larger square layouts",
+      thumbnail: "./assets/descriptors/table-shapes/square.png",
+    },
   ],
 };
 
@@ -182,6 +200,7 @@ const refs = {
 const sizeScaleMap = {
   round: { 60: 1, 72: 1.1, 90: 1.2 },
   rectangle: { "6ft": 1, "8ft": 1.1, "9ft": 1.2 },
+  square: { 36: 1, 48: 1.1, 60: 1.2 },
 };
 
 let currentPreviewScale = 1;
@@ -270,10 +289,10 @@ function applyTableShape(shape, size, options = {}) {
     refs.table.style.borderRadius = "26px";
     refs.table.classList.add("table--rectangle");
   } else if (shape === "square") {
-    if (size === "10ft") {
+    if (Number(size) === 60) {
       refs.table.style.width = "350px";
       refs.table.style.height = "350px";
-    } else if (size === "9ft") {
+    } else if (Number(size) === 48) {
       refs.table.style.width = "320px";
       refs.table.style.height = "320px";
     } else {
@@ -321,7 +340,7 @@ function applyPreviewScale(shape, size, { animate = false } = {}) {
 }
 
 function handleTableSizeSelection(shape, value) {
-  const nextSize = shape === "round" ? Number(value) : value;
+  const nextSize = shape === "round" || shape === "square" ? Number(value) : value;
   if (state.tableSize === nextSize) {
     return;
   }
@@ -642,6 +661,10 @@ function renderRectangleSizeCards() {
   renderTableSizeCards("rectangle", state.tableSize);
 }
 
+function renderSquareSizeCards() {
+  renderTableSizeCards("square", Number(state.tableSize));
+}
+
 function renderTableSizeCards(shape, selectedValue) {
   const shapeOptions = tableSizeOptions[shape] || [];
 
@@ -908,6 +931,8 @@ function renderStepContent() {
       renderRoundSizeCards();
     } else if (state.tableShape === "rectangle") {
       renderRectangleSizeCards();
+    } else if (state.tableShape === "square") {
+      renderSquareSizeCards();
     } else {
       renderVisualOptionCards({
         name: "tableSize",
