@@ -8,6 +8,83 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
+  <style>
+    #wizard-shape-carousel.shape-carousel {
+      position: relative;
+      display: grid;
+      align-items: center;
+      margin-top: 4px;
+    }
+
+    #wizard-shape-carousel .shape-carousel__viewport {
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+    }
+
+    #wizard-shape-carousel .shape-carousel__viewport::-webkit-scrollbar {
+      display: none;
+    }
+
+    #wizard-shape-carousel .option-cards {
+      display: flex;
+      gap: 10px;
+      flex-wrap: nowrap;
+      padding: 2px 24px;
+      width: max-content;
+    }
+
+    #wizard-shape-carousel .option-card {
+      flex: 0 0 clamp(230px, calc((100% - 34px) / 2), 300px);
+      scroll-snap-align: center;
+    }
+
+    #wizard-shape-carousel .shape-carousel__arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      border: 1px solid rgba(92, 74, 49, 0.22);
+      background: rgba(247, 243, 236, 0.9);
+      color: #5c4a31;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .16s ease, background .16s ease;
+      z-index: 1;
+    }
+
+    #wizard-shape-carousel:hover .shape-carousel__arrow,
+    #wizard-shape-carousel:focus-within .shape-carousel__arrow {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    #wizard-shape-carousel .shape-carousel__arrow:hover,
+    #wizard-shape-carousel .shape-carousel__arrow:focus-visible {
+      background: rgba(240, 234, 225, 0.98);
+      outline: none;
+    }
+
+    #wizard-shape-carousel .shape-carousel__arrow--left { left: -6px; }
+    #wizard-shape-carousel .shape-carousel__arrow--right { right: -6px; }
+
+    @media (max-width: 760px) {
+      #wizard-shape-carousel .option-card {
+        flex-basis: min(260px, calc(100vw - 98px));
+      }
+
+      #wizard-shape-carousel .shape-carousel__arrow {
+        display: none;
+      }
+    }
+  </style>
 </head>
 <body>
   <header class="topbar">
@@ -126,5 +203,88 @@
   </footer>
 
   <script src="tablescape.js"></script>
+  <script>
+    (() => {
+      const stepContent = document.getElementById("stepContent");
+      if (!stepContent) return;
+
+      function getCardWidth(carousel) {
+        const card = carousel.querySelector(".option-card");
+        const cards = carousel.querySelector(".option-cards");
+        if (!card || !cards) return 0;
+        const cardWidth = card.getBoundingClientRect().width;
+        const gap = parseFloat(getComputedStyle(cards).columnGap || getComputedStyle(cards).gap || "0");
+        return cardWidth + gap;
+      }
+
+      function centerCard(card) {
+        if (!card) return;
+        card.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+      }
+
+      function setupShapeCarousel() {
+        const tableShapeCards = [...stepContent.querySelectorAll('.option-cards')]
+          .find((cards) => cards.querySelector('input[name="tableShape"]'));
+        if (!tableShapeCards || document.getElementById("wizard-shape-carousel")) return;
+
+        const carousel = document.createElement("div");
+        carousel.id = "wizard-shape-carousel";
+        carousel.className = "shape-carousel";
+
+        const viewport = document.createElement("div");
+        viewport.className = "shape-carousel__viewport";
+        tableShapeCards.replaceWith(carousel);
+        viewport.appendChild(tableShapeCards);
+        carousel.appendChild(viewport);
+
+        const leftArrow = document.createElement("button");
+        leftArrow.type = "button";
+        leftArrow.className = "shape-carousel__arrow shape-carousel__arrow--left";
+        leftArrow.setAttribute("aria-label", "Scroll table shape options left");
+        leftArrow.innerHTML = "&#8249;";
+
+        const rightArrow = document.createElement("button");
+        rightArrow.type = "button";
+        rightArrow.className = "shape-carousel__arrow shape-carousel__arrow--right";
+        rightArrow.setAttribute("aria-label", "Scroll table shape options right");
+        rightArrow.innerHTML = "&#8250;";
+
+        carousel.append(leftArrow, rightArrow);
+
+        function scrollByCard(direction) {
+          const offset = getCardWidth(carousel);
+          if (!offset) return;
+          viewport.scrollBy({ left: direction * offset, behavior: "smooth" });
+        }
+
+        leftArrow.addEventListener("click", () => scrollByCard(-1));
+        rightArrow.addEventListener("click", () => scrollByCard(1));
+
+        const cards = [...carousel.querySelectorAll(".option-card")];
+        cards.forEach((card, index) => {
+          card.tabIndex = 0;
+          card.dataset.shapeCardIndex = String(index);
+          card.addEventListener("click", () => centerCard(card));
+          card.addEventListener("keydown", (event) => {
+            if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+            event.preventDefault();
+            const nextIndex = event.key === "ArrowRight"
+              ? Math.min(cards.length - 1, index + 1)
+              : Math.max(0, index - 1);
+            const nextCard = cards[nextIndex];
+            nextCard?.focus();
+            centerCard(nextCard);
+          });
+        });
+
+        const checked = carousel.querySelector('input[name="tableShape"]:checked')?.closest(".option-card");
+        if (checked) centerCard(checked);
+      }
+
+      const observer = new MutationObserver(() => setupShapeCarousel());
+      observer.observe(stepContent, { childList: true, subtree: true });
+      setupShapeCarousel();
+    })();
+  </script>
 </body>
 </html>
