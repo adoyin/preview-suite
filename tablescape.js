@@ -2,9 +2,9 @@ const PLACEHOLDER_ASSET = "./assets/placeholders/ref-card.svg";
 const TABLECLOTH_FALLBACK_ASSET = "./assets/tablescape/tablecloth-texture.svg";
 
 const tableShapeOptions = [
-  { value: "round", label: "Round", thumbnail: "assets/descriptors/table-shapes/round.png" },
-  { value: "rectangle", label: "Rectangle", thumbnail: "assets/descriptors/table-shapes/rectangle.png" },
-  { value: "square", label: "Square", thumbnail: "assets/descriptors/table-shapes/square.png" },
+  { value: "round", label: "Round", thumbnail: "./assets/descriptors/table-shapes/round.png" },
+  { value: "rectangle", label: "Rectangle", thumbnail: "./assets/descriptors/table-shapes/rectangle.png" },
+  { value: "square", label: "Square", thumbnail: "./assets/descriptors/table-shapes/square.png" },
 ];
 
 const tableSizeOptions = {
@@ -14,27 +14,45 @@ const tableSizeOptions = {
       label: '60" Round',
       descriptor: "Intimate",
       helperText: "Often styled for gatherings of 6–8 guests",
-      thumbnail: "assets/descriptors/table-shapes/round.png",
+      thumbnail: "./assets/descriptors/table-shapes/round.png",
     },
     {
       value: 72,
       label: '72" Round',
       descriptor: "Classic",
       helperText: "A versatile choice for gatherings of 8–10 guests",
-      thumbnail: "assets/descriptors/table-shapes/round.png",
+      thumbnail: "./assets/descriptors/table-shapes/round.png",
     },
     {
       value: 90,
       label: '90" Round',
       descriptor: "Grand",
       helperText: "Ideal for larger group seating and grand layouts",
-      thumbnail: "assets/descriptors/table-shapes/round.png",
+      thumbnail: "./assets/descriptors/table-shapes/round.png",
     },
   ],
   rectangle: [
-    { value: "6ft", label: "Rectangle 6 ft" },
-    { value: "8ft", label: "Rectangle 8 ft" },
-    { value: "9ft", label: "Rectangle 9 ft" },
+    {
+      value: "6ft",
+      label: "6 ft Rectangle",
+      descriptor: "Compact",
+      helperText: "Often used for smaller table groupings or supporting tables",
+      thumbnail: "./assets/descriptors/table-shapes/rectangle.png",
+    },
+    {
+      value: "8ft",
+      label: "8 ft Rectangle",
+      descriptor: "Classic",
+      helperText: "The most common banquet table length for events",
+      thumbnail: "./assets/descriptors/table-shapes/rectangle.png",
+    },
+    {
+      value: "9ft",
+      label: "9 ft Rectangle",
+      descriptor: "Extended",
+      helperText: "Ideal for long layouts, head tables, and statement seating",
+      thumbnail: "./assets/descriptors/table-shapes/rectangle.png",
+    },
   ],
   square: [
     { value: "8ft", label: "Square 8 ft" },
@@ -274,8 +292,11 @@ function applyTableShape(shape, size) {
     refs.table.classList.add("table--square");
   }
 
-  const roundScaleMap = { 60: 1, 72: 1.1, 90: 1.2 };
-  const previewScale = shape === "round" ? (roundScaleMap[Number(size)] || 1) : 1;
+  const sizeScaleMap = {
+    round: { 60: 1, 72: 1.1, 90: 1.2 },
+    rectangle: { "6ft": 1, "8ft": 1.1, "9ft": 1.2 },
+  };
+  const previewScale = sizeScaleMap[shape]?.[size] || sizeScaleMap[shape]?.[Number(size)] || 1;
   refs.table.style.setProperty("--size-scale", String(previewScale));
 }
 
@@ -573,11 +594,19 @@ function renderVisualOptionCards({ name, options, selectedValue, onSelect }) {
 }
 
 function renderRoundSizeCards() {
-  const selectedValue = Number(state.tableSize);
+  renderTableSizeCards("round", Number(state.tableSize));
+}
+
+function renderRectangleSizeCards() {
+  renderTableSizeCards("rectangle", state.tableSize);
+}
+
+function renderTableSizeCards(shape, selectedValue) {
+  const shapeOptions = tableSizeOptions[shape] || [];
 
   refs.stepContent.innerHTML = `
     <div class="option-cards option-cards--table-size" data-tooltip-root>
-      ${tableSizeOptions.round.map((option, index) => {
+      ${shapeOptions.map((option, index) => {
         const tooltipId = `tableSizeTip${index}`;
         return `
           <label class="option-card option-card--size ${selectedValue === option.value ? "option-card--selected" : ""}">
@@ -605,7 +634,7 @@ function renderRoundSizeCards() {
 
   refs.stepContent.querySelectorAll('input[name="tableSize"]').forEach((radio) => {
     radio.addEventListener("change", (event) => {
-      state.tableSize = Number(event.target.value);
+      state.tableSize = shape === "round" ? Number(event.target.value) : event.target.value;
       closeAllTooltips();
       updateUI();
     });
@@ -837,6 +866,8 @@ function renderStepContent() {
 
     if (state.tableShape === "round") {
       renderRoundSizeCards();
+    } else if (state.tableShape === "rectangle") {
+      renderRectangleSizeCards();
     } else {
       renderVisualOptionCards({
         name: "tableSize",
