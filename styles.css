@@ -454,6 +454,7 @@ a:focus-visible{
 .option-card__media{
   width: 100%;
   aspect-ratio: 3 / 2;
+  min-height: 120px;
   border-radius: 10px;
   border: 1px solid var(--stroke);
   background: #e9e4dd;
@@ -463,8 +464,10 @@ a:focus-visible{
 }
 
 .option-card__image{
+  display: block;
   width: 100%;
   height: 100%;
+  opacity: 1;
   object-fit: contain;
   object-position: center;
 }
