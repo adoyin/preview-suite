@@ -669,30 +669,36 @@ function renderTableSizeCards(shape, selectedValue) {
   const shapeOptions = tableSizeOptions[shape] || [];
 
   refs.stepContent.innerHTML = `
-    <div class="option-cards option-cards--table-size" data-tooltip-root>
-      ${shapeOptions.map((option, index) => {
-        const tooltipId = `tableSizeTip${index}`;
-        return `
-          <label class="option-card option-card--size ${selectedValue === option.value ? "option-card--selected" : ""}">
-            <input type="radio" name="tableSize" value="${option.value}" ${selectedValue === option.value ? "checked" : ""} />
-            <div class="option-card__media option-card__media--size">
-              <img class="option-card__image" src="${option.thumbnail}" data-fallback-src="${PLACEHOLDER_ASSET}" data-fallback-text="true" alt="${option.label}" loading="lazy" />
-              <span class="option-card__fallback" data-fallback-text hidden>Image coming soon</span>
-              <button
-                class="option-card__info"
-                type="button"
-                aria-label="More details about ${option.label}"
-                aria-expanded="false"
-                aria-describedby="${tooltipId}"
-                data-tooltip-toggle="${tooltipId}"
-              >ⓘ</button>
-              <span class="option-card__tooltip" role="tooltip" id="${tooltipId}">${option.helperText}</span>
-            </div>
-            <span class="option-card__meta">${option.descriptor}</span>
-            <span class="option-card__title">${option.label}</span>
-          </label>
-        `;
-      }).join("")}
+    <div id="wizard-size-carousel" class="size-carousel" data-tooltip-root>
+      <button class="size-carousel__arrow size-carousel__arrow--left" type="button" data-size-scroll="left" aria-label="Scroll table size options left">&#8249;</button>
+      <div class="size-carousel__viewport">
+        <div class="option-cards option-cards--table-size">
+          ${shapeOptions.map((option, index) => {
+            const tooltipId = `tableSizeTip${index}`;
+            return `
+              <label class="option-card option-card--size ${selectedValue === option.value ? "option-card--selected" : ""}">
+                <input type="radio" name="tableSize" value="${option.value}" ${selectedValue === option.value ? "checked" : ""} />
+                <div class="option-card__media option-card__media--size">
+                  <img class="option-card__image" src="${option.thumbnail}" data-fallback-src="${PLACEHOLDER_ASSET}" data-fallback-text="true" alt="${option.label}" loading="lazy" />
+                  <span class="option-card__fallback" data-fallback-text hidden>Image coming soon</span>
+                  <button
+                    class="option-card__info"
+                    type="button"
+                    aria-label="More details about ${option.label}"
+                    aria-expanded="false"
+                    aria-describedby="${tooltipId}"
+                    data-tooltip-toggle="${tooltipId}"
+                  >ⓘ</button>
+                  <span class="option-card__tooltip" role="tooltip" id="${tooltipId}">${option.helperText}</span>
+                </div>
+                <span class="option-card__meta">${option.descriptor}</span>
+                <span class="option-card__title">${option.label}</span>
+              </label>
+            `;
+          }).join("")}
+        </div>
+      </div>
+      <button class="size-carousel__arrow size-carousel__arrow--right" type="button" data-size-scroll="right" aria-label="Scroll table size options right">&#8250;</button>
     </div>
   `;
 
@@ -721,7 +727,60 @@ function renderTableSizeCards(shape, selectedValue) {
     });
   });
 
+  setupSizeCarousel();
+
   attachImageFallbacks(refs.stepContent);
+}
+
+function getSizeCarouselScrollAmount(carousel) {
+  const viewport = carousel.querySelector(".size-carousel__viewport");
+  const track = carousel.querySelector(".option-cards--table-size");
+  if (!viewport || !track) {
+    return 0;
+  }
+
+  const cards = [...track.querySelectorAll(".option-card")];
+  if (!cards.length) {
+    return 0;
+  }
+
+  const viewportRect = viewport.getBoundingClientRect();
+  const firstVisibleCard = cards.find((card) => {
+    const cardRect = card.getBoundingClientRect();
+    return cardRect.right > viewportRect.left + 1;
+  }) || cards[0];
+
+  const cardWidth = firstVisibleCard.getBoundingClientRect().width;
+  const computedStyle = getComputedStyle(track);
+  const gap = parseFloat(computedStyle.columnGap || computedStyle.gap || "0");
+
+  return cardWidth + gap;
+}
+
+function setupSizeCarousel() {
+  const carousel = refs.stepContent.querySelector("#wizard-size-carousel");
+  if (!carousel || carousel.dataset.carouselReady === "true") {
+    return;
+  }
+
+  const viewport = carousel.querySelector(".size-carousel__viewport");
+  const leftArrow = carousel.querySelector('[data-size-scroll="left"]');
+  const rightArrow = carousel.querySelector('[data-size-scroll="right"]');
+  if (!viewport || !leftArrow || !rightArrow) {
+    return;
+  }
+
+  const scrollByOneCard = (direction) => {
+    const amount = getSizeCarouselScrollAmount(carousel);
+    if (!amount) {
+      return;
+    }
+    viewport.scrollBy({ left: direction * amount, behavior: "smooth" });
+  };
+
+  leftArrow.addEventListener("click", () => scrollByOneCard(-1));
+  rightArrow.addEventListener("click", () => scrollByOneCard(1));
+  carousel.dataset.carouselReady = "true";
 }
 
 function closeAllTooltips() {
