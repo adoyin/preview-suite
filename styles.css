@@ -482,6 +482,91 @@ a:focus-visible{
   font-weight: 500;
 }
 
+.option-cards--table-size{
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.option-card--size{
+  border-radius: 16px;
+  background: linear-gradient(180deg, #f9f5ef 0%, #f5eee3 100%);
+  border-color: rgba(164, 139, 99, 0.22);
+  box-shadow: 0 10px 20px rgba(48, 33, 18, 0.08);
+  transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+
+.option-card--size:hover,
+.option-card--size:focus-within{
+  transform: translateY(-2px);
+  border-color: rgba(182, 154, 112, 0.58);
+  box-shadow: 0 16px 24px rgba(48, 33, 18, 0.12);
+}
+
+.option-card__media--size{
+  position: relative;
+  background: #f0e8dc;
+}
+
+.option-card__meta{
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 17px;
+  color: #67523a;
+  line-height: 1.1;
+}
+
+.option-card--size .option-card__title{
+  font-size: 13px;
+  color: var(--text-soft);
+}
+
+.option-card__info{
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  width: 16px;
+  height: 16px;
+  border: 0;
+  padding: 0;
+  font-size: 15px;
+  line-height: 1;
+  background: transparent;
+  color: #6a5a45;
+  cursor: pointer;
+  opacity: 0.4;
+  transition: opacity .16s ease;
+}
+
+.option-card__info:hover,
+.option-card__info:focus-visible{
+  opacity: 0.9;
+}
+
+.option-card__tooltip{
+  position: absolute;
+  top: 30px;
+  right: 10px;
+  width: min(210px, calc(100% - 20px));
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #EEE7DE;
+  color: #5d4b36;
+  font-size: 12px;
+  line-height: 1.35;
+  box-shadow: 0 10px 18px rgba(31, 22, 13, 0.16);
+  opacity: 0;
+  transform: translateY(4px);
+  pointer-events: none;
+  transition: opacity .14s ease, transform .14s ease;
+  z-index: 2;
+}
+
+.option-card__info:hover + .option-card__tooltip,
+.option-card__info:focus-visible + .option-card__tooltip,
+.option-card__tooltip.is-visible{
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .opt{
   border: 1px solid var(--stroke);
   background: var(--surface-strong);
@@ -576,6 +661,7 @@ a:focus-visible{
   background-size: cover;
   background-position: center;
   transition: border-radius .18s ease, width .18s ease, height .18s ease, background-color .18s ease, opacity .22s ease, transform .22s ease;
+  transform: scale(var(--size-scale, 1));
   overflow: hidden;
 }
 
@@ -672,6 +758,7 @@ a:focus-visible{
   .hero__actions{ justify-content: flex-start; }
   .h2{ font-size: 32px; }
   .option-cards{ grid-template-columns: 1fr; }
+  .option-cards--table-size{ grid-template-columns: 1fr; }
   .shape-options{ grid-template-columns: 1fr; }
 }
 

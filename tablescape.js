@@ -9,8 +9,27 @@ const tableShapeOptions = [
 
 const tableSizeOptions = {
   round: [
-    { value: '60"', label: 'Round 60"' },
-    { value: '90"', label: 'Round 90"' },
+    {
+      value: 60,
+      label: '60" Round',
+      descriptor: "Intimate",
+      helperText: "Often styled for gatherings of 6–8 guests",
+      thumbnail: "assets/descriptors/table-shapes/round.png",
+    },
+    {
+      value: 72,
+      label: '72" Round',
+      descriptor: "Classic",
+      helperText: "A versatile choice for gatherings of 8–10 guests",
+      thumbnail: "assets/descriptors/table-shapes/round.png",
+    },
+    {
+      value: 90,
+      label: '90" Round',
+      descriptor: "Grand",
+      helperText: "Ideal for larger group seating and grand layouts",
+      thumbnail: "assets/descriptors/table-shapes/round.png",
+    },
   ],
   rectangle: [
     { value: "6ft", label: "Rectangle 6 ft" },
@@ -62,7 +81,7 @@ const clothPalette = {
 
 const initialState = {
   tableShape: "round",
-  tableSize: '60"',
+  tableSize: 60,
   tableclothTexture: "linen",
   tableclothColor: "ivory",
   customTableclothColor: "",
@@ -207,16 +226,20 @@ function formatTableShape(shape) {
 }
 
 function formatTableSelection(shape, size) {
-  return `${formatTableShape(shape)} — ${size}`;
+  const formattedSize = typeof size === "number" ? `${size}\"` : size;
+  return `${formatTableShape(shape)} — ${formattedSize}`;
 }
 
 function applyTableShape(shape, size) {
   refs.table.classList.remove("table--round", "table--rectangle", "table--oval", "table--square");
 
   if (shape === "round") {
-    if (size === '90"') {
+    if (Number(size) === 90) {
       refs.table.style.width = "360px";
       refs.table.style.height = "360px";
+    } else if (Number(size) === 72) {
+      refs.table.style.width = "330px";
+      refs.table.style.height = "330px";
     } else {
       refs.table.style.width = "300px";
       refs.table.style.height = "300px";
@@ -250,6 +273,10 @@ function applyTableShape(shape, size) {
     refs.table.style.borderRadius = "26px";
     refs.table.classList.add("table--square");
   }
+
+  const roundScaleMap = { 60: 1, 72: 1.1, 90: 1.2 };
+  const previewScale = shape === "round" ? (roundScaleMap[Number(size)] || 1) : 1;
+  refs.table.style.setProperty("--size-scale", String(previewScale));
 }
 
 function getNapkinAsset() {
@@ -515,7 +542,8 @@ function renderPreview() {
   refs.settings.innerHTML = "";
 
   renderCenterpiece();
-  requestAnimationFrame(() => renderPlaceSettings(state.placeSettingsCount));
+  const shouldShowSettings = currentStepNumber >= 5;
+  requestAnimationFrame(() => renderPlaceSettings(shouldShowSettings ? state.placeSettingsCount : null));
 
   renderSummary();
   updatePreviewStatus();
@@ -544,12 +572,81 @@ function renderVisualOptionCards({ name, options, selectedValue, onSelect }) {
   attachImageFallbacks(refs.stepContent);
 }
 
+function renderRoundSizeCards() {
+  const selectedValue = Number(state.tableSize);
+
+  refs.stepContent.innerHTML = `
+    <div class="option-cards option-cards--table-size" data-tooltip-root>
+      ${tableSizeOptions.round.map((option, index) => {
+        const tooltipId = `tableSizeTip${index}`;
+        return `
+          <label class="option-card option-card--size ${selectedValue === option.value ? "option-card--selected" : ""}">
+            <input type="radio" name="tableSize" value="${option.value}" ${selectedValue === option.value ? "checked" : ""} />
+            <div class="option-card__media option-card__media--size">
+              <img class="option-card__image" src="${option.thumbnail}" data-fallback-src="${PLACEHOLDER_ASSET}" data-fallback-text="true" alt="${option.label}" loading="lazy" />
+              <span class="option-card__fallback" data-fallback-text hidden>Image coming soon</span>
+              <button
+                class="option-card__info"
+                type="button"
+                aria-label="More details about ${option.label}"
+                aria-expanded="false"
+                aria-describedby="${tooltipId}"
+                data-tooltip-toggle="${tooltipId}"
+              >ⓘ</button>
+              <span class="option-card__tooltip" role="tooltip" id="${tooltipId}">${option.helperText}</span>
+            </div>
+            <span class="option-card__meta">${option.descriptor}</span>
+            <span class="option-card__title">${option.label}</span>
+          </label>
+        `;
+      }).join("")}
+    </div>
+  `;
+
+  refs.stepContent.querySelectorAll('input[name="tableSize"]').forEach((radio) => {
+    radio.addEventListener("change", (event) => {
+      state.tableSize = Number(event.target.value);
+      closeAllTooltips();
+      updateUI();
+    });
+  });
+
+  refs.stepContent.querySelectorAll("[data-tooltip-toggle]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const tooltipId = button.getAttribute("data-tooltip-toggle");
+      const tooltip = tooltipId ? refs.stepContent.querySelector(`#${tooltipId}`) : null;
+      if (!tooltip) return;
+
+      const shouldOpen = !tooltip.classList.contains("is-visible");
+      closeAllTooltips();
+      if (shouldOpen) {
+        tooltip.classList.add("is-visible");
+        button.setAttribute("aria-expanded", "true");
+      }
+    });
+  });
+
+  attachImageFallbacks(refs.stepContent);
+}
+
+function closeAllTooltips() {
+  refs.stepContent.querySelectorAll(".option-card__tooltip.is-visible").forEach((tooltip) => {
+    tooltip.classList.remove("is-visible");
+  });
+  refs.stepContent.querySelectorAll("[data-tooltip-toggle]").forEach((button) => {
+    button.setAttribute("aria-expanded", "false");
+  });
+}
+
 function getStepMeta() {
   const currentStepNumber = currentStepIndex + 1;
 
   switch (currentStepNumber) {
     case 1: return { title: "Table shape", hint: "Choose the base table shape.", value: formatTableShape(state.tableShape) };
-    case 2: return { title: "Table size", hint: "Choose a size for the selected shape.", value: state.tableSize };
+    case 2: return { title: "Table size", hint: "Choose a size for the selected shape.", value: typeof state.tableSize === "number" ? `${state.tableSize}"` : state.tableSize };
     case 3: return { title: "Tablecloth texture", hint: "Choose a fabric.", value: state.tableclothTexture[0].toUpperCase() + state.tableclothTexture.slice(1) };
     case 4: return { title: "Tablecloth color", hint: "Choose a color.", value: tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory" };
     case 5: return { title: "Number of place settings", hint: "How many guests are you planning for?", value: state.placeSettingsCount == null ? "Not selected" : String(state.placeSettingsCount) };
@@ -738,15 +835,19 @@ function renderStepContent() {
       state.tableSize = shapeSizes[0]?.value || "";
     }
 
-    renderVisualOptionCards({
-      name: "tableSize",
-      options: shapeSizes,
-      selectedValue: state.tableSize,
-      onSelect: (value) => {
-        state.tableSize = value;
-        updateUI();
-      },
-    });
+    if (state.tableShape === "round") {
+      renderRoundSizeCards();
+    } else {
+      renderVisualOptionCards({
+        name: "tableSize",
+        options: shapeSizes,
+        selectedValue: state.tableSize,
+        onSelect: (value) => {
+          state.tableSize = value;
+          updateUI();
+        },
+      });
+    }
   }
 
   if (currentStepNumber === 3) {
@@ -1099,8 +1200,21 @@ function init() {
   refs.jumpClose.addEventListener("click", closeJumpModal);
   refs.jumpBackdrop.addEventListener("click", closeJumpModal);
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && isJumpModalOpen) {
-      closeJumpModal();
+    if (event.key === "Escape") {
+      if (isJumpModalOpen) {
+        closeJumpModal();
+      }
+      closeAllTooltips();
+    }
+  });
+
+  document.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) {
+      return;
+    }
+    if (!target.closest("[data-tooltip-root]")) {
+      closeAllTooltips();
     }
   });
 
