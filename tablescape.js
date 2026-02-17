@@ -2,9 +2,9 @@ const PLACEHOLDER_ASSET = "./assets/placeholders/ref-card.svg";
 const TABLECLOTH_FALLBACK_ASSET = "./assets/tablescape/tablecloth-texture.svg";
 
 const tableShapeOptions = [
-  { value: "round", label: "Round", thumbnail: "./assets/descriptors/table-shapes/round.png" },
-  { value: "rectangle", label: "Rectangle", thumbnail: "./assets/descriptors/table-shapes/rectangle.png" },
-  { value: "square", label: "Square", thumbnail: "./assets/descriptors/table-shapes/square.png" },
+  { value: "round", label: "Round", thumbnail: "assets/descriptors/table-shapes/round.png" },
+  { value: "rectangle", label: "Rectangle", thumbnail: "assets/descriptors/table-shapes/rectangle.png" },
+  { value: "square", label: "Square", thumbnail: "assets/descriptors/table-shapes/square.png" },
 ];
 
 const tableSizeOptions = {
@@ -713,6 +713,10 @@ function renderStepContent() {
   refs.stepContent.innerHTML = "";
 
   if (currentStepNumber === 1) {
+    tableShapeOptions.forEach((option) => {
+      console.log(`[Tablescape] Step 1 table shape image src for ${option.label}: ${option.thumbnail}`);
+    });
+
     renderVisualOptionCards({
       name: "tableShape",
       options: tableShapeOptions,
