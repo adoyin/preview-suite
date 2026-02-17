@@ -166,6 +166,7 @@ const refs = {
   exportNote: el("exportNote"),
   previewStepText: el("previewStepText") || el("previewStatusLine"),
   previewNextText: el("previewNextText") || el("previewNextHint"),
+  previewStage: el("previewStage"),
   previewSummary: el("previewSummary"),
   summary: {
     table: el("sumTable"),
@@ -177,6 +178,13 @@ const refs = {
     centerpiece: el("sumCenterpiece"),
   },
 };
+
+const sizeScaleMap = {
+  round: { 60: 1, 72: 1.1, 90: 1.2 },
+  rectangle: { "6ft": 1, "8ft": 1.1, "9ft": 1.2 },
+};
+
+let currentPreviewScale = 1;
 
 const ASSET_BASE = "./assets/tablescape";
 
@@ -248,33 +256,17 @@ function formatTableSelection(shape, size) {
   return `${formatTableShape(shape)} — ${formattedSize}`;
 }
 
-function applyTableShape(shape, size) {
+function applyTableShape(shape, size, options = {}) {
   refs.table.classList.remove("table--round", "table--rectangle", "table--oval", "table--square");
 
   if (shape === "round") {
-    if (Number(size) === 90) {
-      refs.table.style.width = "360px";
-      refs.table.style.height = "360px";
-    } else if (Number(size) === 72) {
-      refs.table.style.width = "330px";
-      refs.table.style.height = "330px";
-    } else {
-      refs.table.style.width = "300px";
-      refs.table.style.height = "300px";
-    }
+    refs.table.style.width = "320px";
+    refs.table.style.height = "320px";
     refs.table.style.borderRadius = "999px";
     refs.table.classList.add("table--round");
   } else if (shape === "rectangle") {
-    if (size === "6ft") {
-      refs.table.style.width = "320px";
-      refs.table.style.height = "220px";
-    } else if (size === "9ft") {
-      refs.table.style.width = "410px";
-      refs.table.style.height = "250px";
-    } else {
-      refs.table.style.width = "370px";
-      refs.table.style.height = "240px";
-    }
+    refs.table.style.width = "370px";
+    refs.table.style.height = "240px";
     refs.table.style.borderRadius = "26px";
     refs.table.classList.add("table--rectangle");
   } else if (shape === "square") {
@@ -292,12 +284,61 @@ function applyTableShape(shape, size) {
     refs.table.classList.add("table--square");
   }
 
-  const sizeScaleMap = {
-    round: { 60: 1, 72: 1.1, 90: 1.2 },
-    rectangle: { "6ft": 1, "8ft": 1.1, "9ft": 1.2 },
-  };
-  const previewScale = sizeScaleMap[shape]?.[size] || sizeScaleMap[shape]?.[Number(size)] || 1;
-  refs.table.style.setProperty("--size-scale", String(previewScale));
+  applyPreviewScale(shape, size, options);
+}
+
+function getPreviewScale(shape, size) {
+  return sizeScaleMap[shape]?.[size] || sizeScaleMap[shape]?.[Number(size)] || 1;
+}
+
+function applyPreviewScale(shape, size, { animate = false } = {}) {
+  if (!refs.previewStage) {
+    return;
+  }
+
+  const nextScale = getPreviewScale(shape, size);
+  const previousScale = currentPreviewScale;
+  currentPreviewScale = nextScale;
+
+  refs.previewStage.style.setProperty("--preview-stage-scale", String(nextScale));
+  refs.previewStage.style.transform = `translateZ(0) scale(${nextScale})`;
+
+  if (!animate || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    return;
+  }
+
+  const scaleDelta = nextScale - previousScale;
+  const overshoot = Math.min(0.018, Math.max(0.006, Math.abs(scaleDelta) * 0.35));
+  const peakScale = nextScale + (scaleDelta >= 0 ? overshoot : -overshoot);
+
+  refs.previewStage.classList.remove("is-size-transition");
+  refs.previewStage.style.setProperty("--preview-stage-from", String(previousScale));
+  refs.previewStage.style.setProperty("--preview-stage-peak", String(peakScale));
+  refs.previewStage.style.setProperty("--preview-stage-to", String(nextScale));
+
+  void refs.previewStage.offsetWidth;
+  refs.previewStage.classList.add("is-size-transition");
+}
+
+function handleTableSizeSelection(shape, value) {
+  const nextSize = shape === "round" ? Number(value) : value;
+  if (state.tableSize === nextSize) {
+    return;
+  }
+
+  state.tableSize = nextSize;
+
+  refs.stepContent.querySelectorAll(".option-card--size").forEach((card) => {
+    const input = card.querySelector('input[name="tableSize"]');
+    card.classList.toggle("option-card--selected", input?.value === String(nextSize));
+  });
+
+  const meta = getStepMeta();
+  refs.stepValue.textContent = meta.value;
+
+  applyTableShape(state.tableShape, state.tableSize, { animate: true });
+  renderSummary();
+  updatePreviewStatus();
 }
 
 function getNapkinAsset() {
@@ -634,9 +675,8 @@ function renderTableSizeCards(shape, selectedValue) {
 
   refs.stepContent.querySelectorAll('input[name="tableSize"]').forEach((radio) => {
     radio.addEventListener("change", (event) => {
-      state.tableSize = shape === "round" ? Number(event.target.value) : event.target.value;
       closeAllTooltips();
-      updateUI();
+      handleTableSizeSelection(shape, event.target.value);
     });
   });
 

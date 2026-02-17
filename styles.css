@@ -492,7 +492,12 @@ a:focus-visible{
   background: linear-gradient(180deg, #f9f5ef 0%, #f5eee3 100%);
   border-color: rgba(164, 139, 99, 0.22);
   box-shadow: 0 10px 20px rgba(48, 33, 18, 0.08);
-  transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+
+.option-card--size.option-card--selected{
+  border-color: rgba(205, 171, 117, 0.75);
+  box-shadow: 0 0 0 1px rgba(232, 210, 168, 0.72), 0 14px 24px rgba(70, 47, 21, 0.16);
 }
 
 .option-card--size:hover,
@@ -639,6 +644,10 @@ a:focus-visible{
 .preview-status__next{ color: var(--text-faint); }
 
 .preview__stage{
+  --preview-stage-scale: 1;
+  --preview-stage-from: 1;
+  --preview-stage-peak: 1;
+  --preview-stage-to: 1;
   border: 1px solid var(--stroke);
   border-radius: var(--radius);
   background: radial-gradient(circle at 50% 20%, #fffdfa, #f2eade);
@@ -648,6 +657,13 @@ a:focus-visible{
   justify-content:center;
   position:relative;
   overflow:hidden;
+  transform: translateZ(0) scale(var(--preview-stage-scale));
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+
+.preview__stage.is-size-transition{
+  animation: preview-stage-luxury 360ms cubic-bezier(0.23, 0.96, 0.32, 1) both;
 }
 
 .table{
@@ -660,8 +676,7 @@ a:focus-visible{
   background-color: #F6F0E6;
   background-size: cover;
   background-position: center;
-  transition: border-radius .18s ease, width .18s ease, height .18s ease, background-color .18s ease, opacity .22s ease, transform .22s ease;
-  transform: scale(var(--size-scale, 1));
+  transition: border-radius .18s ease, background-color .18s ease, opacity .22s ease, transform .22s ease;
   overflow: hidden;
 }
 
@@ -716,6 +731,21 @@ a:focus-visible{
 @keyframes preview-fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+@keyframes preview-stage-luxury {
+  0% { transform: translateZ(0) scale(var(--preview-stage-from)); }
+  70% { transform: translateZ(0) scale(var(--preview-stage-peak)); }
+  100% { transform: translateZ(0) scale(var(--preview-stage-to)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .preview__stage,
+  .preview__stage.is-size-transition,
+  .option-card--size {
+    animation: none;
+    transition-duration: 0.01ms;
+  }
 }
 .summary{
   border-radius: var(--radius-sm);
