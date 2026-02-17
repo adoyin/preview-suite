@@ -2,9 +2,9 @@ const PLACEHOLDER_ASSET = "./assets/placeholders/ref-card.svg";
 const TABLECLOTH_FALLBACK_ASSET = "./assets/tablescape/tablecloth-texture.svg";
 
 const tableShapeOptions = [
-  { value: "round", label: "Round" },
-  { value: "rectangle", label: "Rectangle" },
-  { value: "square", label: "Square" },
+  { value: "round", label: "Round", thumbnail: "./assets/descriptors/table-shapes/round.png" },
+  { value: "rectangle", label: "Rectangle", thumbnail: "./assets/descriptors/table-shapes/rectangle.png" },
+  { value: "square", label: "Square", thumbnail: "./assets/descriptors/table-shapes/square.png" },
 ];
 
 const tableSizeOptions = {
@@ -178,13 +178,25 @@ function getTableclothAssetPath(texture, color) {
 }
 
 function attachImageFallbacks(root = document) {
-  root.querySelectorAll("img[data-fallback-src]").forEach((image) => {
+  root.querySelectorAll("img[data-fallback-src], img[data-fallback-text]").forEach((image) => {
     image.onerror = () => {
       const fallbackSrc = image.getAttribute("data-fallback-src");
+      const fallbackLabel = image.parentElement?.querySelector("[data-fallback-text]");
+
       if (fallbackSrc && image.getAttribute("src") !== fallbackSrc) {
         image.src = fallbackSrc;
+        return;
       }
+
+      image.hidden = true;
+      if (fallbackLabel) fallbackLabel.hidden = false;
       image.onerror = null;
+    };
+
+    image.onload = () => {
+      const fallbackLabel = image.parentElement?.querySelector("[data-fallback-text]");
+      image.hidden = false;
+      if (fallbackLabel) fallbackLabel.hidden = true;
     };
   });
 }
@@ -515,7 +527,10 @@ function renderVisualOptionCards({ name, options, selectedValue, onSelect }) {
       ${options.map((option) => `
         <label class="option-card ${selectedValue === option.value ? "option-card--selected" : ""}">
           <input type="radio" name="${name}" value="${option.value}" ${selectedValue === option.value ? "checked" : ""} />
-          <img class="option-card__image" src="${option.thumbnail || PLACEHOLDER_ASSET}" data-fallback-src="${PLACEHOLDER_ASSET}" alt="${option.label}" loading="lazy" />
+          <div class="option-card__media">
+            <img class="option-card__image" src="${option.thumbnail || PLACEHOLDER_ASSET}" data-fallback-src="${PLACEHOLDER_ASSET}" data-fallback-text="true" alt="${option.label}" loading="lazy" />
+            <span class="option-card__fallback" data-fallback-text hidden>Image coming soon</span>
+          </div>
           <span class="option-card__title">${option.label}</span>
         </label>
       `).join("")}
