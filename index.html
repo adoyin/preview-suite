@@ -30,40 +30,112 @@
   </header>
 
   <main class="page page--home">
-    <section class="hero card">
-      <p class="eyebrow">Premium Client Preview Suite</p>
-      <h1>Design confidence before installation day.</h1>
-      <p class="subtle hero__copy">Create polished visual previews so your clients can say yes faster.</p>
-      <div class="hero__actions">
-        <a class="btn" href="experience.html">Start Designing</a>
+    <section class="home-hero">
+      <p class="home-kicker">Editorial visual planning, refined.</p>
+      <h1>See your vision before the first guest arrives.</h1>
+      <p class="home-hero__subhead">High-fidelity visual previews for tablescapes, backdrops, and complete event settings.</p>
+      <div class="home-hero__actions">
+        <a class="btn" href="experience.html">GET MY PREVIEW</a>
+        <a class="btn btn--ghost" href="#vision-examples">SEE EXAMPLES</a>
+      </div>
+      <!-- TODO: swap this placeholder panel for a real hero image, keeping .home-hero__media as the wrapper -->
+      <div class="home-hero__media" role="img" aria-label="Hero image placeholder">
+        <span class="visually-hidden">Hero image placeholder</span>
       </div>
     </section>
 
-    <section class="card landing-cta" aria-label="Start designing">
-      <a class="btn btn--luxury" href="experience.html">Start Designing</a>
+    <section class="home-strip" aria-label="Stop guessing">
+      <div class="home-strip__panel">
+        <h2>Stop guessing. Start visualizing.</h2>
+        <ul>
+          <li>Stop buying decor that doesn't match.</li>
+          <li>Preview scale and lighting in your space.</li>
+          <li>Share a clear vision with your vendors.</li>
+        </ul>
+      </div>
     </section>
 
-    <section id="pricing" class="info-grid">
-      <article class="card info-card">
-        <h2 class="h2">Pricing</h2>
-        <p class="subtle">Preview Suite access is included in all event design retainers. Reach out for custom studio licensing.</p>
+    <section class="home-steps" aria-label="How it works">
+      <article class="home-step">
+        <p class="home-step__number">01</p>
+        <h3>Select Your Canvas</h3>
+        <p>Choose tablescape, backdrop, or room mockup.</p>
       </article>
-      <article id="faq" class="card info-card">
-        <h2 class="h2">FAQ</h2>
-        <p class="subtle">Can clients self-serve? Yes—share direct links to each experience page and collect feedback in real time.</p>
+      <article class="home-step">
+        <p class="home-step__number">02</p>
+        <h3>Pick Your Style</h3>
+        <p>Select a curated direction to set the foundation.</p>
+      </article>
+      <article class="home-step">
+        <p class="home-step__number">03</p>
+        <h3>Preview Your Event</h3>
+        <p>Receive your lifelike render in minutes.</p>
       </article>
     </section>
 
-    <section id="contact" class="card contact-card">
-      <h2 class="h2">Contact</h2>
-      <p class="subtle">Email hello@thepreviewsuite.com to request a personalized walkthrough.</p>
+    <section class="home-features" id="pricing" aria-labelledby="precision-title">
+      <p class="home-features__eyebrow">BUILT FOR TOTAL INTENTIONALITY</p>
+      <h2 id="precision-title">Precision Design Suites</h2>
+      <div class="home-features__grid">
+        <article class="home-feature-card">
+          <h3>Styled Event Mockups</h3>
+          <p>Visualize the entire atmosphere of your room in high fidelity.</p>
+        </article>
+        <article class="home-feature-card">
+          <h3>Tablescape Builder</h3>
+          <p>Preview linens and centerpieces with perfect color accuracy.</p>
+        </article>
+        <article class="home-feature-card">
+          <h3>Backdrop Generator</h3>
+          <p>Design focal walls that scale perfectly to your space.</p>
+        </article>
+        <article class="home-feature-card">
+          <h3>Cohesive Set Builder</h3>
+          <p>Match your tablescapes to your backdrops for a seamless look.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="home-gallery" id="vision-examples" aria-labelledby="vision-title">
+      <h2 id="vision-title">From vision to reality.</h2>
+      <div class="home-gallery__grid">
+        <!-- TODO: replace each placeholder panel with real gallery imagery -->
+        <div class="home-gallery__item" role="img" aria-label="Example preview one"><span class="visually-hidden">Preview image placeholder 01</span></div>
+        <div class="home-gallery__item" role="img" aria-label="Example preview two"><span class="visually-hidden">Preview image placeholder 02</span></div>
+        <div class="home-gallery__item" role="img" aria-label="Example preview three"><span class="visually-hidden">Preview image placeholder 03</span></div>
+      </div>
+    </section>
+
+    <section class="home-final-cta" id="contact" aria-label="Final call to action">
+      <div class="home-final-cta__panel">
+        <h2>Decorate with absolute confidence.</h2>
+        <a class="btn" href="experience.html">START YOUR PREVIEW</a>
+      </div>
+    </section>
+
+    <section class="home-footer-links" id="faq" aria-label="Footer links">
+      <div>
+        <h3>The Preview Suite</h3>
+        <p>High-fidelity planning tools for elevated event teams.</p>
+        <p>Bring every detail into focus before installation day.</p>
+      </div>
+      <div>
+        <h3>Explore</h3>
+        <a href="index.html">Home</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+        <a href="#contact">Contact</a>
+      </div>
+      <div>
+        <h3>Support</h3>
+        <a href="#">Concierge</a>
+        <a href="#">Help Center</a>
+      </div>
     </section>
   </main>
 
-  <footer class="footer">
+  <footer class="footer footer--home">
     <span>© <span id="year"></span> The Preview Suite</span>
-    <span class="dot">•</span>
-    <span class="subtle">Curated visual planning tools for modern events</span>
   </footer>
 
   <script>
