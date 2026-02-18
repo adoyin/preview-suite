@@ -80,9 +80,48 @@ const tableSizeOptions = {
 };
 
 const tableclothTextureOptions = [
-  { value: "linen", label: "Linen", thumbnail: "./assets/tablecloths/linen/ivory.jpg" },
-  { value: "satin", label: "Satin", thumbnail: "./assets/tablecloths/satin/ivory.jpg" },
-  { value: "velvet", label: "Velvet", thumbnail: "./assets/tablecloths/velvet/ivory.jpg" },
+  {
+    value: "polyester",
+    label: "Polyester",
+    thumbnail: "./assets/descriptors/tablecloth-textures/polyester.png",
+    helperText: "Crisp, structured event styling",
+  },
+  {
+    value: "satin",
+    label: "Satin",
+    thumbnail: "./assets/descriptors/tablecloth-textures/satin.png",
+    helperText: "Soft sheen with a formal finish",
+  },
+  {
+    value: "velvet",
+    label: "Velvet",
+    thumbnail: "./assets/descriptors/tablecloth-textures/velvet.png",
+    helperText: "Rich texture with a dramatic feel",
+  },
+  {
+    value: "linen",
+    label: "Linen",
+    thumbnail: "./assets/descriptors/tablecloth-textures/linen.png",
+    helperText: "Natural weave, relaxed elegance",
+  },
+  {
+    value: "cheesecloth",
+    label: "Cheesecloth",
+    thumbnail: "./assets/descriptors/tablecloth-textures/cheesecloth.png",
+    helperText: "Soft drape, airy and organic",
+  },
+  {
+    value: "sequin",
+    label: "Sequin",
+    thumbnail: "./assets/descriptors/tablecloth-textures/sequin.png",
+    helperText: "High-glam sparkle and reflection",
+  },
+  {
+    value: "crinkle-taffeta",
+    label: "Crinkle Taffeta",
+    thumbnail: "./assets/descriptors/tablecloth-textures/crinkle-taffeta.png",
+    helperText: "Textured shimmer with structure",
+  },
 ];
 
 const tableclothColorOptions = [
@@ -118,7 +157,7 @@ const clothPalette = {
 const initialState = {
   tableShape: "round",
   tableSize: 60,
-  tableclothTexture: "linen",
+  tableclothTexture: "polyester",
   tableclothColor: "ivory",
   customTableclothColor: "",
   placeSettingsCount: null,
@@ -607,6 +646,7 @@ function renderPreview() {
   requestAnimationFrame(() => refs.table.classList.remove("is-refreshing"));
 
   refs.tableclothLayer.classList.add("table__cloth--changing");
+  refs.tableclothLayer.dataset.texture = state.tableclothTexture;
   refs.tableclothLayer.src = getTableclothAssetPath(state.tableclothTexture, state.tableclothColor);
   refs.tableclothLayer.alt = `${state.tableclothTexture} ${state.tableclothColor} tablecloth`;
   requestAnimationFrame(() => refs.tableclothLayer.classList.remove("table__cloth--changing"));
@@ -732,9 +772,73 @@ function renderTableSizeCards(shape, selectedValue) {
   attachImageFallbacks(refs.stepContent);
 }
 
-function getSizeCarouselScrollAmount(carousel) {
-  const viewport = carousel.querySelector(".size-carousel__viewport");
-  const track = carousel.querySelector(".option-cards--table-size");
+function renderTableTextureCards() {
+  refs.stepContent.innerHTML = `
+    <div id="wizard-texture-carousel" class="texture-carousel" data-tooltip-root>
+      <button class="texture-carousel__arrow texture-carousel__arrow--left" type="button" data-texture-scroll="left" aria-label="Scroll tablecloth textures left">&#8249;</button>
+      <div class="texture-carousel__viewport">
+        <div class="option-cards option-cards--table-texture">
+          ${tableclothTextureOptions.map((option, index) => {
+            const tooltipId = `tableTextureTip${index}`;
+            return `
+              <label class="option-card option-card--texture ${state.tableclothTexture === option.value ? "option-card--selected" : ""}">
+                <input type="radio" name="tableclothTexture" value="${option.value}" ${state.tableclothTexture === option.value ? "checked" : ""} />
+                <div class="option-card__media option-card__media--texture">
+                  <img class="option-card__image option-card__image--texture" src="${option.thumbnail}" data-fallback-text="true" alt="${option.label} texture swatch" loading="lazy" />
+                  <span class="option-card__fallback option-card__fallback--texture" data-fallback-text hidden>${option.label}</span>
+                  <button
+                    class="option-card__info option-card__info--texture"
+                    type="button"
+                    aria-label="More details about ${option.label}"
+                    aria-expanded="false"
+                    aria-describedby="${tooltipId}"
+                    data-tooltip-toggle="${tooltipId}"
+                  >ⓘ</button>
+                  <span class="option-card__tooltip option-card__tooltip--texture" role="tooltip" id="${tooltipId}">${option.helperText}</span>
+                </div>
+                <span class="option-card__title option-card__title--texture">${option.label}</span>
+              </label>
+            `;
+          }).join("")}
+        </div>
+      </div>
+      <button class="texture-carousel__arrow texture-carousel__arrow--right" type="button" data-texture-scroll="right" aria-label="Scroll tablecloth textures right">&#8250;</button>
+    </div>
+  `;
+
+  refs.stepContent.querySelectorAll('input[name="tableclothTexture"]').forEach((radio) => {
+    radio.addEventListener("change", (event) => {
+      closeAllTooltips();
+      state.tableclothTexture = event.target.value;
+      updateUI();
+    });
+  });
+
+  refs.stepContent.querySelectorAll("#wizard-texture-carousel [data-tooltip-toggle]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const tooltipId = button.getAttribute("data-tooltip-toggle");
+      const tooltip = tooltipId ? refs.stepContent.querySelector(`#${tooltipId}`) : null;
+      if (!tooltip) return;
+
+      const shouldOpen = !tooltip.classList.contains("is-visible");
+      closeAllTooltips();
+      if (shouldOpen) {
+        tooltip.classList.add("is-visible");
+        button.setAttribute("aria-expanded", "true");
+      }
+    });
+  });
+
+  setupTextureCarousel();
+  attachImageFallbacks(refs.stepContent);
+}
+
+function getCarouselScrollAmount(carousel, viewportSelector, trackSelector) {
+  const viewport = carousel.querySelector(viewportSelector);
+  const track = carousel.querySelector(trackSelector);
   if (!viewport || !track) {
     return 0;
   }
@@ -755,6 +859,10 @@ function getSizeCarouselScrollAmount(carousel) {
   const gap = parseFloat(computedStyle.columnGap || computedStyle.gap || "0");
 
   return cardWidth + gap;
+}
+
+function getSizeCarouselScrollAmount(carousel) {
+  return getCarouselScrollAmount(carousel, ".size-carousel__viewport", ".option-cards--table-size");
 }
 
 function setupSizeCarousel() {
@@ -783,6 +891,36 @@ function setupSizeCarousel() {
   carousel.dataset.carouselReady = "true";
 }
 
+function getTextureCarouselScrollAmount(carousel) {
+  return getCarouselScrollAmount(carousel, ".texture-carousel__viewport", ".option-cards--table-texture");
+}
+
+function setupTextureCarousel() {
+  const carousel = refs.stepContent.querySelector("#wizard-texture-carousel");
+  if (!carousel || carousel.dataset.carouselReady === "true") {
+    return;
+  }
+
+  const viewport = carousel.querySelector(".texture-carousel__viewport");
+  const leftArrow = carousel.querySelector('[data-texture-scroll="left"]');
+  const rightArrow = carousel.querySelector('[data-texture-scroll="right"]');
+  if (!viewport || !leftArrow || !rightArrow) {
+    return;
+  }
+
+  const scrollByOneCard = (direction) => {
+    const amount = getTextureCarouselScrollAmount(carousel);
+    if (!amount) {
+      return;
+    }
+    viewport.scrollBy({ left: direction * amount, behavior: "smooth" });
+  };
+
+  leftArrow.addEventListener("click", () => scrollByOneCard(-1));
+  rightArrow.addEventListener("click", () => scrollByOneCard(1));
+  carousel.dataset.carouselReady = "true";
+}
+
 function closeAllTooltips() {
   refs.stepContent.querySelectorAll(".option-card__tooltip.is-visible").forEach((tooltip) => {
     tooltip.classList.remove("is-visible");
@@ -798,7 +936,7 @@ function getStepMeta() {
   switch (currentStepNumber) {
     case 1: return { title: "Table shape", hint: "Choose the base table shape.", value: formatTableShape(state.tableShape) };
     case 2: return { title: "Table size", hint: "Choose a size for the selected shape.", value: typeof state.tableSize === "number" ? `${state.tableSize}"` : state.tableSize };
-    case 3: return { title: "Tablecloth texture", hint: "Choose a fabric.", value: state.tableclothTexture[0].toUpperCase() + state.tableclothTexture.slice(1) };
+    case 3: return { title: "Choose Tablecloth Texture", hint: "Choose a fabric.", value: tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || state.tableclothTexture };
     case 4: return { title: "Tablecloth color", hint: "Choose a color.", value: tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory" };
     case 5: return { title: "Number of place settings", hint: "How many guests are you planning for?", value: state.placeSettingsCount == null ? "Not selected" : String(state.placeSettingsCount) };
     case 6: return { title: "Charger plate", hint: "Select a metallic or neutral charger.", value: state.chargerType || "Not selected" };
@@ -1006,15 +1144,7 @@ function renderStepContent() {
   }
 
   if (currentStepNumber === 3) {
-    renderVisualOptionCards({
-      name: "tableclothTexture",
-      options: tableclothTextureOptions,
-      selectedValue: state.tableclothTexture,
-      onSelect: (value) => {
-        state.tableclothTexture = value;
-        updateUI();
-      },
-    });
+    renderTableTextureCards();
   }
 
   if (currentStepNumber === 4) {

@@ -572,6 +572,150 @@ a:focus-visible{
   transform: translateY(0);
 }
 
+
+#wizard-texture-carousel.texture-carousel{
+  position: relative;
+  display: grid;
+  align-items: center;
+  margin-top: 4px;
+}
+
+#wizard-texture-carousel .texture-carousel__viewport{
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  padding: 2px 0;
+}
+
+#wizard-texture-carousel .texture-carousel__viewport::-webkit-scrollbar{
+  display: none;
+}
+
+#wizard-texture-carousel .option-cards--table-texture{
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 14px;
+  width: max-content;
+  padding-right: 22px;
+}
+
+#wizard-texture-carousel .option-card--texture{
+  flex: 0 0 clamp(230px, calc((100% - 34px) / 2), 300px);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #f9f5ef 0%, #f4ede1 100%);
+  border-color: rgba(164, 139, 99, 0.2);
+  box-shadow: 0 10px 20px rgba(48, 33, 18, 0.08);
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+
+#wizard-texture-carousel .option-card--texture.option-card--selected{
+  border-color: rgba(205, 171, 117, 0.75);
+  box-shadow: 0 0 0 1px rgba(232, 210, 168, 0.72), 0 14px 24px rgba(70, 47, 21, 0.16);
+}
+
+#wizard-texture-carousel .option-card--texture:hover,
+#wizard-texture-carousel .option-card--texture:focus-within{
+  transform: translateY(-2px);
+  border-color: rgba(182, 154, 112, 0.58);
+  box-shadow: 0 16px 24px rgba(48, 33, 18, 0.12);
+}
+
+#wizard-texture-carousel .option-card__media--texture{
+  position: relative;
+  min-height: 165px;
+  aspect-ratio: 4 / 3;
+  border-radius: 12px;
+  border-color: rgba(164, 139, 99, 0.24);
+  background: linear-gradient(145deg, #ece4d8, #ded2c1);
+}
+
+#wizard-texture-carousel .option-card__image--texture{
+  object-fit: cover;
+}
+
+#wizard-texture-carousel .option-card__fallback--texture{
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  font-size: 13px;
+  color: #6e5a42;
+  text-align: center;
+  letter-spacing: 0.02em;
+  background: linear-gradient(140deg, #ece4d8, #ddd0be);
+}
+
+#wizard-texture-carousel .option-card__title--texture{
+  font-size: 14px;
+  color: #5f4b35;
+}
+
+#wizard-texture-carousel .option-card__info--texture{
+  top: 10px;
+  right: 10px;
+  width: 18px;
+  height: 18px;
+  font-size: 15px;
+  color: #74624d;
+  opacity: 0.38;
+}
+
+#wizard-texture-carousel .option-card__info--texture:hover,
+#wizard-texture-carousel .option-card__info--texture:focus-visible{
+  opacity: 0.82;
+}
+
+#wizard-texture-carousel .option-card__tooltip--texture{
+  top: 34px;
+  right: 10px;
+  width: min(220px, calc(100% - 20px));
+  padding: 8px 10px;
+  border-radius: 9px;
+  background: #EEE7DE;
+  color: #5d4b36;
+  font-size: 12px;
+  line-height: 1.35;
+  box-shadow: 0 10px 18px rgba(31, 22, 13, 0.16);
+}
+
+#wizard-texture-carousel .texture-carousel__arrow{
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid rgba(92, 74, 49, 0.14);
+  background: rgba(247, 243, 236, 0.76);
+  color: rgba(92, 74, 49, 0.7);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .16s ease, background .16s ease;
+  z-index: 1;
+}
+
+#wizard-texture-carousel:hover .texture-carousel__arrow,
+#wizard-texture-carousel:focus-within .texture-carousel__arrow{
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#wizard-texture-carousel .texture-carousel__arrow:hover,
+#wizard-texture-carousel .texture-carousel__arrow:focus-visible{
+  background: rgba(240, 234, 225, 0.95);
+  outline: none;
+}
+
+#wizard-texture-carousel .texture-carousel__arrow--left{ left: -6px; }
+#wizard-texture-carousel .texture-carousel__arrow--right{ right: -6px; }
+
 .opt{
   border: 1px solid var(--stroke);
   background: var(--surface-strong);
@@ -779,6 +923,17 @@ a:focus-visible{
   .preview__stage{ height: 380px; }
   .builder-head{ flex-direction: column; }
   .experience-card{ min-height: 270px; }
+}
+
+
+@media (max-width: 760px){
+  #wizard-texture-carousel .option-card--texture{
+    flex-basis: min(260px, calc(100vw - 98px));
+  }
+
+  #wizard-texture-carousel .texture-carousel__arrow{
+    display: none;
+  }
 }
 
 @media (max-width: 640px){
