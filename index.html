@@ -19,51 +19,65 @@
       </div>
     </a>
 
-    <nav class="main-nav" aria-label="Primary">
-      <a href="index.html">Home</a>
-      <a href="#what-you-get">What You Get</a>
-      <a href="#examples">View Examples</a>
-      <a href="#start-preview">Start</a>
-    </nav>
+    <div class="nav-group">
+      <nav class="main-nav" aria-label="Primary">
+        <a class="is-active" href="index.html" aria-current="page">Home</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+        <a href="#contact">Contact</a>
+      </nav>
 
-    <a class="btn" href="experience.html">Start Designing</a>
+      <a class="btn btn--nav" href="experience.html">Get My Preview</a>
+    </div>
   </header>
 
   <main class="page page--home-minimal">
     <section class="home-hero home-hero--minimal" aria-label="Homepage hero">
-      <div class="home-hero__content">
-        <p class="home-kicker">THE PREVIEW SUITE</p>
-        <h1>Design confidence before installation day.</h1>
-        <p class="home-hero__subhead">Photoreal previews for tablescapes and focal walls—so you can buy and book with certainty.</p>
-        <div class="home-hero__actions">
-          <a class="btn" href="experience.html">Start Designing</a>
-          <a class="home-link" href="#examples">View Examples</a>
+      <div class="container home-hero__inner">
+        <div class="home-hero__content">
+          <p class="home-kicker">THE PREVIEW SUITE</p>
+          <h1>Design confidence before installation day.</h1>
+          <p class="home-hero__subhead">Photoreal previews for tablescapes and focal walls—so you can buy and book with certainty.</p>
+          <div class="home-hero__actions">
+            <a class="btn" href="experience.html">Start Designing</a>
+            <a class="home-link" href="#examples">View Examples</a>
+          </div>
         </div>
-        <p class="home-hero__trust">Built for everyday hosts. Premium results.</p>
-      </div>
-      <div class="home-hero__media" id="examples" role="img" aria-label="Preview suite example placeholder">
-        <span class="visually-hidden">Preview suite example placeholder</span>
+
+        <div class="home-hero__media" id="examples" role="img" aria-label="Preview suite example placeholder">
+          <span class="visually-hidden">Preview suite example placeholder</span>
+        </div>
       </div>
     </section>
 
-    <section class="home-value-strip" id="what-you-get" aria-label="What you get">
-      <div class="home-value-strip__item">Match decor before you buy.</div>
-      <div class="home-value-strip__item">See scale, spacing, and lighting.</div>
-      <div class="home-value-strip__item">Share a clear plan with vendors.</div>
+    <section class="home-value-strip" id="pricing" aria-label="What you get">
+      <div class="container home-value-strip__inner">
+        <div class="home-value-strip__item">Match decor before you buy.</div>
+        <div class="home-value-strip__dot" aria-hidden="true"></div>
+        <div class="home-value-strip__item">See scale, spacing, and lighting.</div>
+        <div class="home-value-strip__dot" aria-hidden="true"></div>
+        <div class="home-value-strip__item">Share a clear plan with vendors.</div>
+      </div>
     </section>
 
-    <section class="home-dark-cta" id="start-preview" aria-label="Start your preview">
-      <h2>Ready to see your table?</h2>
-      <a class="btn" href="experience.html">Start Your Preview</a>
+    <section class="home-dark-cta" id="faq" aria-label="Start your preview">
+      <div class="container home-dark-cta__inner">
+        <div>
+          <h2>Ready to preview your event?</h2>
+          <p>One clear visual plan, before you book, buy, or install.</p>
+        </div>
+        <a class="btn" href="experience.html">Start Your Preview</a>
+      </div>
     </section>
   </main>
 
-  <footer class="footer footer--home footer--minimal">
+  <footer class="footer footer--home footer--minimal" id="contact">
     <span>© <span id="year"></span> The Preview Suite</span>
     <span class="dot" aria-hidden="true">•</span>
     <a href="index.html">Home</a>
-    <a href="#what-you-get">What You Get</a>
-    <a href="#start-preview">Start Designing</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+    <a href="#contact">Contact</a>
   </footer>
 
   <script>
