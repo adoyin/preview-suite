@@ -630,22 +630,22 @@ a:focus-visible{
   border-radius: 12px;
   border-color: rgba(164, 139, 99, 0.24);
   background: linear-gradient(145deg, #ece4d8, #ded2c1);
+  overflow: hidden;
 }
 
 #wizard-texture-carousel .option-card__image--texture{
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 1;
+  visibility: visible;
   object-fit: cover;
+  border-radius: inherit;
+  position: relative;
+  z-index: 1;
 }
 
-#wizard-texture-carousel .option-card__fallback--texture{
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding: 12px;
-  font-size: 13px;
-  color: #6e5a42;
-  text-align: center;
-  letter-spacing: 0.02em;
+#wizard-texture-carousel .option-card__media--texture.texture-fallback{
   background: linear-gradient(140deg, #ece4d8, #ddd0be);
 }
 
@@ -662,6 +662,7 @@ a:focus-visible{
   font-size: 15px;
   color: #74624d;
   opacity: 0.38;
+  z-index: 2;
 }
 
 #wizard-texture-carousel .option-card__info--texture:hover,

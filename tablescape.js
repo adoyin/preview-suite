@@ -83,44 +83,38 @@ const tableclothTextureOptions = [
   {
     value: "polyester",
     label: "Polyester",
-    thumbnail: "./assets/descriptors/tablecloth-textures/polyester.png",
+    thumbnail: "assets/textures/polyester-pearl.png",
     helperText: "Crisp, structured event styling",
   },
   {
     value: "satin",
     label: "Satin",
-    thumbnail: "./assets/descriptors/tablecloth-textures/satin.png",
+    thumbnail: "assets/textures/satin-champagne.png",
     helperText: "Soft sheen with a formal finish",
   },
   {
     value: "velvet",
     label: "Velvet",
-    thumbnail: "./assets/descriptors/tablecloth-textures/velvet.png",
+    thumbnail: "assets/textures/velvet-cream.png",
     helperText: "Rich texture with a dramatic feel",
   },
   {
     value: "linen",
     label: "Linen",
-    thumbnail: "./assets/descriptors/tablecloth-textures/linen.png",
+    thumbnail: "assets/textures/linen-ivory.png",
     helperText: "Natural weave, relaxed elegance",
-  },
-  {
-    value: "cheesecloth",
-    label: "Cheesecloth",
-    thumbnail: "./assets/descriptors/tablecloth-textures/cheesecloth.png",
-    helperText: "Soft drape, airy and organic",
-  },
-  {
-    value: "sequin",
-    label: "Sequin",
-    thumbnail: "./assets/descriptors/tablecloth-textures/sequin.png",
-    helperText: "High-glam sparkle and reflection",
   },
   {
     value: "crinkle-taffeta",
     label: "Crinkle Taffeta",
-    thumbnail: "./assets/descriptors/tablecloth-textures/crinkle-taffeta.png",
+    thumbnail: "assets/textures/crinkle-taffeta-champagne.png",
     helperText: "Textured shimmer with structure",
+  },
+  {
+    value: "sequin",
+    label: "Sequin",
+    thumbnail: "assets/textures/sequin-soft-champagne.png",
+    helperText: "High-glam sparkle and reflection",
   },
 ];
 
@@ -784,8 +778,7 @@ function renderTableTextureCards() {
               <label class="option-card option-card--texture ${state.tableclothTexture === option.value ? "option-card--selected" : ""}">
                 <input type="radio" name="tableclothTexture" value="${option.value}" ${state.tableclothTexture === option.value ? "checked" : ""} />
                 <div class="option-card__media option-card__media--texture">
-                  <img class="option-card__image option-card__image--texture" src="${option.thumbnail}" data-fallback-text="true" alt="${option.label} texture swatch" loading="lazy" />
-                  <span class="option-card__fallback option-card__fallback--texture" data-fallback-text hidden>${option.label}</span>
+                  <img class="option-card__image option-card__image--texture" src="${option.thumbnail}" alt="${option.label} texture swatch" loading="lazy" />
                   <button
                     class="option-card__info option-card__info--texture"
                     type="button"
@@ -829,6 +822,16 @@ function renderTableTextureCards() {
         tooltip.classList.add("is-visible");
         button.setAttribute("aria-expanded", "true");
       }
+    });
+  });
+
+  refs.stepContent.querySelectorAll(".option-card__image--texture").forEach((image) => {
+    console.log("Texture card src", image.src);
+    image.addEventListener("load", () => console.log("LOADED", image.src));
+    image.addEventListener("error", () => {
+      console.warn("FAILED", image.src);
+      image.style.display = "none";
+      image.closest(".option-card__media--texture")?.classList.add("texture-fallback");
     });
   });
 
