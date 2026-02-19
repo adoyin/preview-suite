@@ -6,75 +6,78 @@
   <title>The Preview Suite</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Instrument+Sans:wght@400;500&family=Cormorant+Garamond:wght@300;400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;500&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
- <body class="preview-suite-home"> <div class="main-layout">
-    
-    <header class="editorial-header">
-      <div class="brand">
-        <div class="brand__mark">
+<body class="preview-suite-home">
+  <div class="suite-shell">
+    <header class="suite-header suite-grid" aria-label="Top navigation">
+      <a class="suite-brand" href="index.html" aria-label="The Preview Suite home">
+        <span class="suite-brand__mark" aria-hidden="true">
           <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M10 30V15C10 9.47715 14.4772 5 20 5C25.5228 5 30 9.47715 30 15V30" stroke="#2D2D2D" stroke-width="1.5"/>
+            <path d="M8 31V16C8 9.37258 13.3726 4 20 4C26.6274 4 32 9.37258 32 16V31" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M20 4V31" stroke="currentColor" stroke-width="1.5"/>
           </svg>
-        </div>
-        <span class="brand__text">The Preview Suite</span>
-      </div>
-      
-      <div class="nav-group">
-        <nav class="main-nav">
-          <a href="index.html" class="nav-link is-active">Home</a>
-          <a href="pricing.html" class="nav-link">Pricing</a>
-          <a href="faq.html" class="nav-link">FAQ</a>
-          <a href="contact.html" class="nav-link">Contact</a>
-        </nav>
-        <a href="experience.html" class="btn-pill">Get My Preview</a>
-      </div>
+        </span>
+        <span class="suite-brand__name">The Preview Suite</span>
+      </a>
+
+      <nav class="suite-nav" aria-label="Primary">
+        <a href="index.html">HOME</a>
+        <a href="pricing.html">PRICING</a>
+        <a href="faq.html">FAQ</a>
+        <a href="contact.html">CONTACT</a>
+      </nav>
+
+      <a class="suite-cta" href="experience.html">GET MY PREVIEW.</a>
     </header>
 
-    <main class="hero">
-      <div class="layout-grid">
-        <section class="hero-copy">
-          <h1>Visualizing the ephemeral. Composing the atmosphere before the first guest arrives.</h1>
-        </section>
-        <figure class="hero-media">
-          <img src="https://images.unsplash.com/photo-1519225497282-9f6d4d623232?auto=format&fit=crop&q=80&w=1200" alt="Minimalist event decor">
-        </figure>
-      </div>
+    <main class="suite-hero suite-grid" aria-label="Hero section">
+      <section class="suite-headline">
+        <h1>Visualizing the ephemeral. Composing the atmosphere before the first guest arrives.</h1>
+      </section>
+
+      <figure class="suite-media">
+        <img src="https://images.unsplash.com/photo-1617098474202-0d0d7f60b66f?auto=format&fit=crop&q=80&w=1400" alt="Minimalist interior with linen-draped table and architectural ceramics in muted taupe tones." />
+      </figure>
     </main>
 
-    <section class="process-row">
-      <div class="process-container">
-        <article class="process-step">
-          <span class="process-number">01</span>
-          <h2>CURATE</h2>
+    <section class="suite-process" aria-label="Process">
+      <div class="suite-grid suite-process__grid">
+        <article class="suite-process__step">
+          <p class="suite-process__kicker">01 CURATE</p>
           <p>Define your spatial atmosphere and select a refined material palette.</p>
         </article>
-        
-        <article class="process-step vertical-divider">
-          <span class="process-number">02</span>
-          <h2>COMPOSE</h2>
+        <article class="suite-process__step">
+          <p class="suite-process__kicker">02 COMPOSE</p>
           <p>Arrange your architectural dimensions and table geometry.</p>
         </article>
-        
-        <article class="process-step vertical-divider">
-          <span class="process-number">03</span>
-          <h2>REALIZE</h2>
+        <article class="suite-process__step">
+          <p class="suite-process__kicker">03 REALIZE</p>
           <p>Inhabit your vision through high-fidelity, photoreal concept previews.</p>
         </article>
       </div>
     </section>
 
-    <footer class="editorial-footer">
-      <span>© 2026 THE PREVIEW SUITE — ALL RIGHTS RESERVED</span>
-      <nav>
-        <a href="#">Terms</a>
-        <a href="#">Privacy</a>
-        <a href="#">Instagram</a>
-      </nav>
+    <footer class="suite-footer suite-grid">
+      <div class="suite-footer__col suite-footer__mission">
+        <p class="suite-footer__brand">The Preview Suite</p>
+        <p>Helping everyday hosts visualize elegance before they commit. The modern standard for intentional celebration design.</p>
+      </div>
+      <div class="suite-footer__col">
+        <p class="suite-footer__heading">EXPLORE</p>
+        <a href="index.html">HOME</a>
+        <a href="pricing.html">PRICING</a>
+        <a href="faq.html">FAQ</a>
+        <a href="contact.html">CONTACT</a>
+      </div>
+      <div class="suite-footer__col">
+        <p class="suite-footer__heading">SUPPORT</p>
+        <a href="#">CONCIERGE</a>
+        <a href="#">HELP CENTER</a>
+        <p>© 2026 THE PREVIEW SUITE.</p>
+      </div>
     </footer>
-
   </div>
 </body>
 </html>
