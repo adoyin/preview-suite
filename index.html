@@ -3,85 +3,54 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>The Preview Suite — Event Design Previews</title>
+  <title>The Preview Suite</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Instrument+Sans:wght@400;500&family=Cormorant+Garamond:wght@300;400&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header class="topbar">
-    <a class="brand" href="index.html" aria-label="The Preview Suite home">
-      <div class="brand__mark" aria-hidden="true"></div>
-      <div class="brand__text">
-        <div class="brand__name">The Preview Suite</div>
-        <div class="brand__tag">Elevated Event Design</div>
-      </div>
-    </a>
-
-    <div class="nav-group">
+  <div class="site-shell">
+    <header class="topbar">
+      <a class="brand" href="index.html">The Preview Suite</a>
       <nav class="main-nav" aria-label="Primary">
-        <a class="is-active" href="index.html" aria-current="page">Home</a>
-        <a href="#pricing">Pricing</a>
-        <a href="#faq">FAQ</a>
-        <a href="#contact">Contact</a>
+        <a href="index.html">Home</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="faq.html">FAQ</a>
+        <a href="contact.html">Contact</a>
       </nav>
+      <a class="outline-button" href="experience.html">Get My Preview</a>
+    </header>
 
-      <a class="btn btn--nav" href="experience.html">Get My Preview</a>
-    </div>
-  </header>
+    <main class="atelier" aria-label="Interactive preview experience">
+      <section class="hero-copy">
+        <h1>Private event concepts,<br />composed with architectural restraint.</h1>
+        <p>A digital atelier for spatial atmosphere, material cadence, and table geometry before installation day.</p>
+        <a class="cta" href="experience.html">Begin the preview →</a>
+      </section>
 
-  <main class="page page--home-minimal">
-    <section class="home-hero home-hero--minimal" aria-label="Homepage hero">
-      <div class="container home-hero__inner">
-        <div class="home-hero__content">
-          <p class="home-kicker">THE PREVIEW SUITE</p>
-          <h1>Design confidence before installation day.</h1>
-          <p class="home-hero__subhead">Photoreal previews for tablescapes and focal walls—so you can buy and book with certainty.</p>
-          <div class="home-hero__actions">
-            <a class="btn" href="experience.html">Start Designing</a>
-            <a class="home-link" href="#examples">View Examples</a>
-          </div>
+      <section class="experience-panel" aria-label="Process and preview canvas">
+        <div class="media-frame" role="img" aria-label="Architectural preview canvas"></div>
+
+        <div class="process-section" aria-label="Process map">
+          <article class="process-step" tabindex="0">
+            <p class="step-number">Step 01</p>
+            <h2>Curate</h2>
+            <p>Select your spatial atmosphere and material palette.</p>
+          </article>
+          <article class="process-step" tabindex="0">
+            <p class="step-number">Step 02</p>
+            <h2>Compose</h2>
+            <p>Input your dimensions and table geometry.</p>
+          </article>
+          <article class="process-step" tabindex="0">
+            <p class="step-number">Step 03</p>
+            <h2>Reveal</h2>
+            <p>Generate your high-fidelity architectural preview.</p>
+          </article>
         </div>
-
-        <div class="home-hero__media" id="examples" role="img" aria-label="Preview suite example placeholder">
-          <span class="visually-hidden">Preview suite example placeholder</span>
-        </div>
-      </div>
-    </section>
-
-    <section class="home-value-strip" id="pricing" aria-label="What you get">
-      <div class="container home-value-strip__inner">
-        <div class="home-value-strip__item">Match decor before you buy.</div>
-        <div class="home-value-strip__dot" aria-hidden="true"></div>
-        <div class="home-value-strip__item">See scale, spacing, and lighting.</div>
-        <div class="home-value-strip__dot" aria-hidden="true"></div>
-        <div class="home-value-strip__item">Share a clear plan with vendors.</div>
-      </div>
-    </section>
-
-    <section class="home-dark-cta" id="faq" aria-label="Start your preview">
-      <div class="container home-dark-cta__inner">
-        <div>
-          <h2>Ready to preview your event?</h2>
-          <p>One clear visual plan, before you book, buy, or install.</p>
-        </div>
-        <a class="btn" href="experience.html">Start Your Preview</a>
-      </div>
-    </section>
-  </main>
-
-  <footer class="footer footer--home footer--minimal" id="contact">
-    <span>© <span id="year"></span> The Preview Suite</span>
-    <span class="dot" aria-hidden="true">•</span>
-    <a href="index.html">Home</a>
-    <a href="#pricing">Pricing</a>
-    <a href="#faq">FAQ</a>
-    <a href="#contact">Contact</a>
-  </footer>
-
-  <script>
-    document.getElementById("year").textContent = String(new Date().getFullYear());
-  </script>
+      </section>
+    </main>
+  </div>
 </body>
 </html>
