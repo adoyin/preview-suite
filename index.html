@@ -6,82 +6,73 @@
   <title>The Preview Suite — Event Design Previews</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@300;400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
-  <header class="topbar">
-    <a class="brand" href="index.html" aria-label="The Preview Suite home">
-      <div class="brand__mark" aria-hidden="true"></div>
-      <div class="brand__text">
-        <div class="brand__name">The Preview Suite</div>
-        <div class="brand__tag">Elevated Event Design</div>
-      </div>
-    </a>
+<body class="preview-suite-home">
+  <div class="main-container main-layout">
+    <header class="editorial-header">
+      <a class="brand" href="index.html" aria-label="The Preview Suite home">
+        <span class="brand__mark" aria-hidden="true">
+          <svg viewBox="0 0 40 40" role="presentation" focusable="false">
+            <path d="M8 31V18.2C8 11.4 13.2 6 20 6C26.8 6 32 11.4 32 18.2V31" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+            <path d="M15.5 31V19.5C15.5 16.8 17.6 14.5 20 14.5C22.4 14.5 24.5 16.8 24.5 19.5V31" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="brand__text">The Preview Suite</span>
+      </a>
 
-    <div class="nav-group">
-      <nav class="main-nav" aria-label="Primary">
-        <a class="is-active" href="index.html" aria-current="page">Home</a>
-        <a href="#pricing">Pricing</a>
-        <a href="#faq">FAQ</a>
-        <a href="#contact">Contact</a>
+      <div class="nav-group">
+        <nav class="main-nav" aria-label="Primary">
+          <a class="nav-link is-active" href="index.html" aria-current="page">Home</a>
+          <a class="nav-link" href="#pricing">Pricing</a>
+          <a class="nav-link" href="#faq">FAQ</a>
+          <a class="nav-link" href="#contact">Contact</a>
+        </nav>
+        <a class="btn-pill" href="experience.html">Get My Preview</a>
+      </div>
+    </header>
+
+    <main class="hero" id="pricing">
+      <div class="layout-grid">
+        <div class="hero-copy">
+          <h1>Visualizing the ephemeral. Composing the atmosphere before the first guest arrives.</h1>
+        </div>
+        <figure class="hero-media">
+          <img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1600&q=80" alt="Linen-draped table styling with candlelight and architectural ceramic vessels in muted taupe tones" />
+        </figure>
+      </div>
+    </main>
+
+    <section class="process-row" id="faq" aria-label="Design process">
+      <div class="process-container">
+        <article class="process-step">
+          <span class="process-number">01</span>
+          <h2>CURATE</h2>
+          <p>Define your spatial atmosphere and select a refined material palette.</p>
+        </article>
+        <article class="process-step vertical-divider">
+          <span class="process-number">02</span>
+          <h2>COMPOSE</h2>
+          <p>Arrange your architectural dimensions and table geometry.</p>
+        </article>
+        <article class="process-step vertical-divider" id="contact">
+          <span class="process-number">03</span>
+          <h2>REALIZE</h2>
+          <p>Inhabit your vision through high-fidelity, photoreal concept previews.</p>
+        </article>
+      </div>
+    </section>
+
+    <footer class="editorial-footer">
+      <span>© 2026 THE PREVIEW SUITE — ALL RIGHTS RESERVED</span>
+      <nav aria-label="Legal and social">
+        <a href="#">TERMS</a>
+        <a href="#">PRIVACY</a>
+        <a href="#">INSTAGRAM</a>
+        <a href="#contact">CONTACT</a>
       </nav>
-
-      <a class="btn btn--nav" href="experience.html">Get My Preview</a>
-    </div>
-  </header>
-
-  <main class="page page--home-minimal">
-    <section class="home-hero home-hero--minimal" aria-label="Homepage hero">
-      <div class="container home-hero__inner">
-        <div class="home-hero__content">
-          <p class="home-kicker">THE PREVIEW SUITE</p>
-          <h1>Design confidence before installation day.</h1>
-          <p class="home-hero__subhead">Photoreal previews for tablescapes and focal walls—so you can buy and book with certainty.</p>
-          <div class="home-hero__actions">
-            <a class="btn" href="experience.html">Start Designing</a>
-            <a class="home-link" href="#examples">View Examples</a>
-          </div>
-        </div>
-
-        <div class="home-hero__media" id="examples" role="img" aria-label="Preview suite example placeholder">
-          <span class="visually-hidden">Preview suite example placeholder</span>
-        </div>
-      </div>
-    </section>
-
-    <section class="home-value-strip" id="pricing" aria-label="What you get">
-      <div class="container home-value-strip__inner">
-        <div class="home-value-strip__item">Match decor before you buy.</div>
-        <div class="home-value-strip__dot" aria-hidden="true"></div>
-        <div class="home-value-strip__item">See scale, spacing, and lighting.</div>
-        <div class="home-value-strip__dot" aria-hidden="true"></div>
-        <div class="home-value-strip__item">Share a clear plan with vendors.</div>
-      </div>
-    </section>
-
-    <section class="home-dark-cta" id="faq" aria-label="Start your preview">
-      <div class="container home-dark-cta__inner">
-        <div>
-          <h2>Ready to preview your event?</h2>
-          <p>One clear visual plan, before you book, buy, or install.</p>
-        </div>
-        <a class="btn" href="experience.html">Start Your Preview</a>
-      </div>
-    </section>
-  </main>
-
-  <footer class="footer footer--home footer--minimal" id="contact">
-    <span>© <span id="year"></span> The Preview Suite</span>
-    <span class="dot" aria-hidden="true">•</span>
-    <a href="index.html">Home</a>
-    <a href="#pricing">Pricing</a>
-    <a href="#faq">FAQ</a>
-    <a href="#contact">Contact</a>
-  </footer>
-
-  <script>
-    document.getElementById("year").textContent = String(new Date().getFullYear());
-  </script>
+    </footer>
+  </div>
 </body>
 </html>
