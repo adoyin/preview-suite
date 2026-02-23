@@ -1064,13 +1064,49 @@ a:focus-visible{
   z-index: 4;
 }
 
-.wizard-color-grid{
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+.wizard-color-toolbar{
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.wizard-color-group{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-faint);
+}
+
+.wizard-color-group__select{
+  border: 1px solid rgba(140, 119, 87, 0.3);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-soft);
+  font: inherit;
+  font-weight: 500;
+  padding: 6px 10px;
+}
+
+.wizard-color-carousel__viewport{
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scroll-behavior: smooth;
+  padding: 2px 0;
+}
+
+.option-cards--table-color{
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 12px;
+  width: max-content;
+  padding: 2px 0 2px 2px;
 }
 
 .option-card--color{
+  flex: 0 0 134px;
   padding: 10px;
   border-radius: 14px;
 }
@@ -1229,7 +1265,7 @@ a:focus-visible{
 }
 
 @media (max-width: 640px){
-  .wizard-color-grid{
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .option-card--color{
+    flex-basis: 120px;
   }
 }
