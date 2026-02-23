@@ -119,32 +119,32 @@ const tableclothTextureOptions = [
 ];
 
 const tableclothColorOptions = [
-  { value: "ivory", label: "Ivory" },
-  { value: "white", label: "White" },
-  { value: "champagne", label: "Champagne" },
-  { value: "blush", label: "Blush" },
-  { value: "dusty-rose", label: "Dusty Rose" },
-  { value: "sage", label: "Sage" },
-  { value: "emerald", label: "Emerald" },
-  { value: "navy", label: "Navy" },
-  { value: "french-blue", label: "French Blue" },
-  { value: "burgundy", label: "Burgundy" },
-  { value: "terracotta", label: "Terracotta" },
-  { value: "black", label: "Black" },
+  { value: "ivory", label: "Ivory", hex: "#F3EBDD" },
+  { value: "white", label: "White", hex: "#FFFFFF" },
+  { value: "champagne", label: "Champagne", hex: "#E8D8C6" },
+  { value: "blush", label: "Blush", hex: "#E9C6C9" },
+  { value: "dustyRose", label: "Dusty Rose", hex: "#CFA5AA", assetValue: "dusty-rose" },
+  { value: "sage", label: "Sage", hex: "#AEB8A6" },
+  { value: "emerald", label: "Emerald", hex: "#1F6B4E" },
+  { value: "navy", label: "Navy", hex: "#0F2340" },
+  { value: "frenchBlue", label: "French Blue", hex: "#4C78A8", assetValue: "french-blue" },
+  { value: "burgundy", label: "Burgundy", hex: "#5A1E2D" },
+  { value: "terracotta", label: "Terracotta", hex: "#B05A3C" },
+  { value: "black", label: "Black", hex: "#111111" },
 ];
 
 const clothPalette = {
-  ivory: "#F6F1E8",
+  ivory: "#F3EBDD",
   white: "#FFFFFF",
-  champagne: "#F1E3C6",
-  blush: "#E8C7C8",
-  "dusty-rose": "#CFA1A3",
-  sage: "#A8B5A2",
-  emerald: "#1F6A5A",
-  navy: "#1C2A44",
-  "french-blue": "#4F6D8A",
-  burgundy: "#6B1F2A",
-  terracotta: "#C46A4A",
+  champagne: "#E8D8C6",
+  blush: "#E9C6C9",
+  dustyRose: "#CFA5AA",
+  sage: "#AEB8A6",
+  emerald: "#1F6B4E",
+  navy: "#0F2340",
+  frenchBlue: "#4C78A8",
+  burgundy: "#5A1E2D",
+  terracotta: "#B05A3C",
   black: "#111111",
 };
 
@@ -271,7 +271,9 @@ const centerpieceAssetMap = {
 };
 
 function getTableclothAssetPath(texture, color) {
-  return `./assets/tablecloths/${texture}/${color}.jpg`;
+  const selectedColor = tableclothColorOptions.find((option) => option.value === color);
+  const colorSlug = selectedColor?.assetValue || color;
+  return `./assets/tablecloths/${texture}/${colorSlug}.jpg`;
 }
 
 function attachImageFallbacks(root = document) {
@@ -839,6 +841,29 @@ function renderTableTextureCards() {
   attachImageFallbacks(refs.stepContent);
 }
 
+function renderTableColorCards() {
+  refs.stepContent.innerHTML = `
+    <div id="wizard-color-grid" class="option-cards wizard-color-grid">
+      ${tableclothColorOptions.map((option) => `
+        <label class="option-card option-card--color ${state.tableclothColor === option.value ? "option-card--selected" : ""}">
+          <input type="radio" name="tableclothColor" value="${option.value}" ${state.tableclothColor === option.value ? "checked" : ""} />
+          <div class="option-card__media option-card__media--color">
+            <div class="option-card__swatch" style="background-color: ${option.hex};" aria-hidden="true"></div>
+          </div>
+          <span class="option-card__title option-card__title--color">${option.label}</span>
+        </label>
+      `).join("")}
+    </div>
+  `;
+
+  refs.stepContent.querySelectorAll('input[name="tableclothColor"]').forEach((radio) => {
+    radio.addEventListener("change", (event) => {
+      state.tableclothColor = event.target.value;
+      updateUI();
+    });
+  });
+}
+
 function getCarouselScrollAmount(carousel, viewportSelector, trackSelector) {
   const viewport = carousel.querySelector(viewportSelector);
   const track = carousel.querySelector(trackSelector);
@@ -1151,121 +1176,7 @@ function renderStepContent() {
   }
 
   if (currentStepNumber === 4) {
-    const defaultHex = clothPalette[state.tableclothColor] || "#FFFFFF";
-
-    refs.stepContent.innerHTML = `
-      <div class="cloth-color-grid">
-        ${tableclothColorOptions.map((option) => `
-          <button class="cloth-color-card ${state.tableclothColor === option.value ? "cloth-color-card--selected" : ""}" type="button" data-cloth-color="${option.value}">
-            <img class="cloth-color-card__image" src="${getTableclothAssetPath(state.tableclothTexture, option.value)}" data-fallback-src="${PLACEHOLDER_ASSET}" alt="${option.label} tablecloth" loading="lazy" />
-            <span class="cloth-color-card__label">${option.label}</span>
-          </button>
-        `).join("")}
-      </div>
-      <div class="similar-color-finder">
-        <hr class="similar-color-finder__divider" />
-        <h3 class="similar-color-finder__title">Can’t find your exact color?</h3>
-        <div class="similar-color-finder__actions">
-          <button class="btn btn--ghost" type="button" data-match-mode="hex">Pick a Color</button>
-          <button class="btn btn--ghost" type="button" data-match-mode="upload">Upload Image</button>
-        </div>
-
-        <div class="similar-color-finder__panel" id="similarColorPanel" hidden>
-          <div class="similar-color-finder__content" id="hexTool" hidden>
-            <div class="similar-color-finder__inputs">
-              <input id="hexColorInput" class="custom-color-note__input" type="text" value="${defaultHex}" placeholder="#RRGGBB" maxlength="7" />
-              <input id="hexColorPicker" class="similar-color-finder__picker" type="color" value="${defaultHex}" />
-            </div>
-            <button class="btn" type="button" id="findHexMatches">Find Closest Matches</button>
-          </div>
-
-          <div class="similar-color-finder__content" id="uploadTool" hidden>
-            <label class="custom-color-note__label" for="imageColorUpload">Upload an image</label>
-            <input id="imageColorUpload" class="custom-color-note__input" type="file" accept="image/*" />
-          </div>
-
-          <p class="custom-color-note__text" id="matchStatusText"></p>
-          <div id="matchResults"></div>
-
-          <div class="custom-color-note similar-color-finder__teaser">
-            <p class="similar-color-finder__coming-soon">✨ Coming Soon</p>
-            <p class="custom-color-note__text">Upload your invitation or stationery<br />We’ll extract your event palette and suggest real linens and decor.</p>
-            <button class="btn btn--ghost" type="button" disabled>Upload Invitation (Coming Soon)</button>
-          </div>
-        </div>
-      </div>
-    `;
-
-    document.querySelectorAll("[data-cloth-color]").forEach((button) => {
-      button.addEventListener("click", () => {
-        state.tableclothColor = button.getAttribute("data-cloth-color");
-        updateUI();
-      });
-    });
-
-    const matchModeButtons = refs.stepContent.querySelectorAll("[data-match-mode]");
-    const similarColorPanel = el("similarColorPanel");
-    const hexTool = el("hexTool");
-    const uploadTool = el("uploadTool");
-    const hexColorInput = el("hexColorInput");
-    const hexColorPicker = el("hexColorPicker");
-    const findHexMatchesButton = el("findHexMatches");
-    const imageColorUpload = el("imageColorUpload");
-    const matchResults = el("matchResults");
-    const matchStatusText = el("matchStatusText");
-
-    const setMatchMode = (mode) => {
-      similarColorPanel.hidden = false;
-      hexTool.hidden = mode !== "hex";
-      uploadTool.hidden = mode !== "upload";
-      matchStatusText.textContent = "";
-      renderClothMatches(matchResults, []);
-    };
-
-    matchModeButtons.forEach((button) => {
-      button.addEventListener("click", () => setMatchMode(button.getAttribute("data-match-mode")));
-    });
-
-    hexColorPicker.addEventListener("input", (event) => {
-      hexColorInput.value = event.target.value.toUpperCase();
-    });
-
-    findHexMatchesButton.addEventListener("click", () => {
-      const normalizedHex = normalizeHex(hexColorInput.value);
-      if (!normalizedHex) {
-        matchStatusText.textContent = "Please enter a valid hex color (example: #A36F5A).";
-        renderClothMatches(matchResults, []);
-        return;
-      }
-
-      hexColorInput.value = normalizedHex;
-      hexColorPicker.value = normalizedHex;
-      const matches = findClosestClothMatches(normalizedHex, 3);
-      renderClothMatches(matchResults, matches);
-      matchStatusText.textContent = "";
-    });
-
-    imageColorUpload.addEventListener("change", async (event) => {
-      const [file] = event.target.files || [];
-      if (!file) {
-        return;
-      }
-
-      matchStatusText.textContent = "Analyzing image color…";
-      renderClothMatches(matchResults, []);
-
-      try {
-        const extractedHex = await extractDominantHexFromFile(file);
-        const matches = findClosestClothMatches(extractedHex, 3);
-        matchStatusText.textContent = `Detected dominant color: ${extractedHex}`;
-        renderClothMatches(matchResults, matches);
-      } catch (error) {
-        matchStatusText.textContent = error.message;
-        renderClothMatches(matchResults, []);
-      }
-    });
-
-    attachImageFallbacks(refs.stepContent);
+    renderTableColorCards();
   }
 
   if (currentStepNumber === 5) {
