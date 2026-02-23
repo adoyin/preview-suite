@@ -118,20 +118,33 @@ const tableclothTextureOptions = [
   },
 ];
 
-const tableclothColorOptions = [
-  { value: "ivory", label: "Ivory", hex: "#F3EBDD" },
-  { value: "white", label: "White", hex: "#FFFFFF" },
-  { value: "champagne", label: "Champagne", hex: "#E8D8C6" },
-  { value: "blush", label: "Blush", hex: "#E9C6C9" },
-  { value: "dustyRose", label: "Dusty Rose", hex: "#CFA5AA", assetValue: "dusty-rose" },
-  { value: "sage", label: "Sage", hex: "#AEB8A6" },
-  { value: "emerald", label: "Emerald", hex: "#1F6B4E" },
-  { value: "navy", label: "Navy", hex: "#0F2340" },
-  { value: "frenchBlue", label: "French Blue", hex: "#4C78A8", assetValue: "french-blue" },
-  { value: "burgundy", label: "Burgundy", hex: "#5A1E2D" },
-  { value: "terracotta", label: "Terracotta", hex: "#B05A3C" },
-  { value: "black", label: "Black", hex: "#111111" },
-];
+const tableclothColorGroups = {
+  Neutrals: [
+    { value: "ivory", label: "Ivory", hex: "#F3EBDD" },
+    { value: "white", label: "White", hex: "#FFFFFF" },
+    { value: "champagne", label: "Champagne", hex: "#E8D8C6" },
+    { value: "terracotta", label: "Terracotta", hex: "#B05A3C" },
+  ],
+  Pinks: [
+    { value: "blush", label: "Blush", hex: "#E9C6C9" },
+    { value: "dustyRose", label: "Dusty Rose", hex: "#CFA5AA", assetValue: "dusty-rose" },
+    { value: "burgundy", label: "Burgundy", hex: "#5A1E2D" },
+  ],
+  Greens: [
+    { value: "sage", label: "Sage", hex: "#AEB8A6" },
+    { value: "emerald", label: "Emerald", hex: "#1F6B4E" },
+  ],
+  Blues: [
+    { value: "frenchBlue", label: "French Blue", hex: "#4C78A8", assetValue: "french-blue" },
+    { value: "navy", label: "Navy", hex: "#0F2340" },
+  ],
+  Darks: [
+    { value: "black", label: "Black", hex: "#111111" },
+  ],
+};
+
+const tableclothColorGroupNames = Object.keys(tableclothColorGroups);
+const tableclothColorOptions = tableclothColorGroupNames.flatMap((group) => tableclothColorGroups[group]);
 
 const clothPalette = {
   ivory: "#F3EBDD",
@@ -153,6 +166,7 @@ const initialState = {
   tableSize: 60,
   tableclothTexture: "polyester",
   tableclothColor: "ivory",
+  tableclothColorGroup: "Neutrals",
   customTableclothColor: "",
   placeSettingsCount: null,
   chargerType: null,
@@ -842,19 +856,43 @@ function renderTableTextureCards() {
 }
 
 function renderTableColorCards() {
+  const selectedGroup = tableclothColorGroups[state.tableclothColorGroup]
+    ? state.tableclothColorGroup
+    : "Neutrals";
+  const activeColorOptions = tableclothColorGroups[selectedGroup] || [];
+
   refs.stepContent.innerHTML = `
-    <div id="wizard-color-grid" class="option-cards wizard-color-grid">
-      ${tableclothColorOptions.map((option) => `
-        <label class="option-card option-card--color ${state.tableclothColor === option.value ? "option-card--selected" : ""}">
-          <input type="radio" name="tableclothColor" value="${option.value}" ${state.tableclothColor === option.value ? "checked" : ""} />
-          <div class="option-card__media option-card__media--color">
-            <div class="option-card__swatch" style="background-color: ${option.hex};" aria-hidden="true"></div>
-          </div>
-          <span class="option-card__title option-card__title--color">${option.label}</span>
-        </label>
-      `).join("")}
+    <div class="wizard-color-toolbar">
+      <label class="wizard-color-group" for="tableclothColorGroup">
+        <span class="wizard-color-group__label">Group:</span>
+        <select id="tableclothColorGroup" class="wizard-color-group__select" aria-label="Filter tablecloth colors by group">
+          ${tableclothColorGroupNames.map((group) => `<option value="${group}" ${group === selectedGroup ? "selected" : ""}>${group}</option>`).join("")}
+        </select>
+      </label>
+    </div>
+    <div id="wizard-color-carousel" class="wizard-color-carousel">
+      <div class="wizard-color-carousel__viewport">
+        <div class="option-cards option-cards--table-color">
+          ${activeColorOptions.map((option) => `
+            <label class="option-card option-card--color ${state.tableclothColor === option.value ? "option-card--selected" : ""}">
+              <input type="radio" name="tableclothColor" value="${option.value}" ${state.tableclothColor === option.value ? "checked" : ""} />
+              <div class="option-card__media option-card__media--color">
+                <div class="option-card__swatch" style="background-color: ${option.hex};" aria-hidden="true"></div>
+              </div>
+              <span class="option-card__title option-card__title--color">${option.label}</span>
+            </label>
+          `).join("")}
+          
+        </div>
+      </div>
     </div>
   `;
+
+  const groupSelect = refs.stepContent.querySelector("#tableclothColorGroup");
+  groupSelect?.addEventListener("change", (event) => {
+    state.tableclothColorGroup = event.target.value;
+    renderTableColorCards();
+  });
 
   refs.stepContent.querySelectorAll('input[name="tableclothColor"]').forEach((radio) => {
     radio.addEventListener("change", (event) => {
