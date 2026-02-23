@@ -3,78 +3,71 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>The Preview Suite</title>
+  <title>The Preview Suite — Event Design Previews</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Instrument+Sans:wght@400;500&family=Cormorant+Garamond:wght@300;400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
- <body class="preview-suite-home"> <div class="main-layout">
-    
-    <header class="editorial-header">
-      <div class="brand">
-        <div class="brand__mark">
-          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M10 30V15C10 9.47715 14.4772 5 20 5C25.5228 5 30 9.47715 30 15V30" stroke="#2D2D2D" stroke-width="1.5"/>
-          </svg>
-        </div>
-        <span class="brand__text">The Preview Suite</span>
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="The Preview Suite home">
+      <div class="brand__mark" aria-hidden="true"></div>
+      <div class="brand__text">
+        <div class="brand__name">The Preview Suite</div>
+        <div class="brand__tag">Elevated Event Design</div>
       </div>
-      
-      <div class="nav-group">
-        <nav class="main-nav">
-          <a href="index.html" class="nav-link is-active">Home</a>
-          <a href="pricing.html" class="nav-link">Pricing</a>
-          <a href="faq.html" class="nav-link">FAQ</a>
-          <a href="contact.html" class="nav-link">Contact</a>
-        </nav>
-        <a href="experience.html" class="btn-pill">Get My Preview</a>
-      </div>
-    </header>
+    </a>
 
-    <main class="hero">
-      <div class="layout-grid">
-        <section class="hero-copy">
-          <h1>Visualizing the ephemeral. Composing the atmosphere before the first guest arrives.</h1>
-        </section>
-        <figure class="hero-media">
-          <img src="https://images.unsplash.com/photo-1519225497282-9f6d4d623232?auto=format&fit=crop&q=80&w=1200" alt="Minimalist event decor">
-        </figure>
-      </div>
-    </main>
+    <nav class="main-nav" aria-label="Primary">
+      <a href="index.html">Home</a>
+      <a href="index.html#pricing">Pricing</a>
+      <a href="index.html#faq">FAQ</a>
+      <a href="index.html#contact">Contact</a>
+    </nav>
 
-    <section class="process-row">
-      <div class="process-container">
-        <article class="process-step">
-          <span class="process-number">01</span>
-          <h2>CURATE</h2>
-          <p>Define your spatial atmosphere and select a refined material palette.</p>
-        </article>
-        
-        <article class="process-step vertical-divider">
-          <span class="process-number">02</span>
-          <h2>COMPOSE</h2>
-          <p>Arrange your architectural dimensions and table geometry.</p>
-        </article>
-        
-        <article class="process-step vertical-divider">
-          <span class="process-number">03</span>
-          <h2>REALIZE</h2>
-          <p>Inhabit your vision through high-fidelity, photoreal concept previews.</p>
-        </article>
+    <a class="btn" href="experience.html">Start Designing</a>
+  </header>
+
+  <main class="page page--home">
+    <section class="hero card">
+      <p class="eyebrow">Premium Client Preview Suite</p>
+      <h1>Design confidence before installation day.</h1>
+      <p class="subtle hero__copy">Create polished visual previews so your clients can say yes faster.</p>
+      <div class="hero__actions">
+        <a class="btn" href="experience.html">Start Designing</a>
       </div>
     </section>
 
-    <footer class="editorial-footer">
-      <span>© 2026 THE PREVIEW SUITE — ALL RIGHTS RESERVED</span>
-      <nav>
-        <a href="#">Terms</a>
-        <a href="#">Privacy</a>
-        <a href="#">Instagram</a>
-      </nav>
-    </footer>
+    <section class="card landing-cta" aria-label="Start designing">
+      <a class="btn btn--luxury" href="experience.html">Start Designing</a>
+    </section>
 
-  </div>
+    <section id="pricing" class="info-grid">
+      <article class="card info-card">
+        <h2 class="h2">Pricing</h2>
+        <p class="subtle">Preview Suite access is included in all event design retainers. Reach out for custom studio licensing.</p>
+      </article>
+      <article id="faq" class="card info-card">
+        <h2 class="h2">FAQ</h2>
+        <p class="subtle">Can clients self-serve? Yes—share direct links to each experience page and collect feedback in real time.</p>
+      </article>
+    </section>
+
+    <section id="contact" class="card contact-card">
+      <h2 class="h2">Contact</h2>
+      <p class="subtle">Email hello@thepreviewsuite.com to request a personalized walkthrough.</p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>© <span id="year"></span> The Preview Suite</span>
+    <span class="dot">•</span>
+    <span class="subtle">Curated visual planning tools for modern events</span>
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = String(new Date().getFullYear());
+  </script>
 </body>
 </html>
