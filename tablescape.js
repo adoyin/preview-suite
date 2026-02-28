@@ -205,6 +205,8 @@ let currentStepIndex = 0;
 let maxStepReached = 0;
 let isJumpModalOpen = false;
 
+const placeSettingsOptions = Array.from({ length: 11 }, (_, index) => index + 2);
+
 const el = (id) => document.getElementById(id);
 
 const refs = {
@@ -1004,7 +1006,7 @@ function getStepMeta() {
     case 2: return { title: "Table size", hint: "Choose a size for the selected shape.", value: typeof state.tableSize === "number" ? `${state.tableSize}"` : state.tableSize };
     case 3: return { title: "Choose Tablecloth Texture", hint: "Choose a fabric.", value: tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || state.tableclothTexture };
     case 4: return { title: "Tablecloth color", hint: "Choose a color.", value: tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory" };
-    case 5: return { title: "Number of place settings", hint: "How many guests are you planning for?", value: state.placeSettingsCount == null ? "Not selected" : String(state.placeSettingsCount) };
+    case 5: return { title: "Number of place settings", hint: "How many guests are you planning for?", value: state.placeSettingsCount == null ? "Not selected" : formatGuestLabel(state.placeSettingsCount) };
     case 6: return { title: "Charger plate", hint: "Select a metallic or neutral charger.", value: state.chargerType || "Not selected" };
     case 7: return { title: "Napkin color", hint: "Choose the napkin color.", value: state.napkinType || "Not selected" };
     case 8: return { title: "Napkin style", hint: "Define the napkin presentation style.", value: state.napkinStyle || "Not selected" };
@@ -1160,6 +1162,44 @@ function renderClothMatches(container, matches) {
   });
 }
 
+function formatGuestLabel(count) {
+  return `${count} ${count === 1 ? "Guest" : "Guests"}`;
+}
+
+function renderPlaceSettingsStep() {
+  const selectedCount = state.placeSettingsCount;
+
+  refs.stepContent.innerHTML = `
+    <section class="place-settings-panel" aria-labelledby="placeSettingsHeading">
+      <p id="placeSettingsHeading" class="place-settings-panel__subtitle">How many guests will be seated at this table?</p>
+      <div class="pill-row pill--scroll" role="group" aria-label="Select guests">
+        ${placeSettingsOptions.map((count) => {
+          const isSelected = selectedCount === count;
+          return `
+            <button
+              type="button"
+              class="pill place-settings-pill ${isSelected ? "pill--selected" : ""}"
+              data-place-settings-value="${count}"
+              aria-pressed="${isSelected ? "true" : "false"}"
+            >${count}</button>
+          `;
+        }).join("")}
+      </div>
+      <p class="place-settings-panel__helper" aria-live="polite">
+        ${selectedCount == null ? "Selected: Not selected" : `Selected: ${selectedCount} ${selectedCount === 1 ? "guest" : "guests"}`}
+      </p>
+    </section>
+  `;
+
+  refs.stepContent.querySelectorAll("[data-place-settings-value]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const count = Number(button.getAttribute("data-place-settings-value"));
+      state.placeSettingsCount = Number.isNaN(count) ? null : count;
+      updateUI();
+    });
+  });
+}
+
 function renderStepContent() {
   const currentStepNumber = currentStepIndex + 1;
   refs.stepContent.innerHTML = "";
@@ -1218,22 +1258,7 @@ function renderStepContent() {
   }
 
   if (currentStepNumber === 5) {
-    refs.stepContent.innerHTML = `
-      <div class="row">
-        <label class="field" for="placeSettings">Select place settings</label>
-        <select id="placeSettings" class="input select">
-          <option value="">Choose a number</option>
-          ${Array.from({ length: 11 }, (_, index) => {
-            const count = index + 2;
-            return `<option value="${count}" ${state.placeSettingsCount === count ? "selected" : ""}>${count}</option>`;
-          }).join("")}
-        </select>
-      </div>
-    `;
-    el("placeSettings").addEventListener("change", (event) => {
-      state.placeSettingsCount = event.target.value === "" ? null : Number(event.target.value);
-      updateUI();
-    });
+    renderPlaceSettingsStep();
   }
 
   if (currentStepNumber === 6) {
@@ -1375,7 +1400,7 @@ function updateUI() {
   refs.stepValue.textContent = meta.value;
 
   refs.btnBack.disabled = currentStepNumber === 1;
-  refs.btnNext.disabled = currentStepNumber === TOTAL_STEPS;
+  refs.btnNext.disabled = currentStepNumber === TOTAL_STEPS || (currentStepNumber === 5 && state.placeSettingsCount == null);
   refs.btnNext.textContent = currentStepNumber === TOTAL_STEPS ? "Complete" : "Next";
 
   if (isJumpModalOpen) {
@@ -1412,6 +1437,9 @@ function goToStep(index, options = {}) {
 }
 
 function nextStep() {
+  if (currentStepIndex + 1 === 5 && state.placeSettingsCount == null) {
+    return;
+  }
   goToStep(currentStepIndex + 1, { allowFuture: true });
 }
 
