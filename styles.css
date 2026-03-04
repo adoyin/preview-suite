@@ -716,6 +716,28 @@ a:focus-visible{
   padding: 10px;
 }
 
+#wizard-texture-carousel .option-card--charger:hover,
+#wizard-texture-carousel .option-card--charger:focus-within{
+  transform: translateY(-3px);
+}
+
+#wizard-texture-carousel .option-card--charger .option-card__image--charger{
+  transition: transform .18s ease;
+}
+
+#wizard-texture-carousel .option-card--charger:hover .option-card__image--charger,
+#wizard-texture-carousel .option-card--charger:focus-within .option-card__image--charger{
+  transform: scale(1.03);
+}
+
+#wizard-texture-carousel .option-card__ghost-plate{
+  width: clamp(76px, 34%, 108px);
+  aspect-ratio: 1 / 1;
+  border-radius: 999px;
+  border: 2px solid rgba(74, 62, 49, 0.14);
+  box-shadow: inset 0 0 0 6px rgba(74, 62, 49, 0.06);
+}
+
 #wizard-texture-carousel .option-card__none{
   font-size: 14px;
   color: #6f5b43;

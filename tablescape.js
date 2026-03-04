@@ -123,8 +123,8 @@ const chargerOptions = [
   { value: "gold", label: "Gold Charger", image: "./assets/chargers/charger-gold.png" },
   { value: "silver", label: "Silver Charger", image: "./assets/chargers/charger-silver.png" },
   { value: "matte-black", label: "Matte Black Charger", image: "./assets/chargers/charger-matte-black.png" },
-  { value: "clear-goldrim", label: "Clear Gold Rim", image: "./assets/chargers/charger-clear-goldrim.png" },
-  { value: "goldbeaded", label: "Gold Beaded", image: "./assets/chargers/charger-goldbeaded.png" },
+  { value: "clear-goldrim", label: "Clear Gold Rim Charger", image: "./assets/chargers/charger-clear-goldrim.png" },
+  { value: "goldbeaded", label: "Gold Beaded Charger", image: "./assets/chargers/charger-goldbeaded.png" },
 ];
 
 const tableclothColorGroups = {
@@ -1286,13 +1286,13 @@ function renderStepContent() {
         <div class="texture-carousel__viewport">
           <div class="option-cards option-cards--table-texture">
             ${chargerOptions.map((option) => `
-              <label class="option-card option-card--texture ${state.selectedCharger === option.value ? "option-card--selected" : ""}">
+              <label class="option-card option-card--texture option-card--charger ${state.selectedCharger === option.value ? "option-card--selected" : ""}">
                 <input type="radio" name="selectedCharger" value="${option.value}" ${state.selectedCharger === option.value ? "checked" : ""} />
                 <div class="option-card__media option-card__media--texture">
                   ${option.image
                     ? `<img class="option-card__image option-card__image--texture option-card__image--charger" src="${option.image}" data-fallback-src="${PLACEHOLDER_ASSET}" data-fallback-text="true" alt="${option.label}" loading="lazy" />
                       <span class="option-card__fallback" data-fallback-text hidden>Image coming soon</span>`
-                    : `<span class="option-card__none" aria-hidden="true">None</span>`}
+                    : `<span class="option-card__ghost-plate" aria-hidden="true"></span>`}
                 </div>
                 <span class="option-card__title option-card__title--texture">${option.label}</span>
               </label>
