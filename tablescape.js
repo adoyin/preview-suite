@@ -119,12 +119,12 @@ const tableclothTextureOptions = [
 ];
 
 const chargerOptions = [
-  { value: "No Charger", label: "No Charger", thumbnail: PLACEHOLDER_ASSET },
-  { value: "Gold Charger", label: "Gold Charger", thumbnail: "./assets/chargers/charger-gold.png" },
-  { value: "Silver Charger", label: "Silver Charger", thumbnail: "./assets/chargers/charger-silver.png" },
-  { value: "Matte Black Charger", label: "Matte Black Charger", thumbnail: "./assets/chargers/charger-matte-black.png" },
-  { value: "Clear Gold Rim Charger", label: "Clear Gold Rim Charger", thumbnail: "./assets/chargers/charger-clear-goldrim.png" },
-  { value: "Gold Beaded Charger", label: "Gold Beaded Charger", thumbnail: "./assets/chargers/charger-goldbeaded.png" },
+  { value: "none", label: "No Charger", image: null },
+  { value: "gold", label: "Gold Charger", image: "./assets/chargers/charger-gold.png" },
+  { value: "silver", label: "Silver Charger", image: "./assets/chargers/charger-silver.png" },
+  { value: "matte-black", label: "Matte Black Charger", image: "./assets/chargers/charger-matte-black.png" },
+  { value: "clear-goldrim", label: "Clear Gold Rim", image: "./assets/chargers/charger-clear-goldrim.png" },
+  { value: "goldbeaded", label: "Gold Beaded", image: "./assets/chargers/charger-goldbeaded.png" },
 ];
 
 const tableclothColorGroups = {
@@ -266,12 +266,20 @@ let currentPreviewScale = 1;
 const ASSET_BASE = "./assets/tablescape";
 
 const chargerAssetMap = {
-  "Gold Charger": `${ASSET_BASE}/charger-gold.svg`,
-  "Silver Charger": `${ASSET_BASE}/charger-silver.svg`,
-  "Matte Black Charger": `${ASSET_BASE}/charger-black.svg`,
-  "Clear Gold Rim Charger": `${ASSET_BASE}/charger-gold.svg`,
-  "Gold Beaded Charger": `${ASSET_BASE}/charger-gold.svg`,
+  gold: `${ASSET_BASE}/charger-gold.svg`,
+  silver: `${ASSET_BASE}/charger-silver.svg`,
+  "matte-black": `${ASSET_BASE}/charger-black.svg`,
+  "clear-goldrim": `${ASSET_BASE}/charger-gold.svg`,
+  goldbeaded: `${ASSET_BASE}/charger-gold.svg`,
 };
+
+function getChargerOption(value) {
+  return chargerOptions.find((option) => option.value === value) || null;
+}
+
+function getSelectedChargerLabel() {
+  return getChargerOption(state.selectedCharger)?.label || null;
+}
 
 const napkinColorSlugMap = {
   White: "white",
@@ -590,7 +598,7 @@ function renderSummary() {
   refs.summary.table.textContent = formatTableSelection(state.tableShape, state.tableSize);
   refs.summary.settings.textContent = state.placeSettingsCount == null ? "—" : String(state.placeSettingsCount);
   refs.summary.cloth.textContent = `${state.tableclothTexture[0].toUpperCase()}${state.tableclothTexture.slice(1)} — ${tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory"}`;
-  refs.summary.charger.textContent = state.selectedCharger || "—";
+  refs.summary.charger.textContent = getSelectedChargerLabel() || "—";
   refs.summary.napkin.textContent = state.napkinType || "—";
   refs.summary.napkinStyle.textContent = state.napkinStyle || "—";
   refs.summary.centerpiece.textContent = state.centerpieceType || "—";
@@ -1017,7 +1025,7 @@ function getStepMeta() {
     case 3: return { title: "Choose Tablecloth Texture", hint: "Choose a fabric.", value: tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || state.tableclothTexture };
     case 4: return { title: "Tablecloth color", hint: "Choose a color.", value: tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory" };
     case 5: return { title: "Number of place settings", hint: "How many guests are you planning for?", value: state.placeSettingsCount == null ? "Not selected" : formatGuestLabel(state.placeSettingsCount) };
-    case 6: return { title: "Charger plate", hint: "Select your charger style.", value: state.selectedCharger || "Not selected" };
+    case 6: return { title: "Charger plate", hint: "Select your charger style.", value: getSelectedChargerLabel() || "Not selected" };
     case 7: return { title: "Napkin color", hint: "Choose the napkin color.", value: state.napkinType || "Not selected" };
     case 8: return { title: "Napkin style", hint: "Define the napkin presentation style.", value: state.napkinStyle || "Not selected" };
     case 9: return { title: "Centerpiece", hint: "Select the tabletop focal element.", value: state.centerpieceType || "Not selected" };
@@ -1281,8 +1289,10 @@ function renderStepContent() {
               <label class="option-card option-card--texture ${state.selectedCharger === option.value ? "option-card--selected" : ""}">
                 <input type="radio" name="selectedCharger" value="${option.value}" ${state.selectedCharger === option.value ? "checked" : ""} />
                 <div class="option-card__media option-card__media--texture">
-                  <img class="option-card__image option-card__image--texture" src="${option.thumbnail}" data-fallback-src="${PLACEHOLDER_ASSET}" data-fallback-text="true" alt="${option.label}" loading="lazy" />
-                  <span class="option-card__fallback" data-fallback-text hidden>Image coming soon</span>
+                  ${option.image
+                    ? `<img class="option-card__image option-card__image--texture option-card__image--charger" src="${option.image}" data-fallback-src="${PLACEHOLDER_ASSET}" data-fallback-text="true" alt="${option.label}" loading="lazy" />
+                      <span class="option-card__fallback" data-fallback-text hidden>Image coming soon</span>`
+                    : `<span class="option-card__none" aria-hidden="true">None</span>`}
                 </div>
                 <span class="option-card__title option-card__title--texture">${option.label}</span>
               </label>
@@ -1373,7 +1383,7 @@ function renderStepContent() {
           <div><dt>Table</dt><dd>${formatTableSelection(state.tableShape, state.tableSize)}</dd></div>
           <div><dt>Place Settings</dt><dd>${state.placeSettingsCount == null ? "—" : state.placeSettingsCount}</dd></div>
           <div><dt>Tablecloth</dt><dd>${state.tableclothTexture} - ${tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory"}</dd></div>
-          <div><dt>Charger</dt><dd>${state.selectedCharger || "—"}</dd></div>
+          <div><dt>Charger</dt><dd>${getSelectedChargerLabel() || "—"}</dd></div>
           <div><dt>Napkin</dt><dd>${state.napkinType || "—"}</dd></div>
           <div><dt>Napkin Style</dt><dd>${state.napkinStyle || "—"}</dd></div>
           <div><dt>Centerpiece</dt><dd>${state.centerpieceType || "—"}</dd></div>
@@ -1393,7 +1403,7 @@ function exportMaterials() {
     `Table: ${formatTableSelection(state.tableShape, state.tableSize)}`,
     `Place settings: ${state.placeSettingsCount == null ? "—" : state.placeSettingsCount}`,
     `Tablecloth: ${state.tableclothTexture} - ${tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory"}`,
-    `Charger: ${state.selectedCharger || "—"}`,
+    `Charger: ${getSelectedChargerLabel() || "—"}`,
     `Napkin: ${state.napkinType || "—"}`,
     `Napkin style: ${state.napkinStyle || "—"}`,
     `Centerpiece: ${state.centerpieceType || "—"}`,
@@ -1424,7 +1434,9 @@ function updateUI() {
   refs.stepValue.textContent = meta.value;
 
   refs.btnBack.disabled = currentStepNumber === 1;
-  refs.btnNext.disabled = currentStepNumber === TOTAL_STEPS || (currentStepNumber === 5 && state.placeSettingsCount == null);
+  refs.btnNext.disabled = currentStepNumber === TOTAL_STEPS
+    || (currentStepNumber === 5 && state.placeSettingsCount == null)
+    || (currentStepNumber === 6 && state.selectedCharger == null);
   refs.btnNext.textContent = currentStepNumber === TOTAL_STEPS ? "Complete" : "Next";
 
   if (isJumpModalOpen) {
@@ -1462,6 +1474,9 @@ function goToStep(index, options = {}) {
 
 function nextStep() {
   if (currentStepIndex + 1 === 5 && state.placeSettingsCount == null) {
+    return;
+  }
+  if (currentStepIndex + 1 === 6 && state.selectedCharger == null) {
     return;
   }
   goToStep(currentStepIndex + 1, { allowFuture: true });

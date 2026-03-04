@@ -711,6 +711,18 @@ a:focus-visible{
   z-index: 1;
 }
 
+#wizard-texture-carousel .option-card__image--charger{
+  object-fit: contain;
+  padding: 10px;
+}
+
+#wizard-texture-carousel .option-card__none{
+  font-size: 14px;
+  color: #6f5b43;
+  font-weight: 600;
+  letter-spacing: .03em;
+}
+
 #wizard-texture-carousel .option-card__media--texture.texture-fallback{
   background: linear-gradient(140deg, #ece4d8, #ddd0be);
 }
