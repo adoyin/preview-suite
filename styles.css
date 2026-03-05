@@ -699,6 +699,72 @@ a:focus-visible{
   overflow: hidden;
 }
 
+.charger-step__controls{
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.charger-toggle{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(136, 115, 85, 0.28);
+  background: rgba(252, 249, 243, 0.96);
+  color: #5f4b35;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.charger-toggle__input{
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.charger-toggle__track{
+  width: 36px;
+  height: 20px;
+  border-radius: 999px;
+  border: 1px solid rgba(130, 108, 77, 0.32);
+  background: #e4d9c8;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+  transition: background-color .2s ease;
+}
+
+.charger-toggle__thumb{
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(34, 25, 13, 0.2);
+  transform: translateX(0);
+  transition: transform .2s ease;
+}
+
+.charger-toggle__input:checked + .charger-toggle__track{
+  background: #ccb48e;
+}
+
+.charger-toggle__input:checked + .charger-toggle__track .charger-toggle__thumb{
+  transform: translateX(16px);
+}
+
+.charger-toggle:focus-within{
+  outline: 2px solid rgba(205, 171, 117, 0.5);
+  outline-offset: 1px;
+}
+
+.texture-carousel--disabled{
+  opacity: 0.52;
+  pointer-events: none;
+}
+
 #wizard-texture-carousel .option-card__image--texture{
   display: block;
   width: 100%;
@@ -713,7 +779,8 @@ a:focus-visible{
 
 #wizard-texture-carousel .option-card__image--charger{
   object-fit: contain;
-  padding: 10px;
+  object-position: center;
+  padding: 14px;
 }
 
 #wizard-texture-carousel .option-card--charger:hover,
