@@ -125,6 +125,7 @@ const chargerOptions = [
   { value: "clear-goldrim", label: "Clear Gold Rim Charger", image: "./assets/chargers/charger-clear-goldrim.png" },
   { value: "goldbeaded", label: "Gold Beaded Charger", image: "./assets/chargers/charger-goldbeaded.png" },
 ];
+// Note: some source PNGs may include a baked-in checkerboard pattern and should be re-exported with true transparency.
 
 const tableclothColorGroups = {
   Neutrals: [
@@ -1291,10 +1292,9 @@ function renderStepContent() {
   if (currentStepNumber === 6) {
     refs.stepContent.innerHTML = `
       <div class="charger-step__controls">
-        <label class="charger-toggle" for="includeChargerToggle">
-          <span class="charger-toggle__label">Include charger</span>
-          <input id="includeChargerToggle" class="charger-toggle__input" type="checkbox" ${state.includeCharger ? "checked" : ""} />
-          <span class="charger-toggle__track" aria-hidden="true"><span class="charger-toggle__thumb"></span></span>
+        <label class="charger-toggle charger-toggle--no-charger" for="noChargerToggle">
+          <input id="noChargerToggle" class="charger-toggle__input" type="checkbox" ${state.includeCharger ? "" : "checked"} />
+          <span class="charger-toggle__label">No charger</span>
         </label>
       </div>
       <div id="wizard-texture-carousel" class="texture-carousel ${state.includeCharger ? "" : "texture-carousel--disabled"}" ${state.includeCharger ? "" : "aria-disabled=\"true\""}>
@@ -1304,7 +1304,7 @@ function renderStepContent() {
             ${chargerOptions.map((option) => `
               <label class="option-card option-card--texture option-card--charger ${state.selectedCharger === option.value ? "option-card--selected" : ""}">
                 <input type="radio" name="selectedCharger" value="${option.value}" ${state.selectedCharger === option.value ? "checked" : ""} />
-                <div class="option-card__media option-card__media--texture">
+                <div class="option-card__media option-card__media--texture option-card__media--charger">
                   <img class="option-card__image option-card__image--texture option-card__image--charger" src="${option.image}" data-fallback-src="${PLACEHOLDER_ASSET}" data-fallback-text="true" alt="${option.label}" loading="lazy" />
                   <span class="option-card__fallback" data-fallback-text hidden>Image coming soon</span>
                 </div>
@@ -1317,8 +1317,9 @@ function renderStepContent() {
       </div>
     `;
 
-    refs.stepContent.querySelector("#includeChargerToggle")?.addEventListener("change", (event) => {
-      const includeCharger = event.target.checked;
+    refs.stepContent.querySelector("#noChargerToggle")?.addEventListener("change", (event) => {
+      const noCharger = event.target.checked;
+      const includeCharger = !noCharger;
 
       if (!includeCharger && state.selectedCharger != null) {
         state.lastSelectedCharger = state.selectedCharger;
@@ -1339,6 +1340,7 @@ function renderStepContent() {
 
     refs.stepContent.querySelectorAll('input[name="selectedCharger"]').forEach((radio) => {
       radio.addEventListener("change", (event) => {
+        state.includeCharger = true;
         state.selectedCharger = event.target.value;
         state.lastSelectedCharger = event.target.value;
         updateUI();

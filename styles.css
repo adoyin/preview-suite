@@ -699,6 +699,16 @@ a:focus-visible{
   overflow: hidden;
 }
 
+#wizard-texture-carousel .option-card__media--charger{
+  aspect-ratio: 1 / 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  background: linear-gradient(145deg, #f7f2ea, #efe6da);
+}
+
 .charger-step__controls{
   display: flex;
   justify-content: flex-end;
@@ -718,6 +728,11 @@ a:focus-visible{
   font-weight: 500;
 }
 
+.charger-toggle--no-charger{
+  cursor: pointer;
+  padding: 6px 12px;
+}
+
 .charger-toggle__input{
   position: absolute;
   opacity: 0;
@@ -725,34 +740,16 @@ a:focus-visible{
   height: 1px;
 }
 
-.charger-toggle__track{
-  width: 36px;
-  height: 20px;
+.charger-toggle--no-charger .charger-toggle__label{
+  padding: 2px 8px;
   border-radius: 999px;
-  border: 1px solid rgba(130, 108, 77, 0.32);
-  background: #e4d9c8;
-  display: inline-flex;
-  align-items: center;
-  padding: 2px;
-  transition: background-color .2s ease;
+  border: 1px solid transparent;
+  transition: background-color .2s ease, border-color .2s ease;
 }
 
-.charger-toggle__thumb{
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 1px 2px rgba(34, 25, 13, 0.2);
-  transform: translateX(0);
-  transition: transform .2s ease;
-}
-
-.charger-toggle__input:checked + .charger-toggle__track{
-  background: #ccb48e;
-}
-
-.charger-toggle__input:checked + .charger-toggle__track .charger-toggle__thumb{
-  transform: translateX(16px);
+.charger-toggle--no-charger .charger-toggle__input:checked ~ .charger-toggle__label{
+  background: #f0e6d8;
+  border-color: rgba(130, 108, 77, 0.35);
 }
 
 .charger-toggle:focus-within{
@@ -778,23 +775,16 @@ a:focus-visible{
 }
 
 #wizard-texture-carousel .option-card__image--charger{
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   object-position: center;
-  padding: 14px;
+  filter: drop-shadow(0 4px 8px rgba(58, 43, 24, 0.14));
 }
 
 #wizard-texture-carousel .option-card--charger:hover,
 #wizard-texture-carousel .option-card--charger:focus-within{
   transform: translateY(-3px);
-}
-
-#wizard-texture-carousel .option-card--charger .option-card__image--charger{
-  transition: transform .18s ease;
-}
-
-#wizard-texture-carousel .option-card--charger:hover .option-card__image--charger,
-#wizard-texture-carousel .option-card--charger:focus-within .option-card__image--charger{
-  transform: scale(1.03);
 }
 
 #wizard-texture-carousel .option-card__ghost-plate{
