@@ -260,7 +260,9 @@ const initialState = {
   lastSelectedNapkin: null,
   napkinColorGroup: "Neutrals",
   flatwareType: null,
-  centerpieceType: null,
+  hasCenterpiece: null,
+  centerpieceDecision: null,
+  centerpieceStyle: null,
   napkinStyle: null,
   napkinColor: "#F3EBDD",
 };
@@ -275,20 +277,24 @@ const stepSequence = [
   "Napkin color",
   "Napkin texture",
   "Centerpiece",
+  "Centerpiece style",
   "Review + Export",
 ];
 
 const STEP_INDEX = {
   NAPKIN_COLOR: 6,
   NAPKIN_TEXTURE: 7,
+  CENTERPIECE_DECISION: 8,
+  CENTERPIECE_STYLE: 9,
+  REVIEW: 10,
 };
 
 const stepSections = [
   { label: "Table", steps: [0, 1] },
   { label: "Tablecloth", steps: [2, 3] },
   { label: "Place Settings", steps: [4, 5, 6, 7] },
-  { label: "Centerpiece", steps: [8] },
-  { label: "Review", steps: [9] },
+  { label: "Centerpiece", steps: [8, 9] },
+  { label: "Review", steps: [10] },
 ];
 
 const TOTAL_STEPS = stepSequence.length;
@@ -297,10 +303,25 @@ function shouldSkipNapkinTextureStep() {
   return !state.includeNapkin;
 }
 
+function shouldSkipCenterpieceStyleStep() {
+  return state.centerpieceDecision === "none";
+}
+
+function getSkippedStepCount() {
+  let skippedSteps = 0;
+  if (shouldSkipNapkinTextureStep()) skippedSteps += 1;
+  if (shouldSkipCenterpieceStyleStep()) skippedSteps += 1;
+  return skippedSteps;
+}
+
 function getNextStepIndex(fromIndex = currentStepIndex) {
   let nextIndex = fromIndex + 1;
 
   if (nextIndex === STEP_INDEX.NAPKIN_TEXTURE && shouldSkipNapkinTextureStep()) {
+    nextIndex += 1;
+  }
+
+  if (nextIndex === STEP_INDEX.CENTERPIECE_STYLE && shouldSkipCenterpieceStyleStep()) {
     nextIndex += 1;
   }
 
@@ -314,19 +335,29 @@ function getPreviousStepIndex(fromIndex = currentStepIndex) {
     previousIndex -= 1;
   }
 
+  if (previousIndex === STEP_INDEX.CENTERPIECE_STYLE && shouldSkipCenterpieceStyleStep()) {
+    previousIndex -= 1;
+  }
+
   return previousIndex;
 }
 
 function getDisplayedStepNumber(stepIndex = currentStepIndex) {
-  if (!shouldSkipNapkinTextureStep() || stepIndex <= STEP_INDEX.NAPKIN_COLOR) {
-    return stepIndex + 1;
+  let displayedNumber = stepIndex + 1;
+
+  if (shouldSkipNapkinTextureStep() && stepIndex > STEP_INDEX.NAPKIN_COLOR) {
+    displayedNumber -= 1;
   }
 
-  return stepIndex;
+  if (shouldSkipCenterpieceStyleStep() && stepIndex > STEP_INDEX.CENTERPIECE_DECISION) {
+    displayedNumber -= 1;
+  }
+
+  return displayedNumber;
 }
 
 function getDisplayedTotalSteps() {
-  return shouldSkipNapkinTextureStep() ? TOTAL_STEPS - 1 : TOTAL_STEPS;
+  return TOTAL_STEPS - getSkippedStepCount();
 }
 
 const state = { ...initialState };
@@ -425,6 +456,30 @@ function getNapkinTextureStepValue() {
   return napkinTextureOptions.find((option) => option.value === state.napkinTexture)?.label || "Polyester";
 }
 
+function getCenterpieceStepValue() {
+  if (state.centerpieceDecision === "none") {
+    return "No centerpiece";
+  }
+
+  if (!state.hasCenterpiece) {
+    return "Not selected";
+  }
+
+  if (state.centerpieceStyle) {
+    return getCenterpieceStyleLabel(state.centerpieceStyle);
+  }
+
+  if (state.centerpieceDecision === "chooseForMe") {
+    return "Choose for me";
+  }
+
+  if (state.centerpieceDecision === "dontKnow") {
+    return "I don't know";
+  }
+
+  return "Not selected";
+}
+
 const napkinColorSlugMap = {
   Ivory: "white",
   White: "white",
@@ -458,11 +513,38 @@ const napkinStyleSlugMap = {
 };
 
 const centerpieceAssetMap = {
-  "Low Florals": `${ASSET_BASE}/centerpiece-low-florals.svg`,
-  "Tall Florals": `${ASSET_BASE}/centerpiece-tall-florals.svg`,
-  Candles: `${ASSET_BASE}/centerpiece-candles.svg`,
-  "Minimal Greenery": `${ASSET_BASE}/centerpiece-minimal-greenery.svg`,
+  floralLow: `${ASSET_BASE}/centerpiece-low-florals.svg`,
+  floralTall: `${ASSET_BASE}/centerpiece-tall-florals.svg`,
+  candleTrio: `${ASSET_BASE}/centerpiece-candles.svg`,
+  lantern: `${ASSET_BASE}/centerpiece-candles.svg`,
+  greeneryRunner: `${ASSET_BASE}/centerpiece-minimal-greenery.svg`,
 };
+
+const centerpieceDecisionOptions = [
+  { value: "none", label: "No centerpiece" },
+  { value: "yes", label: "Yes, add centerpiece" },
+  { value: "chooseForMe", label: "Choose for me" },
+  { value: "dontKnow", label: "I don't know" },
+];
+
+const centerpieceStyleOptions = [
+  { value: "floralLow", label: "Floral (Low)", thumbnail: `${ASSET_BASE}/centerpiece-low-florals.svg` },
+  { value: "floralTall", label: "Floral (Tall)", thumbnail: `${ASSET_BASE}/centerpiece-tall-florals.svg` },
+  { value: "candleTrio", label: "Candle Trio", thumbnail: `${ASSET_BASE}/centerpiece-candles.svg` },
+  { value: "lantern", label: "Lantern", thumbnail: `${ASSET_BASE}/centerpiece-candles.svg` },
+  { value: "greeneryRunner", label: "Greenery Runner", thumbnail: `${ASSET_BASE}/centerpiece-minimal-greenery.svg` },
+];
+
+function getCenterpieceStyleLabel(styleValue) {
+  return centerpieceStyleOptions.find((option) => option.value === styleValue)?.label || "";
+}
+
+function getDefaultCenterpieceStyleForDecision(decision) {
+  if (decision === "dontKnow") {
+    return "candleTrio";
+  }
+  return "floralLow";
+}
 
 function getTableclothAssetPath(texture, color) {
   const selectedColor = tableclothColorOptions.find((option) => option.value === color);
@@ -737,7 +819,7 @@ function renderPlaceSettings(count) {
 }
 
 function renderCenterpiece() {
-  if (!state.centerpieceType) {
+  if (!state.hasCenterpiece || !state.centerpieceStyle) {
     refs.centerpiece.innerHTML = "";
     return;
   }
@@ -745,18 +827,10 @@ function renderCenterpiece() {
   refs.centerpiece.innerHTML = "";
   const centerImage = createLayer(
     "centerpiece__image",
-    centerpieceAssetMap[state.centerpieceType],
-    `${state.centerpieceType} centerpiece`
+    centerpieceAssetMap[state.centerpieceStyle],
+    `${getCenterpieceStyleLabel(state.centerpieceStyle)} centerpiece`
   );
   refs.centerpiece.appendChild(centerImage);
-
-  if (state.centerpieceType === "Candles") {
-    ["-44px", "44px"].forEach((offset) => {
-      const candle = createLayer("centerpiece__candle", `${ASSET_BASE}/candle-single.svg`, "Accent candle");
-      candle.style.left = `calc(50% + ${offset})`;
-      refs.centerpiece.appendChild(candle);
-    });
-  }
 }
 
 function renderSummary() {
@@ -766,7 +840,7 @@ function renderSummary() {
   refs.summary.charger.textContent = getSelectedChargerLabel() || "—";
   refs.summary.napkin.textContent = state.includeNapkin ? (state.napkinType || "—") : "No napkin";
   refs.summary.napkinTexture.textContent = getNapkinTextureStepValue();
-  refs.summary.centerpiece.textContent = state.centerpieceType || "—";
+  refs.summary.centerpiece.textContent = getCenterpieceStepValue();
 }
 
 function updatePreviewStatus() {
@@ -783,6 +857,10 @@ function renderJumpStepList() {
   refs.jumpStepList.innerHTML = stepSections.map((section) => {
     const rows = section.steps.map((stepIndex) => {
       if (stepIndex === STEP_INDEX.NAPKIN_TEXTURE && shouldSkipNapkinTextureStep()) {
+        return "";
+      }
+
+      if (stepIndex === STEP_INDEX.CENTERPIECE_STYLE && shouldSkipCenterpieceStyleStep()) {
         return "";
       }
 
@@ -1337,8 +1415,9 @@ function getStepMeta() {
     case 6: return { title: "Charger plate", hint: "Select your charger style.", value: getChargerStepValue() };
     case 7: return { title: "Napkin color", hint: "Choose a color.", value: getNapkinStepValue() };
     case 8: return { title: "Choose Napkin Texture", hint: "Choose a fabric.", value: getNapkinTextureStepValue() };
-    case 9: return { title: "Centerpiece", hint: "Select the tabletop focal element.", value: state.centerpieceType || "Not selected" };
-    case 10: return { title: "Review + Export", hint: "Review all selections and export materials.", value: "Ready" };
+    case 9: return { title: "Centerpiece", hint: "Do you want a centerpiece?", value: getCenterpieceStepValue() };
+    case 10: return { title: "Centerpiece", hint: "Choose a centerpiece style", value: state.hasCenterpiece ? (getCenterpieceStyleLabel(state.centerpieceStyle) || "Not selected") : "Skipped" };
+    case 11: return { title: "Review + Export", hint: "Review all selections and export materials.", value: "Ready" };
     default: return { title: "", hint: "", value: "" };
   }
 }
@@ -1661,23 +1740,62 @@ function renderStepContent() {
   if (currentStepNumber === 9) {
     refs.stepContent.innerHTML = `
       <div class="options">
-        ${["Low Florals", "Tall Florals", "Candles", "Minimal Greenery"].map((style) => `
+        ${centerpieceDecisionOptions.map((option) => `
           <label class="opt">
-            <input type="radio" name="centerpiece" value="${style}" ${state.centerpieceType === style ? "checked" : ""} />
-            <span>${style}</span>
+            <input type="radio" name="centerpieceDecision" value="${option.value}" ${state.centerpieceDecision === option.value ? "checked" : ""} />
+            <span>${option.label}</span>
           </label>
         `).join("")}
       </div>
     `;
-    document.querySelectorAll('input[name="centerpiece"]').forEach((radio) => {
+
+    refs.stepContent.querySelectorAll('input[name="centerpieceDecision"]').forEach((radio) => {
       radio.addEventListener("change", (event) => {
-        state.centerpieceType = event.target.value;
+        state.centerpieceDecision = event.target.value;
+
+        if (state.centerpieceDecision === "none") {
+          state.hasCenterpiece = false;
+          state.centerpieceStyle = null;
+        } else {
+          state.hasCenterpiece = true;
+          if (state.centerpieceDecision === "chooseForMe") {
+            state.centerpieceStyle = getDefaultCenterpieceStyleForDecision("chooseForMe");
+          } else if (state.centerpieceDecision === "dontKnow") {
+            state.centerpieceStyle = getDefaultCenterpieceStyleForDecision("dontKnow");
+          } else if (!state.centerpieceStyle) {
+            state.centerpieceStyle = getDefaultCenterpieceStyleForDecision("yes");
+          }
+        }
+
         updateUI();
       });
     });
   }
 
   if (currentStepNumber === 10) {
+    refs.stepContent.innerHTML = `
+      <div class="option-cards">
+        ${centerpieceStyleOptions.map((option) => `
+          <button class="option-card ${state.centerpieceStyle === option.value ? "option-card--selected" : ""}" type="button" data-centerpiece-style="${option.value}">
+            <div class="option-card__media">
+              <img class="option-card__image" src="${option.thumbnail}" alt="${option.label} centerpiece" loading="lazy" />
+            </div>
+            <span class="option-card__title">${option.label}</span>
+          </button>
+        `).join("")}
+      </div>
+    `;
+
+    refs.stepContent.querySelectorAll("[data-centerpiece-style]").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.hasCenterpiece = true;
+        state.centerpieceStyle = button.getAttribute("data-centerpiece-style");
+        updateUI();
+      });
+    });
+  }
+
+  if (currentStepNumber === 11) {
     refs.stepContent.innerHTML = `
       <div class="review-card">
         <dl class="summary__grid kv">
@@ -1687,7 +1805,7 @@ function renderStepContent() {
           <div><dt>Charger</dt><dd>${getSelectedChargerLabel() || "—"}</dd></div>
           <div><dt>Napkin</dt><dd>${state.includeNapkin ? (state.napkinType || "—") : "No napkin"}</dd></div>
           <div><dt>Napkin Texture</dt><dd>${getNapkinTextureStepValue()}</dd></div>
-          <div><dt>Centerpiece</dt><dd>${state.centerpieceType || "—"}</dd></div>
+          <div><dt>Centerpiece</dt><dd>${getCenterpieceStepValue()}</dd></div>
         </dl>
         <button id="btnExport" class="btn review-card__export" type="button">Export Materials</button>
       </div>
@@ -1707,7 +1825,7 @@ function exportMaterials() {
     `Charger: ${getSelectedChargerLabel() || "—"}`,
     `Napkin: ${state.includeNapkin ? (state.napkinType || "—") : "No napkin"}`,
     `Napkin texture: ${getNapkinTextureStepValue()}`,
-    `Centerpiece: ${state.centerpieceType || "—"}`,
+    `Centerpiece: ${getCenterpieceStepValue()}`,
   ];
 
   const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
@@ -1738,7 +1856,9 @@ function updateUI() {
 
   refs.btnBack.disabled = currentStepNumber === 1;
   refs.btnNext.disabled = currentStepNumber === TOTAL_STEPS
-    || (currentStepNumber === 5 && state.placeSettingsCount == null);
+    || (currentStepNumber === 5 && state.placeSettingsCount == null)
+    || (currentStepNumber === 9 && state.centerpieceDecision == null)
+    || (currentStepNumber === 10 && state.hasCenterpiece && state.centerpieceStyle == null);
   refs.btnNext.textContent = currentStepNumber === TOTAL_STEPS ? "Complete" : "Next";
 
   if (isJumpModalOpen) {
@@ -1758,6 +1878,10 @@ function goToStep(index, options = {}) {
   let normalizedIndex = index;
   if (normalizedIndex === STEP_INDEX.NAPKIN_TEXTURE && shouldSkipNapkinTextureStep()) {
     normalizedIndex = index > currentStepIndex ? STEP_INDEX.NAPKIN_TEXTURE + 1 : STEP_INDEX.NAPKIN_COLOR;
+  }
+
+  if (normalizedIndex === STEP_INDEX.CENTERPIECE_STYLE && shouldSkipCenterpieceStyleStep()) {
+    normalizedIndex = index > currentStepIndex ? STEP_INDEX.REVIEW : STEP_INDEX.CENTERPIECE_DECISION;
   }
 
   const boundedIndex = Math.max(0, Math.min(normalizedIndex, TOTAL_STEPS - 1));
@@ -1807,6 +1931,22 @@ function resetCurrentStep() {
 
   if (currentStepIndex + 1 === 8) {
     state.napkinTexture = initialState.napkinTexture;
+    updateUI();
+    return;
+  }
+
+  if (currentStepIndex + 1 === 9) {
+    state.hasCenterpiece = initialState.hasCenterpiece;
+    state.centerpieceDecision = initialState.centerpieceDecision;
+    state.centerpieceStyle = initialState.centerpieceStyle;
+    updateUI();
+    return;
+  }
+
+  if (currentStepIndex + 1 === 10) {
+    if (state.hasCenterpiece) {
+      state.centerpieceStyle = getDefaultCenterpieceStyleForDecision(state.centerpieceDecision || "yes");
+    }
     updateUI();
     return;
   }
