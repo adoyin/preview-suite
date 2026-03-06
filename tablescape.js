@@ -219,7 +219,9 @@ const initialState = {
   includeCharger: true,
   selectedCharger: null,
   lastSelectedCharger: null,
+  includeNapkin: true,
   napkinType: "Ivory",
+  lastSelectedNapkin: null,
   napkinColorGroup: "Neutrals",
   flatwareType: null,
   centerpieceType: null,
@@ -328,6 +330,14 @@ function getChargerStepValue() {
   }
 
   return getSelectedChargerLabel() || "Not selected";
+}
+
+function getNapkinStepValue() {
+  if (!state.includeNapkin) {
+    return "No napkin";
+  }
+
+  return napkinColorOptions.find((option) => option.value === state.napkinType)?.label || "Ivory";
 }
 
 const napkinColorSlugMap = {
@@ -495,6 +505,10 @@ function handleTableSizeSelection(shape, value) {
 }
 
 function getNapkinAsset() {
+  if (!state.includeNapkin || !state.napkinType) {
+    return null;
+  }
+
   // Integration point: map curated wizard colors to closest available napkin assets until dedicated per-color renders are added.
   const color = napkinColorSlugMap[state.napkinType] || "white";
   const style = napkinStyleSlugMap[state.napkinStyle] || "classic-fold";
@@ -622,7 +636,7 @@ function renderPlaceSettings(count) {
     plateWrap.appendChild(createLayer("setting__plate", `${ASSET_BASE}/dinner-plate.svg`, "Dinner plate"));
     setting.appendChild(plateWrap);
 
-    if (state.napkinType) {
+    if (state.includeNapkin && state.napkinType && napkinAsset) {
       setting.appendChild(createLayer("setting__napkin", napkinAsset, `${state.napkinType} napkin`));
     }
 
@@ -665,7 +679,7 @@ function renderSummary() {
   refs.summary.settings.textContent = state.placeSettingsCount == null ? "—" : String(state.placeSettingsCount);
   refs.summary.cloth.textContent = `${state.tableclothTexture[0].toUpperCase()}${state.tableclothTexture.slice(1)} — ${tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory"}`;
   refs.summary.charger.textContent = getSelectedChargerLabel() || "—";
-  refs.summary.napkin.textContent = state.napkinType || "—";
+  refs.summary.napkin.textContent = state.includeNapkin ? (state.napkinType || "—") : "No napkin";
   refs.summary.napkinStyle.textContent = state.napkinStyle || "—";
   refs.summary.centerpiece.textContent = state.centerpieceType || "—";
 }
@@ -953,6 +967,8 @@ function renderGroupedColorCards({
   selectedValue,
   groupSelectId,
   colorInputName,
+  extraToolbarControls = "",
+  carouselDisabled = false,
   onGroupChange,
   onColorChange,
 }) {
@@ -960,6 +976,7 @@ function renderGroupedColorCards({
 
   refs.stepContent.innerHTML = `
     <div class="wizard-color-toolbar">
+      ${extraToolbarControls}
       <label class="wizard-color-group" for="${groupSelectId}">
         <span class="wizard-color-group__label">Group:</span>
         <select id="${groupSelectId}" class="wizard-color-group__select" aria-label="Filter ${colorInputName === "tableclothColor" ? "tablecloth" : "napkin"} colors by group">
@@ -967,7 +984,7 @@ function renderGroupedColorCards({
         </select>
       </label>
     </div>
-    <div id="wizard-color-carousel" class="wizard-color-carousel">
+    <div id="wizard-color-carousel" class="wizard-color-carousel ${carouselDisabled ? "wizard-color-carousel--disabled" : ""}" ${carouselDisabled ? "aria-disabled=\"true\"" : ""}>
       <div class="wizard-color-carousel__viewport">
         <div class="option-cards option-cards--table-color">
           ${activeColorOptions.map((option) => `
@@ -1037,6 +1054,13 @@ function renderNapkinColorCards() {
     selectedValue: state.napkinType,
     groupSelectId: "napkinColorGroup",
     colorInputName: "napkinColor",
+    extraToolbarControls: `
+      <label class="charger-toggle charger-toggle--no-charger" for="noNapkinToggle">
+        <input id="noNapkinToggle" class="charger-toggle__input" type="checkbox" ${state.includeNapkin ? "" : "checked"} />
+        <span class="charger-toggle__label">No napkin</span>
+      </label>
+    `,
+    carouselDisabled: !state.includeNapkin,
     onGroupChange: (group) => {
       state.napkinColorGroup = group;
       renderNapkinColorCards();
@@ -1044,11 +1068,39 @@ function renderNapkinColorCards() {
     onColorChange: (value) => {
       const selectedOption = napkinColorOptions.find((option) => option.value === value);
       if (!selectedOption) return;
+      state.includeNapkin = true;
       state.napkinType = selectedOption.value;
       state.napkinColor = selectedOption.hex;
+      state.lastSelectedNapkin = selectedOption.value;
       state.napkinColorGroup = selectedOption.group;
       updateUI();
     },
+  });
+
+  refs.stepContent.querySelector("#noNapkinToggle")?.addEventListener("change", (event) => {
+    const noNapkin = event.target.checked;
+    const includeNapkin = !noNapkin;
+
+    if (!includeNapkin && state.napkinType) {
+      state.lastSelectedNapkin = state.napkinType;
+    }
+
+    if (includeNapkin) {
+      state.includeNapkin = true;
+      const fallbackNapkin = napkinColorOptions.find((option) => option.value === state.lastSelectedNapkin)
+        || napkinColorOptions.find((option) => option.value === "Ivory")
+        || napkinColorOptions[0];
+
+      if (fallbackNapkin) {
+        state.napkinType = fallbackNapkin.value;
+        state.napkinColor = fallbackNapkin.hex;
+        state.napkinColorGroup = fallbackNapkin.group;
+      }
+    } else {
+      state.includeNapkin = false;
+    }
+
+    updateUI();
   });
 }
 
@@ -1156,7 +1208,7 @@ function getStepMeta() {
     case 4: return { title: "Tablecloth color", hint: "Choose a color.", value: tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory" };
     case 5: return { title: "Number of place settings", hint: "How many guests are you planning for?", value: state.placeSettingsCount == null ? "Not selected" : formatGuestLabel(state.placeSettingsCount) };
     case 6: return { title: "Charger plate", hint: "Select your charger style.", value: getChargerStepValue() };
-    case 7: return { title: "Napkin color", hint: "Choose a color.", value: napkinColorOptions.find((option) => option.value === state.napkinType)?.label || "Ivory" };
+    case 7: return { title: "Napkin color", hint: "Choose a color.", value: getNapkinStepValue() };
     case 8: return { title: "Napkin style", hint: "Define the napkin presentation style.", value: state.napkinStyle || "Not selected" };
     case 9: return { title: "Centerpiece", hint: "Select the tabletop focal element.", value: state.centerpieceType || "Not selected" };
     case 10: return { title: "Review + Export", hint: "Review all selections and export materials.", value: "Ready" };
@@ -1521,7 +1573,7 @@ function renderStepContent() {
           <div><dt>Place Settings</dt><dd>${state.placeSettingsCount == null ? "—" : state.placeSettingsCount}</dd></div>
           <div><dt>Tablecloth</dt><dd>${state.tableclothTexture} - ${tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory"}</dd></div>
           <div><dt>Charger</dt><dd>${getSelectedChargerLabel() || "—"}</dd></div>
-          <div><dt>Napkin</dt><dd>${state.napkinType || "—"}</dd></div>
+          <div><dt>Napkin</dt><dd>${state.includeNapkin ? (state.napkinType || "—") : "No napkin"}</dd></div>
           <div><dt>Napkin Style</dt><dd>${state.napkinStyle || "—"}</dd></div>
           <div><dt>Centerpiece</dt><dd>${state.centerpieceType || "—"}</dd></div>
         </dl>
@@ -1541,7 +1593,7 @@ function exportMaterials() {
     `Place settings: ${state.placeSettingsCount == null ? "—" : state.placeSettingsCount}`,
     `Tablecloth: ${state.tableclothTexture} - ${tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory"}`,
     `Charger: ${getSelectedChargerLabel() || "—"}`,
-    `Napkin: ${state.napkinType || "—"}`,
+    `Napkin: ${state.includeNapkin ? (state.napkinType || "—") : "No napkin"}`,
     `Napkin style: ${state.napkinStyle || "—"}`,
     `Centerpiece: ${state.centerpieceType || "—"}`,
   ];
@@ -1622,9 +1674,11 @@ function prevStep() {
 function resetCurrentStep() {
   if (currentStepIndex + 1 === 7) {
     const defaultNapkin = napkinColorOptions.find((option) => option.value === "Ivory") || napkinColorOptions[0];
+    state.includeNapkin = true;
     state.napkinType = defaultNapkin.value;
     state.napkinColor = defaultNapkin.hex;
     state.napkinColorGroup = defaultNapkin.group;
+    state.lastSelectedNapkin = null;
     updateUI();
     return;
   }

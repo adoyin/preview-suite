@@ -1225,7 +1225,9 @@ a:focus-visible{
 
 .wizard-color-toolbar{
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 10px;
 }
 
@@ -1245,6 +1247,24 @@ a:focus-visible{
   font: inherit;
   font-weight: 500;
   padding: 6px 10px;
+}
+
+
+.wizard-color-carousel--disabled{
+  opacity: 0.52;
+  pointer-events: none;
+}
+
+.wizard-color-carousel--disabled .option-card--color{
+  cursor: default;
+}
+
+.wizard-color-carousel--disabled .option-card--color:hover,
+.wizard-color-carousel--disabled .option-card--color:focus-within{
+  transform: none;
+  box-shadow: none;
+  background: var(--surface-strong);
+  border-color: var(--stroke);
 }
 
 .wizard-color-carousel__viewport{
