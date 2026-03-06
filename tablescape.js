@@ -237,10 +237,15 @@ const stepSequence = [
   "Number of place settings",
   "Charger plate",
   "Napkin color",
-  "Napkin style",
+  "Napkin texture",
   "Centerpiece",
   "Review + Export",
 ];
+
+const STEP_INDEX = {
+  NAPKIN_COLOR: 6,
+  NAPKIN_TEXTURE: 7,
+};
 
 const stepSections = [
   { label: "Table", steps: [0, 1] },
@@ -251,6 +256,42 @@ const stepSections = [
 ];
 
 const TOTAL_STEPS = stepSequence.length;
+
+function shouldSkipNapkinTextureStep() {
+  return !state.includeNapkin;
+}
+
+function getNextStepIndex(fromIndex = currentStepIndex) {
+  let nextIndex = fromIndex + 1;
+
+  if (nextIndex === STEP_INDEX.NAPKIN_TEXTURE && shouldSkipNapkinTextureStep()) {
+    nextIndex += 1;
+  }
+
+  return nextIndex;
+}
+
+function getPreviousStepIndex(fromIndex = currentStepIndex) {
+  let previousIndex = fromIndex - 1;
+
+  if (previousIndex === STEP_INDEX.NAPKIN_TEXTURE && shouldSkipNapkinTextureStep()) {
+    previousIndex -= 1;
+  }
+
+  return previousIndex;
+}
+
+function getDisplayedStepNumber(stepIndex = currentStepIndex) {
+  if (!shouldSkipNapkinTextureStep() || stepIndex <= STEP_INDEX.NAPKIN_COLOR) {
+    return stepIndex + 1;
+  }
+
+  return stepIndex;
+}
+
+function getDisplayedTotalSteps() {
+  return shouldSkipNapkinTextureStep() ? TOTAL_STEPS - 1 : TOTAL_STEPS;
+}
 
 const state = { ...initialState };
 let currentStepIndex = 0;
@@ -685,9 +726,9 @@ function renderSummary() {
 }
 
 function updatePreviewStatus() {
-  const currentStepNumber = currentStepIndex + 1;
-  const totalSteps = stepSequence.length;
-  const nextLabel = stepSequence[currentStepIndex + 1] || "Review";
+  const currentStepNumber = getDisplayedStepNumber();
+  const totalSteps = getDisplayedTotalSteps();
+  const nextLabel = stepSequence[getNextStepIndex()] || "Review";
 
   refs.previewStepText.textContent = `Designing your table — Step ${currentStepNumber} of ${totalSteps}`;
   refs.previewNextText.textContent = `Next: ${nextLabel}`;
@@ -697,6 +738,10 @@ function updatePreviewStatus() {
 function renderJumpStepList() {
   refs.jumpStepList.innerHTML = stepSections.map((section) => {
     const rows = section.steps.map((stepIndex) => {
+      if (stepIndex === STEP_INDEX.NAPKIN_TEXTURE && shouldSkipNapkinTextureStep()) {
+        return "";
+      }
+
       const isCurrent = stepIndex === currentStepIndex;
       const isCompleted = stepIndex < currentStepIndex;
       const isUnlocked = stepIndex <= maxStepReached;
@@ -1209,7 +1254,7 @@ function getStepMeta() {
     case 5: return { title: "Number of place settings", hint: "How many guests are you planning for?", value: state.placeSettingsCount == null ? "Not selected" : formatGuestLabel(state.placeSettingsCount) };
     case 6: return { title: "Charger plate", hint: "Select your charger style.", value: getChargerStepValue() };
     case 7: return { title: "Napkin color", hint: "Choose a color.", value: getNapkinStepValue() };
-    case 8: return { title: "Napkin style", hint: "Define the napkin presentation style.", value: state.napkinStyle || "Not selected" };
+    case 8: return { title: "Napkin texture", hint: "Define the napkin presentation texture.", value: state.napkinStyle || "Not selected" };
     case 9: return { title: "Centerpiece", hint: "Select the tabletop focal element.", value: state.centerpieceType || "Not selected" };
     case 10: return { title: "Review + Export", hint: "Review all selections and export materials.", value: "Ready" };
     default: return { title: "", hint: "", value: "" };
@@ -1613,9 +1658,11 @@ function exportMaterials() {
 
 function updateUI() {
   const currentStepNumber = currentStepIndex + 1;
+  const displayedStepNumber = getDisplayedStepNumber();
+  const displayedTotalSteps = getDisplayedTotalSteps();
 
-  refs.wizardProgress.textContent = `Step ${currentStepNumber} of ${TOTAL_STEPS}`;
-  refs.progressFill.style.width = `${(currentStepNumber / TOTAL_STEPS) * 100}%`;
+  refs.wizardProgress.textContent = `Step ${displayedStepNumber} of ${displayedTotalSteps}`;
+  refs.progressFill.style.width = `${(displayedStepNumber / displayedTotalSteps) * 100}%`;
 
   const meta = getStepMeta();
   refs.stepTitle.textContent = meta.title;
@@ -1641,7 +1688,12 @@ function goToStep(index, options = {}) {
   if (isJumpModalOpen) {
     closeJumpModal();
   }
-  const boundedIndex = Math.max(0, Math.min(index, TOTAL_STEPS - 1));
+  let normalizedIndex = index;
+  if (normalizedIndex === STEP_INDEX.NAPKIN_TEXTURE && shouldSkipNapkinTextureStep()) {
+    normalizedIndex = index > currentStepIndex ? STEP_INDEX.NAPKIN_TEXTURE + 1 : STEP_INDEX.NAPKIN_COLOR;
+  }
+
+  const boundedIndex = Math.max(0, Math.min(normalizedIndex, TOTAL_STEPS - 1));
   const nextIndex = allowFuture ? boundedIndex : Math.min(boundedIndex, maxStepReached);
 
   if (nextIndex > maxStepReached) {
@@ -1664,21 +1716,30 @@ function nextStep() {
   if (currentStepIndex + 1 === 5 && state.placeSettingsCount == null) {
     return;
   }
-  goToStep(currentStepIndex + 1, { allowFuture: true });
+  goToStep(getNextStepIndex(), { allowFuture: true });
 }
 
 function prevStep() {
-  goToStep(currentStepIndex - 1);
+  goToStep(getPreviousStepIndex());
 }
 
 function resetCurrentStep() {
   if (currentStepIndex + 1 === 7) {
-    const defaultNapkin = napkinColorOptions.find((option) => option.value === "Ivory") || napkinColorOptions[0];
-    state.includeNapkin = true;
-    state.napkinType = defaultNapkin.value;
-    state.napkinColor = defaultNapkin.hex;
-    state.napkinColorGroup = defaultNapkin.group;
-    state.lastSelectedNapkin = null;
+    const configuredDefaultNapkin = napkinColorOptions.find((option) => option.value === initialState.napkinType)
+      || napkinColorOptions.find((option) => option.value === "Ivory")
+      || napkinColorOptions[0];
+
+    state.includeNapkin = initialState.includeNapkin;
+    state.napkinType = configuredDefaultNapkin?.value || initialState.napkinType;
+    state.napkinColor = configuredDefaultNapkin?.hex || initialState.napkinColor;
+    state.napkinColorGroup = configuredDefaultNapkin?.group || initialState.napkinColorGroup;
+    state.lastSelectedNapkin = initialState.lastSelectedNapkin;
+    updateUI();
+    return;
+  }
+
+  if (currentStepIndex + 1 === 8) {
+    state.napkinStyle = initialState.napkinStyle;
     updateUI();
     return;
   }
