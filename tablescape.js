@@ -118,6 +118,41 @@ const tableclothTextureOptions = [
   },
 ];
 
+const napkinTextureOptions = [
+  {
+    id: "polyester",
+    value: "polyester",
+    name: "Polyester",
+    label: "Polyester",
+    thumbnail: "assets/textures/polyester-pearl.png",
+    helperText: "Crisp, structured event styling",
+  },
+  {
+    id: "satin",
+    value: "satin",
+    name: "Satin",
+    label: "Satin",
+    thumbnail: "assets/textures/satin-champagne.png",
+    helperText: "Soft sheen with a formal finish",
+  },
+  {
+    id: "velvet",
+    value: "velvet",
+    name: "Velvet",
+    label: "Velvet",
+    thumbnail: "assets/textures/velvet-cream.png",
+    helperText: "Rich texture with a dramatic feel",
+  },
+  {
+    id: "linen",
+    value: "linen",
+    name: "Linen",
+    label: "Linen",
+    thumbnail: "assets/textures/linen-ivory.png",
+    helperText: "Natural weave, relaxed elegance",
+  },
+];
+
 const chargerOptions = [
   { value: "gold", label: "Gold Charger", image: "./assets/chargers/charger-gold.png" },
   { value: "silver", label: "Silver Charger", image: "./assets/chargers/charger-silver.png" },
@@ -221,6 +256,7 @@ const initialState = {
   lastSelectedCharger: null,
   includeNapkin: true,
   napkinType: "Ivory",
+  napkinTexture: "polyester",
   lastSelectedNapkin: null,
   napkinColorGroup: "Neutrals",
   flatwareType: null,
@@ -334,7 +370,7 @@ const refs = {
     cloth: el("sumCloth"),
     charger: el("sumCharger"),
     napkin: el("sumNapkin"),
-    napkinStyle: el("sumNapkinStyle"),
+    napkinTexture: el("sumNapkinTexture"),
     centerpiece: el("sumCenterpiece"),
   },
 };
@@ -379,6 +415,14 @@ function getNapkinStepValue() {
   }
 
   return napkinColorOptions.find((option) => option.value === state.napkinType)?.label || "Ivory";
+}
+
+function getNapkinTextureStepValue() {
+  if (!state.includeNapkin) {
+    return "No napkin";
+  }
+
+  return napkinTextureOptions.find((option) => option.value === state.napkinTexture)?.label || "Polyester";
 }
 
 const napkinColorSlugMap = {
@@ -721,7 +765,7 @@ function renderSummary() {
   refs.summary.cloth.textContent = `${state.tableclothTexture[0].toUpperCase()}${state.tableclothTexture.slice(1)} — ${tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory"}`;
   refs.summary.charger.textContent = getSelectedChargerLabel() || "—";
   refs.summary.napkin.textContent = state.includeNapkin ? (state.napkinType || "—") : "No napkin";
-  refs.summary.napkinStyle.textContent = state.napkinStyle || "—";
+  refs.summary.napkinTexture.textContent = getNapkinTextureStepValue();
   refs.summary.centerpiece.textContent = state.centerpieceType || "—";
 }
 
@@ -812,6 +856,7 @@ function renderPreview() {
   };
 
   applyTableShape(state.tableShape, state.tableSize);
+  refs.table.dataset.napkinTexture = state.napkinTexture;
 
   const currentStepNumber = currentStepIndex + 1;
   refs.centerpiece.innerHTML = "";
@@ -928,16 +973,54 @@ function renderTableSizeCards(shape, selectedValue) {
 }
 
 function renderTableTextureCards() {
+  renderTextureCards({
+    options: tableclothTextureOptions,
+    selectedValue: state.tableclothTexture,
+    inputName: "tableclothTexture",
+    tooltipPrefix: "tableTextureTip",
+    leftArrowLabel: "Scroll tablecloth textures left",
+    rightArrowLabel: "Scroll tablecloth textures right",
+    onChange: (value) => {
+      state.tableclothTexture = value;
+      updateUI();
+    },
+  });
+}
+
+function renderNapkinTextureCards() {
+  renderTextureCards({
+    options: napkinTextureOptions,
+    selectedValue: state.napkinTexture,
+    inputName: "napkinTexture",
+    tooltipPrefix: "napkinTextureTip",
+    leftArrowLabel: "Scroll napkin textures left",
+    rightArrowLabel: "Scroll napkin textures right",
+    onChange: (value) => {
+      state.napkinTexture = value;
+      updateUI();
+    },
+  });
+}
+
+function renderTextureCards({
+  options,
+  selectedValue,
+  inputName,
+  tooltipPrefix,
+  leftArrowLabel,
+  rightArrowLabel,
+  onChange,
+}) {
   refs.stepContent.innerHTML = `
     <div id="wizard-texture-carousel" class="texture-carousel" data-tooltip-root>
-      <button class="texture-carousel__arrow texture-carousel__arrow--left" type="button" data-texture-scroll="left" aria-label="Scroll tablecloth textures left">&#8249;</button>
+      <button class="texture-carousel__arrow texture-carousel__arrow--left" type="button" data-texture-scroll="left" aria-label="${leftArrowLabel}">&#8249;</button>
       <div class="texture-carousel__viewport">
         <div class="option-cards option-cards--table-texture">
-          ${tableclothTextureOptions.map((option, index) => {
-            const tooltipId = `tableTextureTip${index}`;
+          ${options.map((option, index) => {
+            const tooltipId = `${tooltipPrefix}${index}`;
             return `
-              <label class="option-card option-card--texture ${state.tableclothTexture === option.value ? "option-card--selected" : ""}">
-                <input type="radio" name="tableclothTexture" value="${option.value}" ${state.tableclothTexture === option.value ? "checked" : ""} />
+              <label class="option-card option-card--texture ${selectedValue === option.value ? "option-card--selected" : ""}">
+                <input type="radio" name="${inputName}" value="${option.value}" ${selectedValue === option.value ? "checked" : ""} />
                 <div class="option-card__media option-card__media--texture">
                   <img class="option-card__image option-card__image--texture" src="${option.thumbnail}" alt="${option.label} texture swatch" loading="lazy" />
                   <button
@@ -952,19 +1035,18 @@ function renderTableTextureCards() {
                 </div>
                 <span class="option-card__title option-card__title--texture">${option.label}</span>
               </label>
-            `;
+          `;
           }).join("")}
         </div>
       </div>
-      <button class="texture-carousel__arrow texture-carousel__arrow--right" type="button" data-texture-scroll="right" aria-label="Scroll tablecloth textures right">&#8250;</button>
+      <button class="texture-carousel__arrow texture-carousel__arrow--right" type="button" data-texture-scroll="right" aria-label="${rightArrowLabel}">&#8250;</button>
     </div>
   `;
 
-  refs.stepContent.querySelectorAll('input[name="tableclothTexture"]').forEach((radio) => {
+  refs.stepContent.querySelectorAll(`input[name="${inputName}"]`).forEach((radio) => {
     radio.addEventListener("change", (event) => {
       closeAllTooltips();
-      state.tableclothTexture = event.target.value;
-      updateUI();
+      onChange(event.target.value);
     });
   });
 
@@ -1254,7 +1336,7 @@ function getStepMeta() {
     case 5: return { title: "Number of place settings", hint: "How many guests are you planning for?", value: state.placeSettingsCount == null ? "Not selected" : formatGuestLabel(state.placeSettingsCount) };
     case 6: return { title: "Charger plate", hint: "Select your charger style.", value: getChargerStepValue() };
     case 7: return { title: "Napkin color", hint: "Choose a color.", value: getNapkinStepValue() };
-    case 8: return { title: "Napkin texture", hint: "Define the napkin presentation texture.", value: state.napkinStyle || "Not selected" };
+    case 8: return { title: "Choose Napkin Texture", hint: "Choose a fabric.", value: getNapkinTextureStepValue() };
     case 9: return { title: "Centerpiece", hint: "Select the tabletop focal element.", value: state.centerpieceType || "Not selected" };
     case 10: return { title: "Review + Export", hint: "Review all selections and export materials.", value: "Ready" };
     default: return { title: "", hint: "", value: "" };
@@ -1573,22 +1655,7 @@ function renderStepContent() {
   }
 
   if (currentStepNumber === 8) {
-    refs.stepContent.innerHTML = `
-      <div class="options">
-        ${["Classic Fold", "Pocket Fold", "Napkin Ring", "Bow Tie"].map((style) => `
-          <label class="opt">
-            <input type="radio" name="napkinStyle" value="${style}" ${state.napkinStyle === style ? "checked" : ""} />
-            <span>${style}</span>
-          </label>
-        `).join("")}
-      </div>
-    `;
-    document.querySelectorAll('input[name="napkinStyle"]').forEach((radio) => {
-      radio.addEventListener("change", (event) => {
-        state.napkinStyle = event.target.value;
-        updateUI();
-      });
-    });
+    renderNapkinTextureCards();
   }
 
   if (currentStepNumber === 9) {
@@ -1619,7 +1686,7 @@ function renderStepContent() {
           <div><dt>Tablecloth</dt><dd>${state.tableclothTexture} - ${tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory"}</dd></div>
           <div><dt>Charger</dt><dd>${getSelectedChargerLabel() || "—"}</dd></div>
           <div><dt>Napkin</dt><dd>${state.includeNapkin ? (state.napkinType || "—") : "No napkin"}</dd></div>
-          <div><dt>Napkin Style</dt><dd>${state.napkinStyle || "—"}</dd></div>
+          <div><dt>Napkin Texture</dt><dd>${getNapkinTextureStepValue()}</dd></div>
           <div><dt>Centerpiece</dt><dd>${state.centerpieceType || "—"}</dd></div>
         </dl>
         <button id="btnExport" class="btn review-card__export" type="button">Export Materials</button>
@@ -1639,7 +1706,7 @@ function exportMaterials() {
     `Tablecloth: ${state.tableclothTexture} - ${tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory"}`,
     `Charger: ${getSelectedChargerLabel() || "—"}`,
     `Napkin: ${state.includeNapkin ? (state.napkinType || "—") : "No napkin"}`,
-    `Napkin style: ${state.napkinStyle || "—"}`,
+    `Napkin texture: ${getNapkinTextureStepValue()}`,
     `Centerpiece: ${state.centerpieceType || "—"}`,
   ];
 
@@ -1739,7 +1806,7 @@ function resetCurrentStep() {
   }
 
   if (currentStepIndex + 1 === 8) {
-    state.napkinStyle = initialState.napkinStyle;
+    state.napkinTexture = initialState.napkinTexture;
     updateUI();
     return;
   }
