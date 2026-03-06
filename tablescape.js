@@ -155,6 +155,44 @@ const tableclothColorGroups = {
 const tableclothColorGroupNames = Object.keys(tableclothColorGroups);
 const tableclothColorOptions = tableclothColorGroupNames.flatMap((group) => tableclothColorGroups[group]);
 
+const napkinColorGroups = {
+  Neutrals: [
+    { id: "ivory", value: "Ivory", name: "Ivory", label: "Ivory", group: "Neutrals", hex: "#F3EBDD" },
+    { id: "white", value: "White", name: "White", label: "White", group: "Neutrals", hex: "#FFFFFF" },
+    { id: "champagne", value: "Champagne", name: "Champagne", label: "Champagne", group: "Neutrals", hex: "#E8D8C6" },
+    { id: "sand", value: "Sand", name: "Sand", label: "Sand", group: "Neutrals", hex: "#E7D8C3" },
+    { id: "taupe", value: "Taupe", name: "Taupe", label: "Taupe", group: "Neutrals", hex: "#B7A79A" },
+    { id: "beige", value: "Beige", name: "Beige", label: "Beige", group: "Neutrals", hex: "#D8C4A8" },
+  ],
+  Pinks: [
+    { id: "blush", value: "Blush", name: "Blush", label: "Blush", group: "Pinks", hex: "#E9C6C9" },
+    { id: "dusty-rose", value: "Dusty Rose", name: "Dusty Rose", label: "Dusty Rose", group: "Pinks", hex: "#D9B2B2" },
+    { id: "mauve", value: "Mauve", name: "Mauve", label: "Mauve", group: "Pinks", hex: "#A67B86" },
+    { id: "rosewood", value: "Rosewood", name: "Rosewood", label: "Rosewood", group: "Pinks", hex: "#7F4A55" },
+  ],
+  Greens: [
+    { id: "sage", value: "Sage", name: "Sage", label: "Sage", group: "Greens", hex: "#B5C3AE" },
+    { id: "olive", value: "Olive", name: "Olive", label: "Olive", group: "Greens", hex: "#6F7A45" },
+    { id: "emerald", value: "Emerald", name: "Emerald", label: "Emerald", group: "Greens", hex: "#1F6B4E" },
+    { id: "eucalyptus", value: "Eucalyptus", name: "Eucalyptus", label: "Eucalyptus", group: "Greens", hex: "#8FAE9A" },
+  ],
+  Blues: [
+    { id: "dusty-blue", value: "Dusty Blue", name: "Dusty Blue", label: "Dusty Blue", group: "Blues", hex: "#6F88A6" },
+    { id: "slate-blue", value: "Slate Blue", name: "Slate Blue", label: "Slate Blue", group: "Blues", hex: "#566A83" },
+    { id: "french-blue", value: "French Blue", name: "French Blue", label: "French Blue", group: "Blues", hex: "#4C78A8" },
+    { id: "navy", value: "Navy", name: "Navy", label: "Navy", group: "Blues", hex: "#3A4D68" },
+  ],
+  Darks: [
+    { id: "black", value: "Black", name: "Black", label: "Black", group: "Darks", hex: "#111111" },
+    { id: "charcoal", value: "Charcoal", name: "Charcoal", label: "Charcoal", group: "Darks", hex: "#454545" },
+    { id: "chocolate", value: "Chocolate", name: "Chocolate", label: "Chocolate", group: "Darks", hex: "#4D3125" },
+    { id: "burgundy", value: "Burgundy", name: "Burgundy", label: "Burgundy", group: "Darks", hex: "#5A1E2D" },
+  ],
+};
+
+const napkinColorGroupNames = Object.keys(napkinColorGroups);
+const napkinColorOptions = napkinColorGroupNames.flatMap((group) => napkinColorGroups[group]);
+
 const clothPalette = {
   ivory: "#F3EBDD",
   white: "#FFFFFF",
@@ -181,11 +219,12 @@ const initialState = {
   includeCharger: true,
   selectedCharger: null,
   lastSelectedCharger: null,
-  napkinType: null,
+  napkinType: "Ivory",
+  napkinColorGroup: "Neutrals",
   flatwareType: null,
   centerpieceType: null,
   napkinStyle: null,
-  napkinColor: "#FFFFFF",
+  napkinColor: "#F3EBDD",
 };
 
 const stepSequence = [
@@ -292,12 +331,28 @@ function getChargerStepValue() {
 }
 
 const napkinColorSlugMap = {
+  Ivory: "white",
   White: "white",
+  Champagne: "sand",
   Sand: "sand",
+  Taupe: "sand",
+  Beige: "sand",
+  Blush: "dusty-rose",
   "Dusty Rose": "dusty-rose",
-  Navy: "navy",
-  Charcoal: "charcoal",
+  Mauve: "dusty-rose",
+  Rosewood: "charcoal",
   Sage: "sage",
+  Olive: "sage",
+  Emerald: "sage",
+  Eucalyptus: "sage",
+  "Dusty Blue": "navy",
+  "Slate Blue": "navy",
+  "French Blue": "navy",
+  Navy: "navy",
+  Black: "charcoal",
+  Charcoal: "charcoal",
+  Chocolate: "charcoal",
+  Burgundy: "dusty-rose",
 };
 
 const napkinStyleSlugMap = {
@@ -440,6 +495,7 @@ function handleTableSizeSelection(shape, value) {
 }
 
 function getNapkinAsset() {
+  // Integration point: map curated wizard colors to closest available napkin assets until dedicated per-color renders are added.
   const color = napkinColorSlugMap[state.napkinType] || "white";
   const style = napkinStyleSlugMap[state.napkinStyle] || "classic-fold";
   return `${ASSET_BASE}/napkin-${color}-${style}.svg`;
@@ -885,18 +941,29 @@ function renderTableTextureCards() {
   attachImageFallbacks(refs.stepContent);
 }
 
-function renderTableColorCards() {
-  const selectedGroup = tableclothColorGroups[state.tableclothColorGroup]
-    ? state.tableclothColorGroup
-    : "Neutrals";
-  const activeColorOptions = tableclothColorGroups[selectedGroup] || [];
+function getOptionGroup(groups, selectedValue, valueField = "value") {
+  const matched = Object.entries(groups).find(([, options]) => options.some((option) => option[valueField] === selectedValue));
+  return matched ? matched[0] : null;
+}
+
+function renderGroupedColorCards({
+  groups,
+  groupNames,
+  selectedGroup,
+  selectedValue,
+  groupSelectId,
+  colorInputName,
+  onGroupChange,
+  onColorChange,
+}) {
+  const activeColorOptions = groups[selectedGroup] || [];
 
   refs.stepContent.innerHTML = `
     <div class="wizard-color-toolbar">
-      <label class="wizard-color-group" for="tableclothColorGroup">
+      <label class="wizard-color-group" for="${groupSelectId}">
         <span class="wizard-color-group__label">Group:</span>
-        <select id="tableclothColorGroup" class="wizard-color-group__select" aria-label="Filter tablecloth colors by group">
-          ${tableclothColorGroupNames.map((group) => `<option value="${group}" ${group === selectedGroup ? "selected" : ""}>${group}</option>`).join("")}
+        <select id="${groupSelectId}" class="wizard-color-group__select" aria-label="Filter ${colorInputName === "tableclothColor" ? "tablecloth" : "napkin"} colors by group">
+          ${groupNames.map((group) => `<option value="${group}" ${group === selectedGroup ? "selected" : ""}>${group}</option>`).join("")}
         </select>
       </label>
     </div>
@@ -904,31 +971,84 @@ function renderTableColorCards() {
       <div class="wizard-color-carousel__viewport">
         <div class="option-cards option-cards--table-color">
           ${activeColorOptions.map((option) => `
-            <label class="option-card option-card--color ${state.tableclothColor === option.value ? "option-card--selected" : ""}">
-              <input type="radio" name="tableclothColor" value="${option.value}" ${state.tableclothColor === option.value ? "checked" : ""} />
+            <label class="option-card option-card--color ${selectedValue === option.value ? "option-card--selected" : ""}">
+              <input type="radio" name="${colorInputName}" value="${option.value}" ${selectedValue === option.value ? "checked" : ""} />
               <div class="option-card__media option-card__media--color">
                 <div class="option-card__swatch" style="background-color: ${option.hex};" aria-hidden="true"></div>
               </div>
               <span class="option-card__title option-card__title--color">${option.label}</span>
             </label>
           `).join("")}
-          
         </div>
       </div>
     </div>
   `;
 
-  const groupSelect = refs.stepContent.querySelector("#tableclothColorGroup");
-  groupSelect?.addEventListener("change", (event) => {
-    state.tableclothColorGroup = event.target.value;
-    renderTableColorCards();
+  refs.stepContent.querySelector(`#${groupSelectId}`)?.addEventListener("change", (event) => {
+    onGroupChange(event.target.value);
   });
 
-  refs.stepContent.querySelectorAll('input[name="tableclothColor"]').forEach((radio) => {
+  refs.stepContent.querySelectorAll(`input[name="${colorInputName}"]`).forEach((radio) => {
     radio.addEventListener("change", (event) => {
-      state.tableclothColor = event.target.value;
-      updateUI();
+      onColorChange(event.target.value);
     });
+  });
+}
+
+function renderTableColorCards() {
+  const matchedGroup = getOptionGroup(tableclothColorGroups, state.tableclothColor);
+  const selectedGroup = tableclothColorGroups[state.tableclothColorGroup]
+    ? state.tableclothColorGroup
+    : (matchedGroup || "Neutrals");
+
+  renderGroupedColorCards({
+    groups: tableclothColorGroups,
+    groupNames: tableclothColorGroupNames,
+    selectedGroup,
+    selectedValue: state.tableclothColor,
+    groupSelectId: "tableclothColorGroup",
+    colorInputName: "tableclothColor",
+    onGroupChange: (group) => {
+      state.tableclothColorGroup = group;
+      renderTableColorCards();
+    },
+    onColorChange: (value) => {
+      state.tableclothColor = value;
+      state.tableclothColorGroup = getOptionGroup(tableclothColorGroups, value) || "Neutrals";
+      updateUI();
+    },
+  });
+}
+
+function renderNapkinColorCards() {
+  const selectedNapkin = napkinColorOptions.find((option) => option.value === state.napkinType) || napkinColorOptions[0];
+  const selectedGroup = napkinColorGroups[state.napkinColorGroup]
+    ? state.napkinColorGroup
+    : (selectedNapkin?.group || "Neutrals");
+
+  state.napkinType = selectedNapkin?.value || "Ivory";
+  state.napkinColor = selectedNapkin?.hex || "#F3EBDD";
+  state.napkinColorGroup = selectedGroup;
+
+  renderGroupedColorCards({
+    groups: napkinColorGroups,
+    groupNames: napkinColorGroupNames,
+    selectedGroup: state.napkinColorGroup,
+    selectedValue: state.napkinType,
+    groupSelectId: "napkinColorGroup",
+    colorInputName: "napkinColor",
+    onGroupChange: (group) => {
+      state.napkinColorGroup = group;
+      renderNapkinColorCards();
+    },
+    onColorChange: (value) => {
+      const selectedOption = napkinColorOptions.find((option) => option.value === value);
+      if (!selectedOption) return;
+      state.napkinType = selectedOption.value;
+      state.napkinColor = selectedOption.hex;
+      state.napkinColorGroup = selectedOption.group;
+      updateUI();
+    },
   });
 }
 
@@ -1036,7 +1156,7 @@ function getStepMeta() {
     case 4: return { title: "Tablecloth color", hint: "Choose a color.", value: tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory" };
     case 5: return { title: "Number of place settings", hint: "How many guests are you planning for?", value: state.placeSettingsCount == null ? "Not selected" : formatGuestLabel(state.placeSettingsCount) };
     case 6: return { title: "Charger plate", hint: "Select your charger style.", value: getChargerStepValue() };
-    case 7: return { title: "Napkin color", hint: "Choose the napkin color.", value: state.napkinType || "Not selected" };
+    case 7: return { title: "Napkin color", hint: "Choose a color.", value: napkinColorOptions.find((option) => option.value === state.napkinType)?.label || "Ivory" };
     case 8: return { title: "Napkin style", hint: "Define the napkin presentation style.", value: state.napkinStyle || "Not selected" };
     case 9: return { title: "Centerpiece", hint: "Select the tabletop focal element.", value: state.centerpieceType || "Not selected" };
     case 10: return { title: "Review + Export", hint: "Review all selections and export materials.", value: "Ready" };
@@ -1352,27 +1472,7 @@ function renderStepContent() {
   }
 
   if (currentStepNumber === 7) {
-    const napkinOptions = [
-      ["White", "#FFFFFF"],
-      ["Sand", "#E7D8C3"],
-      ["Dusty Rose", "#D9B2B2"],
-      ["Navy", "#3A4D68"],
-      ["Charcoal", "#454545"],
-      ["Sage", "#B5C3AE"],
-    ];
-
-    refs.stepContent.innerHTML = `<div class="swatches">${napkinOptions.map(([name, color]) => (
-      `<button class="swatch swatch--sm" type="button" data-napkin="${name}" data-color="${color}" aria-label="${name}" style="background:${color}"></button>`
-    )).join("")}</div>`;
-
-    document.querySelectorAll("[data-napkin]").forEach((button) => {
-      button.addEventListener("click", () => {
-        state.napkinType = button.getAttribute("data-napkin");
-        state.napkinColor = button.getAttribute("data-color");
-        updateUI();
-      });
-    });
-    setActiveButtons("[data-napkin]", "data-napkin", state.napkinType);
+    renderNapkinColorCards();
   }
 
   if (currentStepNumber === 8) {
@@ -1519,6 +1619,19 @@ function prevStep() {
   goToStep(currentStepIndex - 1);
 }
 
+function resetCurrentStep() {
+  if (currentStepIndex + 1 === 7) {
+    const defaultNapkin = napkinColorOptions.find((option) => option.value === "Ivory") || napkinColorOptions[0];
+    state.napkinType = defaultNapkin.value;
+    state.napkinColor = defaultNapkin.hex;
+    state.napkinColorGroup = defaultNapkin.group;
+    updateUI();
+    return;
+  }
+
+  resetWizard();
+}
+
 function resetWizard() {
   Object.assign(state, initialState);
   currentStepIndex = 0;
@@ -1532,7 +1645,7 @@ function init() {
 
   refs.btnBack.addEventListener("click", prevStep);
   refs.btnNext.addEventListener("click", nextStep);
-  refs.btnReset.addEventListener("click", resetWizard);
+  refs.btnReset.addEventListener("click", resetCurrentStep);
   refs.btnJumpTo.addEventListener("click", openJumpModal);
   refs.jumpClose.addEventListener("click", closeJumpModal);
   refs.jumpBackdrop.addEventListener("click", closeJumpModal);
