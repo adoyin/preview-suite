@@ -367,7 +367,7 @@ body.wizard-layout .shell{
   width: 100%;
   grid-template-columns: minmax(320px, 32%) minmax(0, 68%);
   gap: clamp(14px, 2.2vw, 28px);
-  align-items: stretch;
+  align-items: start;
 }
 
 
@@ -386,7 +386,7 @@ body.wizard-layout .topbar{
 body.wizard-layout .shell{
   flex: 1 1 auto;
   min-height: 0;
-  height: auto;
+  height: 100%;
   padding-top: clamp(16px, 2.4vh, 24px);
   padding-bottom: 12px;
   overflow: hidden;
@@ -396,6 +396,7 @@ body.wizard-layout .shell{
 body.wizard-layout .panel--wizard-controls{
   height: 100%;
   min-height: 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -410,6 +411,7 @@ body.wizard-layout .panel--wizard-preview{
   align-self: start;
   height: 100%;
   min-height: 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   border: 1px solid rgba(255,255,255,0.48);
@@ -426,6 +428,10 @@ body.wizard-layout .panel--wizard-preview .panel__header{
   overflow:hidden;
   min-height: 76vh;
 }
+
+body.wizard-layout .panel{
+  min-height: 0;
+}
 .panel__header{ padding: 24px 24px 8px; }
 .builder-head{
   display:flex;
@@ -439,12 +445,14 @@ body.wizard-layout .panel--wizard-preview .panel__header{
 .subtle{ color: var(--text-soft); margin:0; font-size: 15px; }
 
 .steps{
-  padding: 8px 14px 16px;
+  padding: 0 14px 16px;
   display:flex;
   flex-direction:column;
   gap: 12px;
   overflow-y: auto;
+  overflow-x: hidden;
   min-height: 0;
+  min-width: 0;
   flex: 1 1 auto;
   scrollbar-gutter: stable;
 }
@@ -454,6 +462,20 @@ body.wizard-layout .panel--wizard-preview .panel__header{
   padding: 16px;
   background: var(--surface);
   margin-bottom: 8px;
+  min-width: 0;
+}
+
+#stepContent,
+.sectioned-builder,
+.section-container,
+.section-container__body,
+.question-row,
+.question-row__content{
+  min-width: 0;
+}
+
+.question-row__content{
+  overflow-x: hidden;
 }
 
 .step__top{
@@ -1080,6 +1102,7 @@ body.wizard-layout .panel--wizard-preview .panel__header{
   gap: 8px;
   min-height: 0;
   flex: 1 1 auto;
+  overflow: hidden;
 }
 
 .preview-status{
@@ -1246,7 +1269,9 @@ body.wizard-layout .panel--wizard-preview .panel__header{
   }
 
   body.wizard-layout .preview__stage{
-    max-height: 100%;
+    min-height: 0;
+    height: clamp(360px, 62vh, 680px);
+    max-height: calc(100dvh - 260px);
   }
 
   body.wizard-layout .table{ width: 580px; height: 580px; }
