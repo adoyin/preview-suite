@@ -362,6 +362,33 @@ a:focus-visible{
   padding: clamp(32px, 6vw, 56px) clamp(18px, 4vw, 32px) 24px;
 }
 
+body.wizard-layout .shell{
+  max-width: none;
+  width: 100%;
+  grid-template-columns: minmax(320px, 32%) minmax(0, 68%);
+  gap: clamp(14px, 2.2vw, 28px);
+  align-items: stretch;
+}
+
+body.wizard-layout .panel--wizard-controls{
+  min-height: clamp(760px, 84vh, 980px);
+  background: rgba(255, 255, 255, 0.76);
+  border-color: rgba(37, 29, 20, 0.08);
+  box-shadow: 0 12px 30px rgba(34, 24, 15, 0.07);
+}
+
+body.wizard-layout .panel--wizard-preview{
+  min-height: clamp(760px, 84vh, 980px);
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+body.wizard-layout .panel--wizard-preview .panel__header{
+  padding: 6px 10px 4px;
+}
+
 .panel{
   overflow:hidden;
   min-height: 76vh;
@@ -379,7 +406,7 @@ a:focus-visible{
 .subtle{ color: var(--text-soft); margin:0; font-size: 15px; }
 
 .steps{
-  padding: 10px 18px 22px;
+  padding: 8px 14px 16px;
   display:flex;
   flex-direction:column;
   gap: 12px;
@@ -954,16 +981,16 @@ a:focus-visible{
 }
 
 .preview{
-  padding: 8px 18px 20px;
+  padding: 0;
   display:grid;
-  gap: 12px;
+  gap: 4px;
 }
 
 .preview-status{
-  border: 1px solid var(--stroke-soft);
+  border: 1px solid rgba(37, 29, 20, 0.05);
   border-radius: 14px;
-  background: var(--surface);
-  padding: 10px 12px;
+  background: rgba(252, 249, 243, 0.66);
+  padding: 8px 10px;
   display: grid;
   gap: 2px;
 }
@@ -982,10 +1009,11 @@ a:focus-visible{
   --preview-stage-from: 1;
   --preview-stage-peak: 1;
   --preview-stage-to: 1;
-  border: 1px solid var(--stroke);
-  border-radius: var(--radius);
-  background: radial-gradient(circle at 50% 20%, #fffdfa, #f2eade);
-  height: 420px;
+  border: 1px solid rgba(37, 29, 20, 0.06);
+  border-radius: clamp(20px, 2.2vw, 32px);
+  background: radial-gradient(circle at 50% 18%, #fffefb, #f1e7d8 74%);
+  height: clamp(640px, 78vh, 960px);
+  min-height: calc(100vh - 170px);
   display:flex;
   align-items:center;
   justify-content:center;
@@ -1001,8 +1029,9 @@ a:focus-visible{
 }
 
 .table{
-  width: 320px;
-  height: 320px;
+  width: 580px;
+  height: 580px;
+  --table-stage-offset: 0px;
   border-radius: 999px;
   position:relative;
   border: 1px solid rgba(37,29,20,0.15);
@@ -1010,6 +1039,7 @@ a:focus-visible{
   background-color: #F6F0E6;
   background-size: cover;
   background-position: center;
+  transform: translateY(var(--table-stage-offset));
   transition: border-radius .18s ease, background-color .18s ease, opacity .22s ease, transform .22s ease;
   overflow: hidden;
 }
@@ -1058,7 +1088,7 @@ a:focus-visible{
 
 .table.is-refreshing{
   opacity: 0.86;
-  transform: scale(0.992);
+  transform: translateY(var(--table-stage-offset)) scale(0.992);
 }
 
 @keyframes preview-fade-in {
@@ -1103,9 +1133,44 @@ a:focus-visible{
 .dot{ opacity: 0.6; }
 
 
-body.wizard-layout .shell{
-  max-width: none;
-  width: 100%;
+@media (max-width: 1200px){
+  body.wizard-layout .shell{
+    grid-template-columns: minmax(300px, 38%) minmax(0, 62%);
+  }
+
+  body.wizard-layout .panel--wizard-controls,
+  body.wizard-layout .panel--wizard-preview{
+    min-height: clamp(680px, 80vh, 920px);
+  }
+
+  body.wizard-layout .preview__stage{
+    height: clamp(560px, 70vh, 820px);
+    min-height: calc(100vh - 190px);
+  }
+}
+
+@media (min-width: 981px){
+  body.wizard-layout .panel--wizard-preview{
+    display: flex;
+    flex-direction: column;
+  }
+
+  body.wizard-layout .panel--wizard-preview .preview{
+    flex: 1;
+    gap: 2px;
+  }
+
+  body.wizard-layout .preview__stage{
+    height: calc(100vh - 170px);
+    min-height: calc(100vh - 170px);
+    max-height: none;
+  }
+
+  body.wizard-layout .table{
+    --table-stage-offset: -12px;
+    width: 580px;
+    height: 580px;
+  }
 }
 
 @media (max-width: 980px){
@@ -1115,9 +1180,22 @@ body.wizard-layout .shell{
   .info-grid,
   .experience-grid{ grid-template-columns: 1fr; }
   .panel{ min-height: unset; }
+  body.wizard-layout .shell{ grid-template-columns: 1fr; }
+  .preview{ padding: 8px 18px 20px; }
   .preview__stage{ height: 380px; }
   .builder-head{ flex-direction: column; }
   .experience-card{ min-height: 270px; }
+}
+
+body.wizard-layout .footer{
+  padding-top: 4px;
+  padding-bottom: 12px;
+  opacity: 0.62;
+  font-size: 12px;
+}
+
+body.wizard-layout .footer .dot{
+  opacity: 0.35;
 }
 
 
