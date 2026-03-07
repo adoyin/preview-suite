@@ -265,6 +265,12 @@ const initialState = {
   centerpieceStyle: null,
   napkinStyle: null,
   napkinColor: "#F3EBDD",
+  tableStyling: {
+    menuCard: { enabled: false, style: null, placement: null },
+    placeCard: { enabled: false, style: null, placement: null },
+    tableNumber: { enabled: false, style: null },
+    candles: { enabled: false, style: null },
+  },
 };
 
 const stepSequence = [
@@ -278,7 +284,9 @@ const stepSequence = [
   "Napkin texture",
   "Centerpiece",
   "Centerpiece style",
-  "Review + Export",
+  "Table styling",
+  "Final review",
+  "Export materials",
 ];
 
 const STEP_INDEX = {
@@ -286,7 +294,9 @@ const STEP_INDEX = {
   NAPKIN_TEXTURE: 7,
   CENTERPIECE_DECISION: 8,
   CENTERPIECE_STYLE: 9,
-  REVIEW: 10,
+  TABLE_STYLING: 10,
+  FINAL_REVIEW: 11,
+  MATERIALS: 12,
 };
 
 const stepSections = [
@@ -294,7 +304,9 @@ const stepSections = [
   { label: "Tablecloth", steps: [2, 3] },
   { label: "Place Settings", steps: [4, 5, 6, 7] },
   { label: "Centerpiece", steps: [8, 9] },
-  { label: "Review", steps: [10] },
+  { label: "Table Styling", steps: [10] },
+  { label: "Review", steps: [11] },
+  { label: "Export", steps: [12] },
 ];
 
 const TOTAL_STEPS = stepSequence.length;
@@ -374,6 +386,7 @@ const refs = {
   table: el("table"),
   tableclothLayer: el("tableclothLayer"),
   settings: el("settingsEl"),
+  styling: el("stylingEl"),
   centerpiece: el("centerpieceEl"),
   stepTitle: el("stepTitle"),
   stepHint: el("stepHint"),
@@ -403,6 +416,7 @@ const refs = {
     napkin: el("sumNapkin"),
     napkinTexture: el("sumNapkinTexture"),
     centerpiece: el("sumCenterpiece"),
+    tableStyling: el("sumTableStyling"),
   },
 };
 
@@ -535,6 +549,44 @@ const centerpieceStyleOptions = [
   { value: "greeneryRunner", label: "Greenery Runner", thumbnail: `${ASSET_BASE}/centerpiece-minimal-greenery.svg` },
 ];
 
+
+const menuCardStyleOptions = [
+  { value: "handmade-paper", label: "Handmade Paper" },
+  { value: "acrylic", label: "Acrylic" },
+  { value: "minimal-print", label: "Minimal Print" },
+  { value: "gold-foil", label: "Gold Foil" },
+];
+
+const menuCardPlacementOptions = [
+  { value: "on-napkin", label: "On napkin" },
+  { value: "above-charger", label: "Above charger" },
+  { value: "beside-charger", label: "Beside charger" },
+];
+
+const placeCardStyleOptions = [
+  { value: "tent-card", label: "Tent Card" },
+  { value: "acrylic-block", label: "Acrylic Block" },
+  { value: "wax-seal-card", label: "Wax Seal Card" },
+];
+
+const placeCardPlacementOptions = [
+  { value: "on-charger", label: "On charger" },
+  { value: "above-charger", label: "Above charger" },
+  { value: "beside-napkin", label: "Beside napkin" },
+];
+
+const tableNumberStyleOptions = [
+  { value: "acrylic-stand", label: "Acrylic Stand" },
+  { value: "metal-stand", label: "Metal Stand" },
+  { value: "floral-base", label: "Floral Base" },
+];
+
+const candleStyleOptions = [
+  { value: "votive", label: "Votive" },
+  { value: "taper", label: "Taper" },
+  { value: "mixed", label: "Mixed" },
+];
+
 function getCenterpieceStyleLabel(styleValue) {
   return centerpieceStyleOptions.find((option) => option.value === styleValue)?.label || "";
 }
@@ -544,6 +596,100 @@ function getDefaultCenterpieceStyleForDecision(decision) {
     return "candleTrio";
   }
   return "floralLow";
+}
+
+
+
+function getOptionLabel(options, value) {
+  return options.find((option) => option.value === value)?.label || null;
+}
+
+function getTableStylingSummaryParts() {
+  const items = [];
+  const { menuCard, placeCard, tableNumber, candles } = state.tableStyling;
+
+  if (menuCard.enabled && menuCard.style) {
+    const style = getOptionLabel(menuCardStyleOptions, menuCard.style) || "Menu Card";
+    const placement = getOptionLabel(menuCardPlacementOptions, menuCard.placement);
+    items.push(`Menu Cards: ${style}${placement ? `, ${placement}` : ""}`);
+  }
+
+  if (placeCard.enabled && placeCard.style) {
+    const style = getOptionLabel(placeCardStyleOptions, placeCard.style) || "Place Card";
+    const placement = getOptionLabel(placeCardPlacementOptions, placeCard.placement);
+    items.push(`Place Cards: ${style}${placement ? `, ${placement}` : ""}`);
+  }
+
+  if (tableNumber.enabled && tableNumber.style) {
+    items.push(`Table Numbers: ${getOptionLabel(tableNumberStyleOptions, tableNumber.style) || "Styled"}`);
+  }
+
+  if (candles.enabled && candles.style) {
+    items.push(`Candles: ${getOptionLabel(candleStyleOptions, candles.style) || "Styled"}`);
+  }
+
+  return items;
+}
+
+function getTableStylingStepValue() {
+  const parts = getTableStylingSummaryParts();
+  return parts.length ? parts.join(" · ") : "None";
+}
+
+function getReadableSummary() {
+  return {
+    table: `${formatTableSelection(state.tableShape, state.tableSize)}, ${state.placeSettingsCount || "—"} place settings`,
+    linens: `${tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || state.tableclothTexture}, ${tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory"}`,
+    charger: getChargerStepValue(),
+    napkin: `${getNapkinStepValue()}, ${getNapkinTextureStepValue()}`,
+    centerpiece: getCenterpieceStepValue(),
+    tableStyling: getTableStylingSummaryParts(),
+  };
+}
+
+function toTitleCase(value) {
+  return value
+    .split(/[-\s]+/)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function generateMaterialsList() {
+  const count = Number(state.placeSettingsCount) || 0;
+  const list = [];
+
+  list.push({ category: "Table", label: `${formatTableSelection(state.tableShape, state.tableSize)} Table`, quantity: 1 });
+  list.push({ category: "Linens", label: `${tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || toTitleCase(state.tableclothTexture)} ${tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory"} Tablecloth`, quantity: 1 });
+
+  if (state.includeCharger && state.selectedCharger && count) {
+    list.push({ category: "Charger", label: getSelectedChargerLabel() || "Charger", quantity: count });
+  }
+
+  if (state.includeNapkin && state.napkinType && count) {
+    list.push({ category: "Napkin", label: `${state.napkinType} ${getNapkinTextureStepValue()} Napkin`, quantity: count });
+  }
+
+  if (state.hasCenterpiece && state.centerpieceStyle) {
+    list.push({ category: "Centerpiece", label: getCenterpieceStyleLabel(state.centerpieceStyle), quantity: 1 });
+  }
+
+  if (state.tableStyling.menuCard.enabled && count) {
+    list.push({ category: "Menu Card", label: `${getOptionLabel(menuCardStyleOptions, state.tableStyling.menuCard.style) || "Menu Card"}`, quantity: count });
+  }
+
+  if (state.tableStyling.placeCard.enabled && count) {
+    list.push({ category: "Place Card", label: `${getOptionLabel(placeCardStyleOptions, state.tableStyling.placeCard.style) || "Place Card"}`, quantity: count });
+  }
+
+  if (state.tableStyling.tableNumber.enabled) {
+    list.push({ category: "Table Number", label: getOptionLabel(tableNumberStyleOptions, state.tableStyling.tableNumber.style) || "Table Number", quantity: 1 });
+  }
+
+  if (state.tableStyling.candles.enabled) {
+    list.push({ category: "Candles", label: getOptionLabel(candleStyleOptions, state.tableStyling.candles.style) || "Candles", quantity: Math.max(3, Math.ceil(count / 2) || 3) });
+  }
+
+  return list;
 }
 
 function getTableclothAssetPath(texture, color) {
@@ -833,6 +979,25 @@ function renderCenterpiece() {
   refs.centerpiece.appendChild(centerImage);
 }
 
+function renderStylingOverlays() {
+  refs.styling.innerHTML = "";
+  const overlays = [];
+
+  if (state.tableStyling.menuCard.enabled) overlays.push("Menu");
+  if (state.tableStyling.placeCard.enabled) overlays.push("Place");
+  if (state.tableStyling.tableNumber.enabled) overlays.push("No.");
+  if (state.tableStyling.candles.enabled) overlays.push("Candle");
+
+  overlays.forEach((label, index) => {
+    const chip = document.createElement("span");
+    chip.className = "styling-overlays__item";
+    chip.textContent = label;
+    chip.style.left = `${18 + (index * 18)}%`;
+    chip.style.top = `${16 + ((index % 2) * 58)}%`;
+    refs.styling.appendChild(chip);
+  });
+}
+
 function renderSummary() {
   refs.summary.table.textContent = formatTableSelection(state.tableShape, state.tableSize);
   refs.summary.settings.textContent = state.placeSettingsCount == null ? "—" : String(state.placeSettingsCount);
@@ -841,6 +1006,7 @@ function renderSummary() {
   refs.summary.napkin.textContent = state.includeNapkin ? (state.napkinType || "—") : "No napkin";
   refs.summary.napkinTexture.textContent = getNapkinTextureStepValue();
   refs.summary.centerpiece.textContent = getCenterpieceStepValue();
+  refs.summary.tableStyling.textContent = getTableStylingStepValue();
 }
 
 function updatePreviewStatus() {
@@ -939,8 +1105,10 @@ function renderPreview() {
   const currentStepNumber = currentStepIndex + 1;
   refs.centerpiece.innerHTML = "";
   refs.settings.innerHTML = "";
+  refs.styling.innerHTML = "";
 
   renderCenterpiece();
+  renderStylingOverlays();
   const shouldShowSettings = currentStepNumber >= 5;
   requestAnimationFrame(() => renderPlaceSettings(shouldShowSettings ? state.placeSettingsCount : null));
 
@@ -1417,7 +1585,9 @@ function getStepMeta() {
     case 8: return { title: "Choose Napkin Texture", hint: "Choose a fabric.", value: getNapkinTextureStepValue() };
     case 9: return { title: "Centerpiece", hint: "Do you want a centerpiece?", value: getCenterpieceStepValue() };
     case 10: return { title: "Centerpiece", hint: "Choose a centerpiece style", value: state.hasCenterpiece ? (getCenterpieceStyleLabel(state.centerpieceStyle) || "Not selected") : "Skipped" };
-    case 11: return { title: "Review + Export", hint: "Review all selections and export materials.", value: "Ready" };
+    case 11: return { title: "Table styling", hint: "Add optional finishing touches.", value: getTableStylingStepValue() };
+    case 12: return { title: "Final Preview / Review", hint: "Review your completed tablescape.", value: "Ready" };
+    case 13: return { title: "Export materials list", hint: "Convert your design into a sourcing checklist.", value: `${generateMaterialsList().length} items` };
     default: return { title: "", hint: "", value: "" };
   }
 }
@@ -1796,36 +1966,181 @@ function renderStepContent() {
   }
 
   if (currentStepNumber === 11) {
+    const categories = [
+      {
+        key: "menuCard",
+        title: "Menu Cards",
+        styles: menuCardStyleOptions,
+        placements: menuCardPlacementOptions,
+      },
+      {
+        key: "placeCard",
+        title: "Place Cards",
+        styles: placeCardStyleOptions,
+        placements: placeCardPlacementOptions,
+      },
+      {
+        key: "tableNumber",
+        title: "Table Numbers",
+        styles: tableNumberStyleOptions,
+      },
+      {
+        key: "candles",
+        title: "Candles",
+        styles: candleStyleOptions,
+      },
+    ];
+
     refs.stepContent.innerHTML = `
-      <div class="review-card">
-        <dl class="summary__grid kv">
-          <div><dt>Table</dt><dd>${formatTableSelection(state.tableShape, state.tableSize)}</dd></div>
-          <div><dt>Place Settings</dt><dd>${state.placeSettingsCount == null ? "—" : state.placeSettingsCount}</dd></div>
-          <div><dt>Tablecloth</dt><dd>${state.tableclothTexture} - ${tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory"}</dd></div>
-          <div><dt>Charger</dt><dd>${getSelectedChargerLabel() || "—"}</dd></div>
-          <div><dt>Napkin</dt><dd>${state.includeNapkin ? (state.napkinType || "—") : "No napkin"}</dd></div>
-          <div><dt>Napkin Texture</dt><dd>${getNapkinTextureStepValue()}</dd></div>
-          <div><dt>Centerpiece</dt><dd>${getCenterpieceStepValue()}</dd></div>
-        </dl>
-        <button id="btnExport" class="btn review-card__export" type="button">Export Materials</button>
+      <div class="styling-step">
+        ${categories.map((category) => {
+          const selected = state.tableStyling[category.key];
+          return `
+            <section class="styling-card ${selected.enabled ? "" : "styling-card--disabled"}" data-styling-key="${category.key}">
+              <label class="styling-card__toggle">
+                <input type="checkbox" data-styling-toggle="${category.key}" ${selected.enabled ? "checked" : ""} />
+                <span>${category.title}</span>
+              </label>
+              <div class="styling-card__controls" ${selected.enabled ? "" : "hidden"}>
+                <label>
+                  <span>Style</span>
+                  <select data-styling-style="${category.key}">
+                    <option value="">None</option>
+                    ${category.styles.map((option) => `<option value="${option.value}" ${selected.style === option.value ? "selected" : ""}>${option.label}</option>`).join("")}
+                  </select>
+                </label>
+                ${category.placements ? `
+                  <label>
+                    <span>Placement</span>
+                    <select data-styling-placement="${category.key}">
+                      <option value="">None</option>
+                      ${category.placements.map((option) => `<option value="${option.value}" ${selected.placement === option.value ? "selected" : ""}>${option.label}</option>`).join("")}
+                    </select>
+                  </label>
+                ` : ""}
+              </div>
+            </section>
+          `;
+        }).join("")}
       </div>
     `;
 
+    refs.stepContent.querySelectorAll("[data-styling-toggle]").forEach((input) => {
+      input.addEventListener("change", (event) => {
+        const key = event.target.getAttribute("data-styling-toggle");
+        const enabled = event.target.checked;
+        if (!key || !state.tableStyling[key]) return;
+
+        state.tableStyling[key].enabled = enabled;
+        if (!enabled) {
+          state.tableStyling[key].style = null;
+          if ("placement" in state.tableStyling[key]) {
+            state.tableStyling[key].placement = null;
+          }
+        }
+        updateUI();
+      });
+    });
+
+    refs.stepContent.querySelectorAll("[data-styling-style]").forEach((select) => {
+      select.addEventListener("change", (event) => {
+        const key = event.target.getAttribute("data-styling-style");
+        if (!key || !state.tableStyling[key]) return;
+        state.tableStyling[key].enabled = true;
+        state.tableStyling[key].style = event.target.value || null;
+        updateUI();
+      });
+    });
+
+    refs.stepContent.querySelectorAll("[data-styling-placement]").forEach((select) => {
+      select.addEventListener("change", (event) => {
+        const key = event.target.getAttribute("data-styling-placement");
+        if (!key || !state.tableStyling[key]) return;
+        state.tableStyling[key].enabled = true;
+        state.tableStyling[key].placement = event.target.value || null;
+        updateUI();
+      });
+    });
+  }
+
+  if (currentStepNumber === 12) {
+    const summary = getReadableSummary();
+    const sections = [
+      { label: "Table", text: summary.table, step: 0 },
+      { label: "Linens", text: summary.linens, step: 2 },
+      { label: "Charger", text: summary.charger, step: 5 },
+      { label: "Napkin", text: summary.napkin, step: 6 },
+      { label: "Centerpiece", text: summary.centerpiece, step: 8 },
+      { label: "Table Styling", text: summary.tableStyling.length ? summary.tableStyling.join(" · ") : "None", step: 10 },
+    ];
+
+    refs.stepContent.innerHTML = `
+      <div class="review-card review-card--final">
+        <div class="review-card__headline">Your design is complete</div>
+        <dl class="summary__grid kv">
+          ${sections.map((section) => `
+            <div>
+              <dt>${section.label}</dt>
+              <dd>${section.text}</dd>
+              <button class="btn btn--ghost btn--sm" type="button" data-edit-step="${section.step}">Edit</button>
+            </div>
+          `).join("")}
+        </dl>
+        <button id="btnToMaterials" class="btn review-card__export" type="button">Continue to Materials List</button>
+      </div>
+    `;
+
+    refs.stepContent.querySelectorAll("[data-edit-step]").forEach((button) => {
+      button.addEventListener("click", () => {
+        goToStep(Number(button.getAttribute("data-edit-step")), { smoothScroll: true });
+      });
+    });
+
+    el("btnToMaterials").addEventListener("click", () => {
+      goToStep(STEP_INDEX.MATERIALS, { allowFuture: true, smoothScroll: true });
+    });
+  }
+
+  if (currentStepNumber === 13) {
+    const materials = generateMaterialsList();
+    refs.stepContent.innerHTML = `
+      <div class="review-card review-card--materials">
+        <h3>Materials List</h3>
+        <div class="materials-list">
+          ${materials.map((item) => `
+            <div class="materials-list__item">
+              <div>
+                <p class="materials-list__category">${item.category}</p>
+                <p>${item.label}</p>
+              </div>
+              <strong>x${item.quantity}</strong>
+            </div>
+          `).join("")}
+        </div>
+        <div class="materials-actions">
+          <button id="btnBackToReview" class="btn btn--ghost" type="button">Back to Review</button>
+          <button class="btn btn--ghost" type="button" disabled>Save Design (Coming Soon)</button>
+          <button class="btn btn--ghost" type="button" disabled>Download PDF (Coming Soon)</button>
+          <button class="btn btn--ghost" type="button" disabled>Shop This Look (Coming Soon)</button>
+          <button class="btn btn--ghost" type="button" disabled>Find Vendors (Coming Soon)</button>
+          <button id="btnExport" class="btn" type="button">Export .txt</button>
+        </div>
+      </div>
+    `;
+
+    el("btnBackToReview").addEventListener("click", () => {
+      goToStep(STEP_INDEX.FINAL_REVIEW, { smoothScroll: true });
+    });
     el("btnExport").addEventListener("click", exportMaterials);
   }
 }
 
 function exportMaterials() {
+  const materials = generateMaterialsList();
   const lines = [
     "The Preview Suite — Materials List",
     "--------------------------------",
-    `Table: ${formatTableSelection(state.tableShape, state.tableSize)}`,
-    `Place settings: ${state.placeSettingsCount == null ? "—" : state.placeSettingsCount}`,
-    `Tablecloth: ${state.tableclothTexture} - ${tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory"}`,
-    `Charger: ${getSelectedChargerLabel() || "—"}`,
-    `Napkin: ${state.includeNapkin ? (state.napkinType || "—") : "No napkin"}`,
-    `Napkin texture: ${getNapkinTextureStepValue()}`,
-    `Centerpiece: ${getCenterpieceStepValue()}`,
+    ...materials.map((item) => `${item.category}: ${item.label} (x${item.quantity})`),
   ];
 
   const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
@@ -1881,7 +2196,7 @@ function goToStep(index, options = {}) {
   }
 
   if (normalizedIndex === STEP_INDEX.CENTERPIECE_STYLE && shouldSkipCenterpieceStyleStep()) {
-    normalizedIndex = index > currentStepIndex ? STEP_INDEX.REVIEW : STEP_INDEX.CENTERPIECE_DECISION;
+    normalizedIndex = index > currentStepIndex ? STEP_INDEX.TABLE_STYLING : STEP_INDEX.CENTERPIECE_DECISION;
   }
 
   const boundedIndex = Math.max(0, Math.min(normalizedIndex, TOTAL_STEPS - 1));
