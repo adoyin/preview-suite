@@ -316,7 +316,7 @@ function shouldSkipNapkinTextureStep() {
 }
 
 function shouldSkipCenterpieceStyleStep() {
-  return state.centerpieceDecision === "none";
+  return state.hasCenterpiece === false;
 }
 
 function getSkippedStepCount() {
@@ -471,11 +471,11 @@ function getNapkinTextureStepValue() {
 }
 
 function getCenterpieceStepValue() {
-  if (state.centerpieceDecision === "none") {
+  if (state.hasCenterpiece === false) {
     return "No centerpiece";
   }
 
-  if (!state.hasCenterpiece) {
+  if (state.hasCenterpiece == null) {
     return "Not selected";
   }
 
@@ -483,15 +483,7 @@ function getCenterpieceStepValue() {
     return getCenterpieceStyleLabel(state.centerpieceStyle);
   }
 
-  if (state.centerpieceDecision === "chooseForMe") {
-    return "Choose for me";
-  }
-
-  if (state.centerpieceDecision === "dontKnow") {
-    return "I don't know";
-  }
-
-  return "Not selected";
+  return "Add centerpiece";
 }
 
 const napkinColorSlugMap = {
@@ -535,10 +527,16 @@ const centerpieceAssetMap = {
 };
 
 const centerpieceDecisionOptions = [
-  { value: "none", label: "No centerpiece" },
-  { value: "yes", label: "Yes, add centerpiece" },
-  { value: "chooseForMe", label: "Choose for me" },
-  { value: "dontKnow", label: "I don't know" },
+  {
+    value: "none",
+    label: "No centerpiece",
+    description: "Keep the table clean and minimal",
+  },
+  {
+    value: "yes",
+    label: "Add centerpiece",
+    description: "Choose a centerpiece style",
+  },
 ];
 
 const centerpieceStyleOptions = [
@@ -591,10 +589,7 @@ function getCenterpieceStyleLabel(styleValue) {
   return centerpieceStyleOptions.find((option) => option.value === styleValue)?.label || "";
 }
 
-function getDefaultCenterpieceStyleForDecision(decision) {
-  if (decision === "dontKnow") {
-    return "candleTrio";
-  }
+function getDefaultCenterpieceStyleForDecision() {
   return "floralLow";
 }
 
@@ -1583,7 +1578,7 @@ function getStepMeta() {
     case 6: return { title: "Charger plate", hint: "Select your charger style.", value: getChargerStepValue() };
     case 7: return { title: "Napkin color", hint: "Choose a color.", value: getNapkinStepValue() };
     case 8: return { title: "Choose Napkin Texture", hint: "Choose a fabric.", value: getNapkinTextureStepValue() };
-    case 9: return { title: "Centerpiece", hint: "Do you want a centerpiece?", value: getCenterpieceStepValue() };
+    case 9: return { title: "Centerpiece", hint: "Would you like to add a centerpiece?", value: getCenterpieceStepValue() };
     case 10: return { title: "Centerpiece", hint: "Choose a centerpiece style", value: state.hasCenterpiece ? (getCenterpieceStyleLabel(state.centerpieceStyle) || "Not selected") : "Skipped" };
     case 11: return { title: "Table styling", hint: "Add optional finishing touches.", value: getTableStylingStepValue() };
     case 12: return { title: "Final Preview / Review", hint: "Review your completed tablescape.", value: "Ready" };
@@ -1909,32 +1904,36 @@ function renderStepContent() {
 
   if (currentStepNumber === 9) {
     refs.stepContent.innerHTML = `
-      <div class="options">
-        ${centerpieceDecisionOptions.map((option) => `
-          <label class="opt">
-            <input type="radio" name="centerpieceDecision" value="${option.value}" ${state.centerpieceDecision === option.value ? "checked" : ""} />
-            <span>${option.label}</span>
-          </label>
-        `).join("")}
+      <div class="centerpiece-decision-cards" role="radiogroup" aria-label="Centerpiece decision">
+        ${centerpieceDecisionOptions.map((option) => {
+          const isSelected = (option.value === "none" && state.hasCenterpiece === false)
+            || (option.value === "yes" && state.hasCenterpiece === true);
+          return `
+            <button
+              class="centerpiece-decision-card ${isSelected ? "centerpiece-decision-card--selected" : ""}"
+              type="button"
+              role="radio"
+              aria-checked="${isSelected ? "true" : "false"}"
+              data-centerpiece-decision="${option.value}"
+            >
+              <span class="centerpiece-decision-card__title">${option.label}</span>
+              <span class="centerpiece-decision-card__description">${option.description}</span>
+            </button>
+          `;
+        }).join("")}
       </div>
     `;
 
-    refs.stepContent.querySelectorAll('input[name="centerpieceDecision"]').forEach((radio) => {
-      radio.addEventListener("change", (event) => {
-        state.centerpieceDecision = event.target.value;
+    refs.stepContent.querySelectorAll("[data-centerpiece-decision]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const decision = button.getAttribute("data-centerpiece-decision");
+        state.centerpieceDecision = decision;
 
-        if (state.centerpieceDecision === "none") {
+        if (decision === "none") {
           state.hasCenterpiece = false;
           state.centerpieceStyle = null;
         } else {
           state.hasCenterpiece = true;
-          if (state.centerpieceDecision === "chooseForMe") {
-            state.centerpieceStyle = getDefaultCenterpieceStyleForDecision("chooseForMe");
-          } else if (state.centerpieceDecision === "dontKnow") {
-            state.centerpieceStyle = getDefaultCenterpieceStyleForDecision("dontKnow");
-          } else if (!state.centerpieceStyle) {
-            state.centerpieceStyle = getDefaultCenterpieceStyleForDecision("yes");
-          }
         }
 
         updateUI();
@@ -1944,6 +1943,7 @@ function renderStepContent() {
 
   if (currentStepNumber === 10) {
     refs.stepContent.innerHTML = `
+      <p class="centerpiece-style-helper">Not sure? Start with Floral (Low).</p>
       <div class="option-cards">
         ${centerpieceStyleOptions.map((option) => `
           <button class="option-card ${state.centerpieceStyle === option.value ? "option-card--selected" : ""}" type="button" data-centerpiece-style="${option.value}">
@@ -1959,6 +1959,7 @@ function renderStepContent() {
     refs.stepContent.querySelectorAll("[data-centerpiece-style]").forEach((button) => {
       button.addEventListener("click", () => {
         state.hasCenterpiece = true;
+        state.centerpieceDecision = "yes";
         state.centerpieceStyle = button.getAttribute("data-centerpiece-style");
         updateUI();
       });
@@ -2172,7 +2173,7 @@ function updateUI() {
   refs.btnBack.disabled = currentStepNumber === 1;
   refs.btnNext.disabled = currentStepNumber === TOTAL_STEPS
     || (currentStepNumber === 5 && state.placeSettingsCount == null)
-    || (currentStepNumber === 9 && state.centerpieceDecision == null)
+    || (currentStepNumber === 9 && state.hasCenterpiece == null)
     || (currentStepNumber === 10 && state.hasCenterpiece && state.centerpieceStyle == null);
   refs.btnNext.textContent = currentStepNumber === TOTAL_STEPS ? "Complete" : "Next";
 
@@ -2260,7 +2261,7 @@ function resetCurrentStep() {
 
   if (currentStepIndex + 1 === 10) {
     if (state.hasCenterpiece) {
-      state.centerpieceStyle = getDefaultCenterpieceStyleForDecision(state.centerpieceDecision || "yes");
+      state.centerpieceStyle = getDefaultCenterpieceStyleForDecision();
     }
     updateUI();
     return;
