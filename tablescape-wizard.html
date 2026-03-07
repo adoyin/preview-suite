@@ -188,15 +188,15 @@
         <div class="builder-head builder-head--stack">
           <div>
             <h1 class="h1">I know what I want</h1>
-            <p class="subtle">Answer one question per step. Your preview updates live as you go.</p>
+            <p class="subtle">Curate your table by section. Your preview updates live as you refine each detail.</p>
           </div>
-          <div class="wizard-progress-wrap">
-            <p class="wizard-progress" id="wizardProgress">Step 1 of 12</p>
+          <div class="wizard-progress-wrap wizard-progress-wrap--sectioned">
+            <p class="wizard-progress" id="wizardProgress">Section 1 of 4</p>
             <div class="progress-track" aria-hidden="true">
               <div class="progress-fill" id="progressFill"></div>
             </div>
-            <div class="wizard-progress-actions">
-              <button id="btnJumpTo" class="btn btn--ghost btn--sm" type="button">Jump to…</button>
+            <div class="wizard-sticky-progress" id="stickySectionProgress" aria-live="polite">
+              Currently editing: <span id="stickySectionLabel">Table Setup</span>
             </div>
           </div>
         </div>
@@ -206,15 +206,15 @@
         <div class="step" id="wizardStepCard">
           <div class="step__top">
             <div>
-              <div class="step__title" id="stepTitle">Table shape</div>
-              <div class="step__hint" id="stepHint">Choose the base table shape.</div>
+              <div class="step__title" id="stepTitle">Grouped Builder</div>
+              <div class="step__hint" id="stepHint">Move through curated sections while keeping every option visible inside its group.</div>
             </div>
-            <span class="pill" id="stepValue">Round</span>
+            <span class="pill" id="stepValue">Table Setup</span>
           </div>
 
           <div id="stepContent"></div>
 
-          <div class="wizard-controls">
+          <div class="wizard-controls" hidden>
             <button id="btnBack" class="btn btn--ghost" type="button">Back</button>
             <div class="wizard-controls__right">
               <button id="btnReset" class="btn btn--ghost" type="button">Reset</button>

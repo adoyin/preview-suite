@@ -24,33 +24,33 @@ const tableSizeOptions = {
       thumbnail: "./assets/descriptors/table-shapes/round.png",
     },
     {
-      value: 90,
-      label: '90" Round',
+      value: 84,
+      label: '84" Round',
       descriptor: "Grand",
-      helperText: "Ideal for larger group seating and grand layouts",
+      helperText: "Ideal for larger group seating with refined spacing",
       thumbnail: "./assets/descriptors/table-shapes/round.png",
     },
   ],
   rectangle: [
     {
       value: "6ft",
-      label: "6 ft Rectangle",
+      label: "6ft Banquet",
       descriptor: "Compact",
-      helperText: "Often used for smaller table groupings or supporting tables",
+      helperText: "Great for smaller layouts and supporting tables",
       thumbnail: "./assets/descriptors/table-shapes/rectangle.png",
     },
     {
       value: "8ft",
-      label: "8 ft Rectangle",
+      label: "8ft Banquet",
       descriptor: "Classic",
       helperText: "The most common banquet table length for events",
       thumbnail: "./assets/descriptors/table-shapes/rectangle.png",
     },
     {
-      value: "9ft",
-      label: "9 ft Rectangle",
-      descriptor: "Extended",
-      helperText: "Ideal for long layouts, head tables, and statement seating",
+      value: "king",
+      label: "King Table",
+      descriptor: "Statement",
+      helperText: "Ideal for head tables and dramatic linear styling",
       thumbnail: "./assets/descriptors/table-shapes/rectangle.png",
     },
   ],
@@ -67,13 +67,6 @@ const tableSizeOptions = {
       label: '48" Square',
       descriptor: "Social",
       helperText: "A flexible choice for most small celebrations and gatherings",
-      thumbnail: "./assets/descriptors/table-shapes/square.png",
-    },
-    {
-      value: 60,
-      label: '60" Square',
-      descriptor: "Statement",
-      helperText: "Ideal for fuller table styling and larger square layouts",
       thumbnail: "./assets/descriptors/table-shapes/square.png",
     },
   ],
@@ -310,6 +303,34 @@ const stepSections = [
 ];
 
 const TOTAL_STEPS = stepSequence.length;
+const builderSections = [
+  {
+    id: "table-setup",
+    title: "Table Setup",
+    hint: "Foundation and linen direction.",
+    rows: [1, 2, 3, 4],
+  },
+  {
+    id: "place-settings",
+    title: "Place Settings",
+    hint: "Layer each seat with charger and napkin details.",
+    rows: [5, 6, 7, 8],
+  },
+  {
+    id: "centerpiece",
+    title: "Centerpiece",
+    hint: "Define the focal arrangement.",
+    rows: [9, 10],
+  },
+  {
+    id: "review",
+    title: "Review",
+    hint: "Confirm your final selections.",
+    rows: [12],
+  },
+];
+
+const sectionStepMap = [0, STEP_INDEX.NAPKIN_COLOR, STEP_INDEX.CENTERPIECE_DECISION, STEP_INDEX.FINAL_REVIEW];
 
 function shouldSkipNapkinTextureStep() {
   return !state.includeNapkin;
@@ -376,6 +397,7 @@ const state = { ...initialState };
 let currentStepIndex = 0;
 let maxStepReached = 0;
 let isJumpModalOpen = false;
+let activeSectionIndex = 0;
 
 const placeSettingsOptions = Array.from({ length: 11 }, (_, index) => index + 2);
 
@@ -396,6 +418,7 @@ const refs = {
   wizardProgress: el("wizardProgress"),
   progressFill: el("progressFill"),
   btnJumpTo: el("btnJumpTo"),
+  stickySectionLabel: el("stickySectionLabel"),
   jumpModal: el("jumpModal"),
   jumpBackdrop: el("jumpBackdrop"),
   jumpClose: el("jumpClose"),
@@ -421,9 +444,9 @@ const refs = {
 };
 
 const sizeScaleMap = {
-  round: { 60: 1.32, 72: 1.45, 90: 1.56 },
-  rectangle: { "6ft": 1.3, "8ft": 1.42, "9ft": 1.54 },
-  square: { 36: 1.28, 48: 1.4, 60: 1.52 },
+  round: { 60: 1.32, 72: 1.45, 84: 1.56 },
+  rectangle: { "6ft": 1.3, "8ft": 1.42, king: 1.54 },
+  square: { 36: 1.28, 48: 1.4 },
 };
 
 let currentPreviewScale = 1;
@@ -1571,7 +1594,7 @@ function getStepMeta() {
 
   switch (currentStepNumber) {
     case 1: return { title: "Table shape", hint: "Choose the base table shape.", value: formatTableShape(state.tableShape) };
-    case 2: return { title: "Table size", hint: "Choose a size for the selected shape.", value: typeof state.tableSize === "number" ? `${state.tableSize}"` : state.tableSize };
+    case 2: return { title: "Table size", hint: "Choose a size for the selected shape.", value: state.tableSize ? (typeof state.tableSize === "number" ? `${state.tableSize}"` : state.tableSize) : "Not selected" };
     case 3: return { title: "Choose Tablecloth Texture", hint: "Choose a fabric.", value: tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || state.tableclothTexture };
     case 4: return { title: "Tablecloth color", hint: "Choose a color.", value: tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory" };
     case 5: return { title: "Number of place settings", hint: "How many guests are you planning for?", value: state.placeSettingsCount == null ? "Not selected" : formatGuestLabel(state.placeSettingsCount) };
@@ -1771,368 +1794,291 @@ function renderPlaceSettingsStep() {
   });
 }
 
-function renderStepContent() {
-  const currentStepNumber = currentStepIndex + 1;
-  refs.stepContent.innerHTML = "";
-
-  if (currentStepNumber === 1) {
-    tableShapeOptions.forEach((option) => {
-      console.log(`[Tablescape] Step 1 table shape image src for ${option.label}: ${option.thumbnail}`);
-    });
-
-    renderVisualOptionCards({
-      name: "tableShape",
-      options: tableShapeOptions,
-      selectedValue: state.tableShape,
-      onSelect: (value) => {
-        if (state.tableShape !== value) {
-          state.tableShape = value;
-          const shapeSizes = tableSizeOptions[value] || [];
-          state.tableSize = shapeSizes[0]?.value || "";
-        }
-        updateUI();
-      },
-    });
+function isSectionComplete(sectionIndex) {
+  switch (sectionIndex) {
+    case 0:
+      return Boolean(state.tableShape && state.tableSize && state.tableclothTexture && state.tableclothColor);
+    case 1:
+      return state.placeSettingsCount != null && (!state.includeCharger || state.selectedCharger) && (!state.includeNapkin || state.napkinType);
+    case 2:
+      return state.hasCenterpiece === false || (state.hasCenterpiece === true && state.centerpieceStyle);
+    case 3:
+      return true;
+    default:
+      return false;
   }
+}
 
-  if (currentStepNumber === 2) {
-    const shapeSizes = tableSizeOptions[state.tableShape] || [];
-    if (!shapeSizes.some((option) => option.value === state.tableSize)) {
-      state.tableSize = shapeSizes[0]?.value || "";
-    }
+function getHighestRevealedSectionIndex() {
+  let index = 0;
+  while (index < builderSections.length - 1 && isSectionComplete(index)) {
+    index += 1;
+  }
+  return index;
+}
 
-    if (state.tableShape === "round") {
-      renderRoundSizeCards();
-    } else if (state.tableShape === "rectangle") {
-      renderRectangleSizeCards();
-    } else if (state.tableShape === "square") {
-      renderSquareSizeCards();
-    } else {
+function withScopedStepContent(container, renderFn) {
+  const previousStepContent = refs.stepContent;
+  refs.stepContent = container;
+  renderFn();
+  refs.stepContent = previousStepContent;
+}
+
+function renderStepInto(stepNumber, container) {
+  withScopedStepContent(container, () => {
+    if (stepNumber === 1) {
       renderVisualOptionCards({
-        name: "tableSize",
-        options: shapeSizes,
-        selectedValue: state.tableSize,
+        name: "tableShape",
+        options: tableShapeOptions,
+        selectedValue: state.tableShape,
         onSelect: (value) => {
-          state.tableSize = value;
+          if (state.tableShape !== value) {
+            state.tableShape = value;
+            const shapeSizes = tableSizeOptions[value] || [];
+            if (!shapeSizes.some((option) => option.value === state.tableSize)) {
+              state.tableSize = "";
+            }
+          }
           updateUI();
         },
       });
+      return;
     }
-  }
 
-  if (currentStepNumber === 3) {
-    renderTableTextureCards();
-  }
+    if (stepNumber === 2) {
+      if (!state.tableShape) {
+        refs.stepContent.innerHTML = '<p class="subtle">Choose a table shape first to unlock matching size options.</p>';
+        return;
+      }
 
-  if (currentStepNumber === 4) {
-    renderTableColorCards();
-  }
+      const shapeSizes = tableSizeOptions[state.tableShape] || [];
+      if (!shapeSizes.some((option) => option.value === state.tableSize)) {
+        state.tableSize = "";
+      }
+      if (state.tableShape === "round") renderRoundSizeCards();
+      else if (state.tableShape === "rectangle") renderRectangleSizeCards();
+      else if (state.tableShape === "square") renderSquareSizeCards();
+      return;
+    }
 
-  if (currentStepNumber === 5) {
-    renderPlaceSettingsStep();
-  }
+    if (stepNumber === 3) return renderTableTextureCards();
+    if (stepNumber === 4) return renderTableColorCards();
+    if (stepNumber === 5) return renderPlaceSettingsStep();
 
-  if (currentStepNumber === 6) {
-    refs.stepContent.innerHTML = `
-      <div class="charger-step__controls">
-        <label class="charger-toggle charger-toggle--no-charger" for="noChargerToggle">
-          <input id="noChargerToggle" class="charger-toggle__input" type="checkbox" ${state.includeCharger ? "" : "checked"} />
-          <span class="charger-toggle__label">No charger</span>
-        </label>
-      </div>
-      <div id="wizard-texture-carousel" class="texture-carousel ${state.includeCharger ? "" : "texture-carousel--disabled"}" ${state.includeCharger ? "" : "aria-disabled=\"true\""}>
-        <button class="texture-carousel__arrow texture-carousel__arrow--left" type="button" data-texture-scroll="left" aria-label="Scroll charger options left">&#8249;</button>
-        <div class="texture-carousel__viewport">
-          <div class="option-cards option-cards--table-texture">
-            ${chargerOptions.map((option) => `
-              <label class="option-card option-card--texture option-card--charger ${state.selectedCharger === option.value ? "option-card--selected" : ""}">
-                <input type="radio" name="selectedCharger" value="${option.value}" ${state.selectedCharger === option.value ? "checked" : ""} />
-                <div class="option-card__media option-card__media--texture option-card__media--charger">
-                  <img class="option-card__image option-card__image--texture option-card__image--charger" src="${option.image}" data-fallback-src="${PLACEHOLDER_ASSET}" data-fallback-text="true" alt="${option.label}" loading="lazy" />
-                  <span class="option-card__fallback" data-fallback-text hidden>Image coming soon</span>
-                </div>
-                <span class="option-card__title option-card__title--texture">${option.label}</span>
-              </label>
-            `).join("")}
-          </div>
+    if (stepNumber === 6) {
+      refs.stepContent.innerHTML = `
+        <div class="charger-step__controls">
+          <label class="charger-toggle charger-toggle--no-charger" for="noChargerToggleGrouped">
+            <input id="noChargerToggleGrouped" class="charger-toggle__input" type="checkbox" ${state.includeCharger ? "" : "checked"} />
+            <span class="charger-toggle__label">No charger</span>
+          </label>
         </div>
-        <button class="texture-carousel__arrow texture-carousel__arrow--right" type="button" data-texture-scroll="right" aria-label="Scroll charger options right">&#8250;</button>
-      </div>
-    `;
+        <div id="wizard-texture-carousel" class="texture-carousel ${state.includeCharger ? "" : "texture-carousel--disabled"}" ${state.includeCharger ? "" : "aria-disabled=\"true\""}>
+          <button class="texture-carousel__arrow texture-carousel__arrow--left" type="button" data-texture-scroll="left" aria-label="Scroll charger options left">&#8249;</button>
+          <div class="texture-carousel__viewport">
+            <div class="option-cards option-cards--table-texture">
+              ${chargerOptions.map((option) => `
+                <label class="option-card option-card--texture option-card--charger ${state.selectedCharger === option.value ? "option-card--selected" : ""}">
+                  <input type="radio" name="selectedCharger" value="${option.value}" ${state.selectedCharger === option.value ? "checked" : ""} />
+                  <div class="option-card__media option-card__media--texture option-card__media--charger">
+                    <img class="option-card__image option-card__image--texture option-card__image--charger" src="${option.image}" data-fallback-src="${PLACEHOLDER_ASSET}" data-fallback-text="true" alt="${option.label}" loading="lazy" />
+                    <span class="option-card__fallback" data-fallback-text hidden>Image coming soon</span>
+                  </div>
+                  <span class="option-card__title option-card__title--texture">${option.label}</span>
+                </label>
+              `).join("")}
+            </div>
+          </div>
+          <button class="texture-carousel__arrow texture-carousel__arrow--right" type="button" data-texture-scroll="right" aria-label="Scroll charger options right">&#8250;</button>
+        </div>
+      `;
 
-    refs.stepContent.querySelector("#noChargerToggle")?.addEventListener("change", (event) => {
-      const noCharger = event.target.checked;
-      const includeCharger = !noCharger;
-
-      if (!includeCharger && state.selectedCharger != null) {
-        state.lastSelectedCharger = state.selectedCharger;
-      }
-
-      if (includeCharger) {
-        state.includeCharger = true;
-        if (state.selectedCharger == null && state.lastSelectedCharger && getChargerOption(state.lastSelectedCharger)) {
-          state.selectedCharger = state.lastSelectedCharger;
+      refs.stepContent.querySelector("#noChargerToggleGrouped")?.addEventListener("change", (event) => {
+        const includeCharger = !event.target.checked;
+        if (!includeCharger && state.selectedCharger != null) state.lastSelectedCharger = state.selectedCharger;
+        if (includeCharger) {
+          state.includeCharger = true;
+          if (state.selectedCharger == null && state.lastSelectedCharger && getChargerOption(state.lastSelectedCharger)) {
+            state.selectedCharger = state.lastSelectedCharger;
+          }
+        } else {
+          state.includeCharger = false;
+          state.selectedCharger = null;
         }
-      } else {
-        state.includeCharger = false;
-        state.selectedCharger = null;
+        updateUI();
+      });
+
+      refs.stepContent.querySelectorAll('input[name="selectedCharger"]').forEach((radio) => {
+        radio.addEventListener("change", (event) => {
+          state.includeCharger = true;
+          state.selectedCharger = event.target.value;
+          state.lastSelectedCharger = event.target.value;
+          updateUI();
+        });
+      });
+
+      setupTextureCarousel();
+      attachImageFallbacks(refs.stepContent);
+      return;
+    }
+
+    if (stepNumber === 7) return renderNapkinColorCards();
+    if (stepNumber === 8) return renderNapkinTextureCards();
+
+    if (stepNumber === 9) {
+      refs.stepContent.innerHTML = `
+        <div class="centerpiece-decision-cards" role="radiogroup" aria-label="Centerpiece decision">
+          ${centerpieceDecisionOptions.map((option) => {
+            const isSelected = (option.value === "none" && state.hasCenterpiece === false)
+              || (option.value === "yes" && state.hasCenterpiece === true);
+            return `
+              <button
+                class="centerpiece-decision-card ${isSelected ? "centerpiece-decision-card--selected" : ""}"
+                type="button"
+                role="radio"
+                aria-checked="${isSelected ? "true" : "false"}"
+                data-centerpiece-decision="${option.value}"
+              >
+                <span class="centerpiece-decision-card__title">${option.label}</span>
+                <span class="centerpiece-decision-card__description">${option.description}</span>
+              </button>
+            `;
+          }).join("")}
+        </div>
+      `;
+      refs.stepContent.querySelectorAll("[data-centerpiece-decision]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const decision = button.getAttribute("data-centerpiece-decision");
+          state.centerpieceDecision = decision;
+          if (decision === "none") {
+            state.hasCenterpiece = false;
+            state.centerpieceStyle = null;
+          } else {
+            state.hasCenterpiece = true;
+            state.centerpieceStyle = state.centerpieceStyle || getDefaultCenterpieceStyleForDecision();
+          }
+          updateUI();
+        });
+      });
+      return;
+    }
+
+    if (stepNumber === 10) {
+      if (state.hasCenterpiece === false) {
+        refs.stepContent.innerHTML = '<p class="subtle">Centerpiece style options appear when a centerpiece is selected.</p>';
+        return;
       }
 
+      refs.stepContent.innerHTML = `
+        <p class="centerpiece-style-helper">Not sure? Start with Floral (Low).</p>
+        <div class="option-cards">
+          ${centerpieceStyleOptions.map((option) => `
+            <button class="option-card ${state.centerpieceStyle === option.value ? "option-card--selected" : ""}" type="button" data-centerpiece-style="${option.value}">
+              <div class="option-card__media">
+                <img class="option-card__image" src="${option.thumbnail}" alt="${option.label} centerpiece" loading="lazy" />
+              </div>
+              <span class="option-card__title">${option.label}</span>
+            </button>
+          `).join("")}
+        </div>
+      `;
+
+      refs.stepContent.querySelectorAll("[data-centerpiece-style]").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.hasCenterpiece = true;
+          state.centerpieceDecision = "yes";
+          state.centerpieceStyle = button.getAttribute("data-centerpiece-style");
+          updateUI();
+        });
+      });
+      return;
+    }
+
+    if (stepNumber === 12) {
+      const summary = getReadableSummary();
+      refs.stepContent.innerHTML = `
+        <div class="review-card review-card--final">
+          <div class="review-card__headline">Your design is complete</div>
+          <dl class="summary__grid kv">
+            <div><dt>Table</dt><dd>${summary.table}</dd></div>
+            <div><dt>Linens</dt><dd>${summary.linens}</dd></div>
+            <div><dt>Charger</dt><dd>${summary.charger}</dd></div>
+            <div><dt>Napkin</dt><dd>${summary.napkin}</dd></div>
+            <div><dt>Centerpiece</dt><dd>${summary.centerpiece}</dd></div>
+          </dl>
+        </div>
+      `;
+    }
+  });
+}
+
+function renderStepContent() {
+  const maxRevealedIndex = getHighestRevealedSectionIndex();
+  if (activeSectionIndex > maxRevealedIndex) activeSectionIndex = maxRevealedIndex;
+
+  refs.stepContent.innerHTML = `
+    <div class="sectioned-builder">
+      ${builderSections.map((section, index) => {
+        const unlocked = index <= maxRevealedIndex;
+        const open = index === activeSectionIndex;
+        return `
+          <section class="section-container ${open ? "section-container--open" : ""} ${unlocked ? "" : "section-container--locked"}" data-section-index="${index}">
+            <button class="section-container__header" type="button" data-open-section="${index}" ${unlocked ? "" : "disabled"}>
+              <span>
+                <span class="section-container__eyebrow">Section ${index + 1}</span>
+                <span class="section-container__title">${section.title}</span>
+                <span class="section-container__hint">${section.hint}</span>
+              </span>
+              <span class="section-container__status">${isSectionComplete(index) ? "Completed" : (open ? "In progress" : "Open")}</span>
+            </button>
+            <div class="section-container__body" ${open ? "" : "hidden"}></div>
+          </section>
+        `;
+      }).join("")}
+    </div>
+  `;
+
+  refs.stepContent.querySelectorAll("[data-open-section]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const nextSection = Number(button.getAttribute("data-open-section"));
+      if (Number.isNaN(nextSection)) return;
+      activeSectionIndex = nextSection;
+      currentStepIndex = sectionStepMap[nextSection] || 0;
       updateUI();
     });
+  });
 
-    refs.stepContent.querySelectorAll('input[name="selectedCharger"]').forEach((radio) => {
-      radio.addEventListener("change", (event) => {
-        state.includeCharger = true;
-        state.selectedCharger = event.target.value;
-        state.lastSelectedCharger = event.target.value;
-        updateUI();
-      });
-    });
+  const openSection = builderSections[activeSectionIndex];
+  const body = refs.stepContent.querySelector(`.section-container[data-section-index="${activeSectionIndex}"] .section-container__body`);
+  if (!openSection || !body) return;
 
-    setupTextureCarousel();
-    attachImageFallbacks(refs.stepContent);
-  }
+  openSection.rows.forEach((stepNumber) => {
+    if (stepNumber === 10 && state.hasCenterpiece === false) return;
+    const question = document.createElement("article");
+    question.className = "question-row";
+    const meta = (() => {
+      const previousIndex = currentStepIndex;
+      currentStepIndex = stepNumber - 1;
+      const data = getStepMeta();
+      currentStepIndex = previousIndex;
+      return data;
+    })();
 
-  if (currentStepNumber === 7) {
-    renderNapkinColorCards();
-  }
-
-  if (currentStepNumber === 8) {
-    renderNapkinTextureCards();
-  }
-
-  if (currentStepNumber === 9) {
-    refs.stepContent.innerHTML = `
-      <div class="centerpiece-decision-cards" role="radiogroup" aria-label="Centerpiece decision">
-        ${centerpieceDecisionOptions.map((option) => {
-          const isSelected = (option.value === "none" && state.hasCenterpiece === false)
-            || (option.value === "yes" && state.hasCenterpiece === true);
-          return `
-            <button
-              class="centerpiece-decision-card ${isSelected ? "centerpiece-decision-card--selected" : ""}"
-              type="button"
-              role="radio"
-              aria-checked="${isSelected ? "true" : "false"}"
-              data-centerpiece-decision="${option.value}"
-            >
-              <span class="centerpiece-decision-card__title">${option.label}</span>
-              <span class="centerpiece-decision-card__description">${option.description}</span>
-            </button>
-          `;
-        }).join("")}
+    question.innerHTML = `
+      <div class="question-row__head">
+        <h3>${meta.title}</h3>
+        <p>${meta.hint || ""}</p>
       </div>
+      <div class="question-row__content"></div>
     `;
 
-    refs.stepContent.querySelectorAll("[data-centerpiece-decision]").forEach((button) => {
-      button.addEventListener("click", () => {
-        const decision = button.getAttribute("data-centerpiece-decision");
-        state.centerpieceDecision = decision;
+    body.appendChild(question);
+    renderStepInto(stepNumber, question.querySelector(".question-row__content"));
+  });
 
-        if (decision === "none") {
-          state.hasCenterpiece = false;
-          state.centerpieceStyle = null;
-        } else {
-          state.hasCenterpiece = true;
-        }
-
-        updateUI();
-      });
-    });
-  }
-
-  if (currentStepNumber === 10) {
-    refs.stepContent.innerHTML = `
-      <p class="centerpiece-style-helper">Not sure? Start with Floral (Low).</p>
-      <div class="option-cards">
-        ${centerpieceStyleOptions.map((option) => `
-          <button class="option-card ${state.centerpieceStyle === option.value ? "option-card--selected" : ""}" type="button" data-centerpiece-style="${option.value}">
-            <div class="option-card__media">
-              <img class="option-card__image" src="${option.thumbnail}" alt="${option.label} centerpiece" loading="lazy" />
-            </div>
-            <span class="option-card__title">${option.label}</span>
-          </button>
-        `).join("")}
-      </div>
-    `;
-
-    refs.stepContent.querySelectorAll("[data-centerpiece-style]").forEach((button) => {
-      button.addEventListener("click", () => {
-        state.hasCenterpiece = true;
-        state.centerpieceDecision = "yes";
-        state.centerpieceStyle = button.getAttribute("data-centerpiece-style");
-        updateUI();
-      });
-    });
-  }
-
-  if (currentStepNumber === 11) {
-    const categories = [
-      {
-        key: "menuCard",
-        title: "Menu Cards",
-        styles: menuCardStyleOptions,
-        placements: menuCardPlacementOptions,
-      },
-      {
-        key: "placeCard",
-        title: "Place Cards",
-        styles: placeCardStyleOptions,
-        placements: placeCardPlacementOptions,
-      },
-      {
-        key: "tableNumber",
-        title: "Table Numbers",
-        styles: tableNumberStyleOptions,
-      },
-      {
-        key: "candles",
-        title: "Candles",
-        styles: candleStyleOptions,
-      },
-    ];
-
-    refs.stepContent.innerHTML = `
-      <div class="styling-step">
-        ${categories.map((category) => {
-          const selected = state.tableStyling[category.key];
-          return `
-            <section class="styling-card ${selected.enabled ? "" : "styling-card--disabled"}" data-styling-key="${category.key}">
-              <label class="styling-card__toggle">
-                <input type="checkbox" data-styling-toggle="${category.key}" ${selected.enabled ? "checked" : ""} />
-                <span>${category.title}</span>
-              </label>
-              <div class="styling-card__controls" ${selected.enabled ? "" : "hidden"}>
-                <label>
-                  <span>Style</span>
-                  <select data-styling-style="${category.key}">
-                    <option value="">None</option>
-                    ${category.styles.map((option) => `<option value="${option.value}" ${selected.style === option.value ? "selected" : ""}>${option.label}</option>`).join("")}
-                  </select>
-                </label>
-                ${category.placements ? `
-                  <label>
-                    <span>Placement</span>
-                    <select data-styling-placement="${category.key}">
-                      <option value="">None</option>
-                      ${category.placements.map((option) => `<option value="${option.value}" ${selected.placement === option.value ? "selected" : ""}>${option.label}</option>`).join("")}
-                    </select>
-                  </label>
-                ` : ""}
-              </div>
-            </section>
-          `;
-        }).join("")}
-      </div>
-    `;
-
-    refs.stepContent.querySelectorAll("[data-styling-toggle]").forEach((input) => {
-      input.addEventListener("change", (event) => {
-        const key = event.target.getAttribute("data-styling-toggle");
-        const enabled = event.target.checked;
-        if (!key || !state.tableStyling[key]) return;
-
-        state.tableStyling[key].enabled = enabled;
-        if (!enabled) {
-          state.tableStyling[key].style = null;
-          if ("placement" in state.tableStyling[key]) {
-            state.tableStyling[key].placement = null;
-          }
-        }
-        updateUI();
-      });
-    });
-
-    refs.stepContent.querySelectorAll("[data-styling-style]").forEach((select) => {
-      select.addEventListener("change", (event) => {
-        const key = event.target.getAttribute("data-styling-style");
-        if (!key || !state.tableStyling[key]) return;
-        state.tableStyling[key].enabled = true;
-        state.tableStyling[key].style = event.target.value || null;
-        updateUI();
-      });
-    });
-
-    refs.stepContent.querySelectorAll("[data-styling-placement]").forEach((select) => {
-      select.addEventListener("change", (event) => {
-        const key = event.target.getAttribute("data-styling-placement");
-        if (!key || !state.tableStyling[key]) return;
-        state.tableStyling[key].enabled = true;
-        state.tableStyling[key].placement = event.target.value || null;
-        updateUI();
-      });
-    });
-  }
-
-  if (currentStepNumber === 12) {
-    const summary = getReadableSummary();
-    const sections = [
-      { label: "Table", text: summary.table, step: 0 },
-      { label: "Linens", text: summary.linens, step: 2 },
-      { label: "Charger", text: summary.charger, step: 5 },
-      { label: "Napkin", text: summary.napkin, step: 6 },
-      { label: "Centerpiece", text: summary.centerpiece, step: 8 },
-      { label: "Table Styling", text: summary.tableStyling.length ? summary.tableStyling.join(" · ") : "None", step: 10 },
-    ];
-
-    refs.stepContent.innerHTML = `
-      <div class="review-card review-card--final">
-        <div class="review-card__headline">Your design is complete</div>
-        <dl class="summary__grid kv">
-          ${sections.map((section) => `
-            <div>
-              <dt>${section.label}</dt>
-              <dd>${section.text}</dd>
-              <button class="btn btn--ghost btn--sm" type="button" data-edit-step="${section.step}">Edit</button>
-            </div>
-          `).join("")}
-        </dl>
-        <button id="btnToMaterials" class="btn review-card__export" type="button">Continue to Materials List</button>
-      </div>
-    `;
-
-    refs.stepContent.querySelectorAll("[data-edit-step]").forEach((button) => {
-      button.addEventListener("click", () => {
-        goToStep(Number(button.getAttribute("data-edit-step")), { smoothScroll: true });
-      });
-    });
-
-    el("btnToMaterials").addEventListener("click", () => {
-      goToStep(STEP_INDEX.MATERIALS, { allowFuture: true, smoothScroll: true });
-    });
-  }
-
-  if (currentStepNumber === 13) {
-    const materials = generateMaterialsList();
-    refs.stepContent.innerHTML = `
-      <div class="review-card review-card--materials">
-        <h3>Materials List</h3>
-        <div class="materials-list">
-          ${materials.map((item) => `
-            <div class="materials-list__item">
-              <div>
-                <p class="materials-list__category">${item.category}</p>
-                <p>${item.label}</p>
-              </div>
-              <strong>x${item.quantity}</strong>
-            </div>
-          `).join("")}
-        </div>
-        <div class="materials-actions">
-          <button id="btnBackToReview" class="btn btn--ghost" type="button">Back to Review</button>
-          <button class="btn btn--ghost" type="button" disabled>Save Design (Coming Soon)</button>
-          <button class="btn btn--ghost" type="button" disabled>Download PDF (Coming Soon)</button>
-          <button class="btn btn--ghost" type="button" disabled>Shop This Look (Coming Soon)</button>
-          <button class="btn btn--ghost" type="button" disabled>Find Vendors (Coming Soon)</button>
-          <button id="btnExport" class="btn" type="button">Export .txt</button>
-        </div>
-      </div>
-    `;
-
-    el("btnBackToReview").addEventListener("click", () => {
-      goToStep(STEP_INDEX.FINAL_REVIEW, { smoothScroll: true });
-    });
-    el("btnExport").addEventListener("click", exportMaterials);
+  if (isSectionComplete(activeSectionIndex) && activeSectionIndex < builderSections.length - 1) {
+    activeSectionIndex += 1;
+    currentStepIndex = sectionStepMap[activeSectionIndex] || 0;
   }
 }
 
@@ -2158,28 +2104,17 @@ function exportMaterials() {
 }
 
 function updateUI() {
-  const currentStepNumber = currentStepIndex + 1;
-  const displayedStepNumber = getDisplayedStepNumber();
-  const displayedTotalSteps = getDisplayedTotalSteps();
+  const sectionNumber = activeSectionIndex + 1;
+  const totalSections = builderSections.length;
 
-  refs.wizardProgress.textContent = `Step ${displayedStepNumber} of ${displayedTotalSteps}`;
-  refs.progressFill.style.width = `${(displayedStepNumber / displayedTotalSteps) * 100}%`;
+  refs.wizardProgress.textContent = `Section ${sectionNumber} of ${totalSections}`;
+  refs.progressFill.style.width = `${(sectionNumber / totalSections) * 100}%`;
 
-  const meta = getStepMeta();
-  refs.stepTitle.textContent = meta.title;
-  refs.stepHint.textContent = meta.hint;
-  refs.stepValue.textContent = meta.value;
-
-  refs.btnBack.disabled = currentStepNumber === 1;
-  refs.btnNext.disabled = currentStepNumber === TOTAL_STEPS
-    || (currentStepNumber === 5 && state.placeSettingsCount == null)
-    || (currentStepNumber === 9 && state.hasCenterpiece == null)
-    || (currentStepNumber === 10 && state.hasCenterpiece && state.centerpieceStyle == null);
-  refs.btnNext.textContent = currentStepNumber === TOTAL_STEPS ? "Complete" : "Next";
-
-  if (isJumpModalOpen) {
-    renderJumpStepList();
-  }
+  const activeSection = builderSections[activeSectionIndex] || builderSections[0];
+  refs.stepTitle.textContent = activeSection.title;
+  refs.stepHint.textContent = activeSection.hint;
+  refs.stepValue.textContent = isSectionComplete(activeSectionIndex) ? "Completed" : "In progress";
+  if (refs.stickySectionLabel) refs.stickySectionLabel.textContent = activeSection.title;
 
   renderStepContent();
   renderPreview();
@@ -2220,14 +2155,15 @@ function goToStep(index, options = {}) {
 }
 
 function nextStep() {
-  if (currentStepIndex + 1 === 5 && state.placeSettingsCount == null) {
-    return;
-  }
-  goToStep(getNextStepIndex(), { allowFuture: true });
+  activeSectionIndex = Math.min(builderSections.length - 1, activeSectionIndex + 1);
+  currentStepIndex = sectionStepMap[activeSectionIndex] || 0;
+  updateUI();
 }
 
 function prevStep() {
-  goToStep(getPreviousStepIndex());
+  activeSectionIndex = Math.max(0, activeSectionIndex - 1);
+  currentStepIndex = sectionStepMap[activeSectionIndex] || 0;
+  updateUI();
 }
 
 function resetCurrentStep() {
@@ -2273,20 +2209,21 @@ function resetCurrentStep() {
 function resetWizard() {
   Object.assign(state, initialState);
   currentStepIndex = 0;
+  activeSectionIndex = 0;
   maxStepReached = 0;
   refs.exportNote.textContent = "";
-  goToStep(0, { allowFuture: true });
+  updateUI();
 }
 
 function init() {
   refs.year.textContent = String(new Date().getFullYear());
 
-  refs.btnBack.addEventListener("click", prevStep);
-  refs.btnNext.addEventListener("click", nextStep);
-  refs.btnReset.addEventListener("click", resetCurrentStep);
-  refs.btnJumpTo.addEventListener("click", openJumpModal);
-  refs.jumpClose.addEventListener("click", closeJumpModal);
-  refs.jumpBackdrop.addEventListener("click", closeJumpModal);
+  refs.btnBack?.addEventListener("click", prevStep);
+  refs.btnNext?.addEventListener("click", nextStep);
+  refs.btnReset?.addEventListener("click", resetCurrentStep);
+  refs.btnJumpTo?.addEventListener("click", openJumpModal);
+  refs.jumpClose?.addEventListener("click", closeJumpModal);
+  refs.jumpBackdrop?.addEventListener("click", closeJumpModal);
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       if (isJumpModalOpen) {
@@ -2311,7 +2248,7 @@ function init() {
   });
 
   setJumpModalOpen(false);
-  goToStep(currentStepIndex, { allowFuture: true });
+  updateUI();
 }
 
 document.addEventListener("DOMContentLoaded", init);
