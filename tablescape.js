@@ -309,16 +309,6 @@ const stepSections = [
   { label: "Export", steps: [12] },
 ];
 
-const majorStepGroups = [
-  { label: "Table", steps: [0, 1] },
-  { label: "Seats", steps: [4] },
-  { label: "Tablecloth", steps: [2, 3] },
-  { label: "Charger", steps: [5] },
-  { label: "Napkin", steps: [6, 7] },
-  { label: "Centerpiece", steps: [8, 9] },
-  { label: "Review", steps: [11, 12] },
-];
-
 const TOTAL_STEPS = stepSequence.length;
 
 function shouldSkipNapkinTextureStep() {
@@ -405,7 +395,6 @@ const refs = {
   stepCard: el("wizardStepCard"),
   wizardProgress: el("wizardProgress"),
   progressFill: el("progressFill"),
-  majorStepper: el("majorStepper"),
   btnJumpTo: el("btnJumpTo"),
   jumpModal: el("jumpModal"),
   jumpBackdrop: el("jumpBackdrop"),
@@ -438,7 +427,6 @@ const sizeScaleMap = {
 };
 
 let currentPreviewScale = 1;
-let hoverPreviewState = null;
 
 const ASSET_BASE = "./assets/tablescape";
 
@@ -824,14 +812,14 @@ function handleTableSizeSelection(shape, value) {
   updatePreviewStatus();
 }
 
-function getNapkinAsset(sourceState = state) {
-  if (!sourceState.includeNapkin || !sourceState.napkinType) {
+function getNapkinAsset() {
+  if (!state.includeNapkin || !state.napkinType) {
     return null;
   }
 
   // Integration point: map curated wizard colors to closest available napkin assets until dedicated per-color renders are added.
-  const color = napkinColorSlugMap[sourceState.napkinType] || "white";
-  const style = napkinStyleSlugMap[sourceState.napkinStyle] || "classic-fold";
+  const color = napkinColorSlugMap[state.napkinType] || "white";
+  const style = napkinStyleSlugMap[state.napkinStyle] || "classic-fold";
   return `${ASSET_BASE}/napkin-${color}-${style}.svg`;
 }
 
@@ -925,17 +913,17 @@ function getSeatRotationJitter(tableType, seatIndex) {
   return ((seededValue % 401) / 100) - 2;
 }
 
-function renderPlaceSettings(count, previewState = state) {
+function renderPlaceSettings(count) {
   refs.settings.innerHTML = "";
   if (count == null) {
     return;
   }
 
   const rect = refs.table.getBoundingClientRect();
-  const chargerAsset = previewState.selectedCharger ? chargerAssetMap[previewState.selectedCharger] : null;
-  const napkinAsset = getNapkinAsset(previewState);
-  const positions = getSettingPositions(previewState.tableShape, count, rect.width, rect.height);
-  const tableType = `${previewState.tableShape}-${previewState.tableSize}`;
+  const chargerAsset = state.selectedCharger ? chargerAssetMap[state.selectedCharger] : null;
+  const napkinAsset = getNapkinAsset();
+  const positions = getSettingPositions(state.tableShape, count, rect.width, rect.height);
+  const tableType = `${state.tableShape}-${state.tableSize}`;
 
   positions.forEach((position, index) => {
     const setting = document.createElement("div");
@@ -947,8 +935,8 @@ function renderPlaceSettings(count, previewState = state) {
     setting.style.top = `${position.y}px`;
     setting.style.setProperty("--rot", `${facing + jitter}deg`);
 
-    if (previewState.selectedCharger && chargerAsset) {
-      setting.appendChild(createLayer("setting__charger", chargerAsset, `${previewState.selectedCharger} charger`));
+    if (state.selectedCharger && chargerAsset) {
+      setting.appendChild(createLayer("setting__charger", chargerAsset, `${state.selectedCharger} charger`));
     }
 
     const plateWrap = document.createElement("div");
@@ -956,11 +944,11 @@ function renderPlaceSettings(count, previewState = state) {
     plateWrap.appendChild(createLayer("setting__plate", `${ASSET_BASE}/dinner-plate.svg`, "Dinner plate"));
     setting.appendChild(plateWrap);
 
-    if (previewState.includeNapkin && previewState.napkinType && napkinAsset) {
-      setting.appendChild(createLayer("setting__napkin", napkinAsset, `${previewState.napkinType} napkin`));
+    if (state.includeNapkin && state.napkinType && napkinAsset) {
+      setting.appendChild(createLayer("setting__napkin", napkinAsset, `${state.napkinType} napkin`));
     }
 
-    if (previewState.flatwareType) {
+    if (state.flatwareType) {
       setting.appendChild(createLayer("setting__fork", `${ASSET_BASE}/cutlery-fork.svg`, "Fork"));
       setting.appendChild(createLayer("setting__knife", `${ASSET_BASE}/cutlery-knife.svg`, "Knife"));
       setting.appendChild(createLayer("setting__spoon", `${ASSET_BASE}/cutlery-spoon.svg`, "Spoon"));
@@ -971,8 +959,8 @@ function renderPlaceSettings(count, previewState = state) {
   });
 }
 
-function renderCenterpiece(sourceState = state) {
-  if (!sourceState.hasCenterpiece || !sourceState.centerpieceStyle) {
+function renderCenterpiece() {
+  if (!state.hasCenterpiece || !state.centerpieceStyle) {
     refs.centerpiece.innerHTML = "";
     return;
   }
@@ -980,8 +968,8 @@ function renderCenterpiece(sourceState = state) {
   refs.centerpiece.innerHTML = "";
   const centerImage = createLayer(
     "centerpiece__image",
-    centerpieceAssetMap[sourceState.centerpieceStyle],
-    `${getCenterpieceStyleLabel(sourceState.centerpieceStyle)} centerpiece`
+    centerpieceAssetMap[state.centerpieceStyle],
+    `${getCenterpieceStyleLabel(state.centerpieceStyle)} centerpiece`
   );
   refs.centerpiece.appendChild(centerImage);
 }
@@ -1027,7 +1015,6 @@ function updatePreviewStatus() {
 }
 
 function renderJumpStepList() {
-  if (!refs.jumpStepList) return;
   refs.jumpStepList.innerHTML = stepSections.map((section) => {
     const rows = section.steps.map((stepIndex) => {
       if (stepIndex === STEP_INDEX.NAPKIN_TEXTURE && shouldSkipNapkinTextureStep()) {
@@ -1078,14 +1065,12 @@ function renderJumpStepList() {
 
 function setJumpModalOpen(isOpen) {
   isJumpModalOpen = isOpen;
-  if (!refs.jumpModal) return;
   refs.jumpModal.hidden = !isOpen;
   refs.jumpModal.classList.toggle("is-hidden", !isOpen);
   refs.jumpModal.setAttribute("aria-hidden", String(!isOpen));
 }
 
 function openJumpModal() {
-  if (!refs.jumpModal) return;
   renderJumpStepList();
   setJumpModalOpen(true);
 }
@@ -1094,14 +1079,14 @@ function closeJumpModal() {
   setJumpModalOpen(false);
 }
 
-function renderPreview(previewState = state) {
+function renderPreview() {
   refs.table.classList.add("is-refreshing");
   requestAnimationFrame(() => refs.table.classList.remove("is-refreshing"));
 
   refs.tableclothLayer.classList.add("table__cloth--changing");
-  refs.tableclothLayer.dataset.texture = previewState.tableclothTexture;
-  refs.tableclothLayer.src = getTableclothAssetPath(previewState.tableclothTexture, previewState.tableclothColor);
-  refs.tableclothLayer.alt = `${previewState.tableclothTexture} ${previewState.tableclothColor} tablecloth`;
+  refs.tableclothLayer.dataset.texture = state.tableclothTexture;
+  refs.tableclothLayer.src = getTableclothAssetPath(state.tableclothTexture, state.tableclothColor);
+  refs.tableclothLayer.alt = `${state.tableclothTexture} ${state.tableclothColor} tablecloth`;
   requestAnimationFrame(() => refs.tableclothLayer.classList.remove("table__cloth--changing"));
 
   refs.tableclothLayer.onerror = () => {
@@ -1109,79 +1094,21 @@ function renderPreview(previewState = state) {
     refs.tableclothLayer.onerror = null;
   };
 
-  applyTableShape(previewState.tableShape, previewState.tableSize);
-  refs.table.dataset.napkinTexture = previewState.napkinTexture;
+  applyTableShape(state.tableShape, state.tableSize);
+  refs.table.dataset.napkinTexture = state.napkinTexture;
 
   const currentStepNumber = currentStepIndex + 1;
   refs.centerpiece.innerHTML = "";
   refs.settings.innerHTML = "";
   refs.styling.innerHTML = "";
 
-  renderCenterpiece(previewState);
+  renderCenterpiece();
   renderStylingOverlays();
   const shouldShowSettings = currentStepNumber >= 5;
-  requestAnimationFrame(() => renderPlaceSettings(shouldShowSettings ? previewState.placeSettingsCount : null, previewState));
+  requestAnimationFrame(() => renderPlaceSettings(shouldShowSettings ? state.placeSettingsCount : null));
 
   renderSummary();
   updatePreviewStatus();
-}
-
-function renderMajorStepper() {
-  if (!refs.majorStepper) return;
-
-  refs.majorStepper.innerHTML = majorStepGroups.map((group) => {
-    const first = group.steps[0];
-    const last = group.steps[group.steps.length - 1];
-    const isCurrent = currentStepIndex >= first && currentStepIndex <= last;
-    const isCompleted = maxStepReached > last;
-    const isUnlocked = first <= maxStepReached;
-
-    return `
-      <button
-        class="wizard-stepper__item ${isCurrent ? "wizard-stepper__item--current" : ""} ${isCompleted ? "wizard-stepper__item--completed" : ""}"
-        type="button"
-        data-major-step="${first}"
-        ${isUnlocked ? "" : "disabled"}
-      >${group.label}</button>
-    `;
-  }).join("");
-
-  refs.majorStepper.querySelectorAll("[data-major-step]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const stepIndex = Number(button.getAttribute("data-major-step"));
-      if (Number.isInteger(stepIndex) && stepIndex <= maxStepReached) {
-        goToStep(stepIndex, { smoothScroll: true });
-      }
-    });
-  });
-}
-
-function setHoverPreview(patch) {
-  hoverPreviewState = { ...state, ...patch };
-  renderPreview(hoverPreviewState);
-}
-
-function clearHoverPreview() {
-  if (!hoverPreviewState) return;
-  hoverPreviewState = null;
-  renderPreview();
-}
-
-function attachOptionHoverPreview(container, inputName, mapValueToPatch) {
-  if (!container) return;
-  container.querySelectorAll(`input[name="${inputName}"]`).forEach((input) => {
-    const card = input.closest('.option-card');
-    if (!card) return;
-
-    card.addEventListener('mouseenter', () => {
-      const patch = mapValueToPatch(input.value);
-      if (patch) setHoverPreview(patch);
-    });
-
-    card.addEventListener('mouseleave', () => {
-      clearHoverPreview();
-    });
-  });
 }
 
 function renderVisualOptionCards({ name, options, selectedValue, onSelect }) {
@@ -1205,14 +1132,7 @@ function renderVisualOptionCards({ name, options, selectedValue, onSelect }) {
   });
 
   attachImageFallbacks(refs.stepContent);
-  if (name === "tableShape") {
-    attachOptionHoverPreview(refs.stepContent, "tableShape", (value) => {
-      const shapeSizes = tableSizeOptions[value] || [];
-      return { tableShape: value, tableSize: shapeSizes[0]?.value || state.tableSize };
-    });
-  }
 }
-
 
 function renderRoundSizeCards() {
   renderTableSizeCards("round", Number(state.tableSize));
@@ -1291,12 +1211,7 @@ function renderTableSizeCards(shape, selectedValue) {
   setupSizeCarousel();
 
   attachImageFallbacks(refs.stepContent);
-  attachOptionHoverPreview(refs.stepContent, "tableSize", (value) => ({
-    tableShape: shape,
-    tableSize: shape === "round" || shape === "square" ? Number(value) : value,
-  }));
 }
-
 
 function renderTableTextureCards() {
   renderTextureCards({
@@ -1406,7 +1321,6 @@ function renderTextureCards({
 
   setupTextureCarousel();
   attachImageFallbacks(refs.stepContent);
-  attachOptionHoverPreview(refs.stepContent, inputName, (value) => ({ [inputName]: value }));
 }
 
 function getOptionGroup(groups, selectedValue, valueField = "value") {
@@ -1656,22 +1570,23 @@ function getStepMeta() {
   const currentStepNumber = currentStepIndex + 1;
 
   switch (currentStepNumber) {
-    case 1: return { title: "Select a Table Shape", hint: "Set the foundation and silhouette for your tablescape.", value: formatTableShape(state.tableShape) };
-    case 2: return { title: "Choose Table Proportions", hint: "Refine the scale to match your guest experience.", value: typeof state.tableSize === "number" ? `${state.tableSize}"` : state.tableSize };
-    case 3: return { title: "Choose a Tablecloth Texture", hint: "Texture defines tone, movement, and light.", value: tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || state.tableclothTexture };
-    case 4: return { title: "Select Tablecloth Color", hint: "Anchor the palette with a balanced, editorial hue.", value: tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory" };
-    case 5: return { title: "Set Place Settings", hint: "Confirm guest count to complete the layout rhythm.", value: state.placeSettingsCount == null ? "Not selected" : formatGuestLabel(state.placeSettingsCount) };
-    case 6: return { title: "Choose a Charger Plate", hint: "Chargers add depth and elegance to each place setting.", value: getChargerStepValue() };
-    case 7: return { title: "Select Your Napkin", hint: "Introduce color contrast and subtle personality.", value: getNapkinStepValue() };
-    case 8: return { title: "Choose Napkin Texture", hint: "Pair material and tone for a refined finish.", value: getNapkinTextureStepValue() };
-    case 9: return { title: "Add a Centerpiece", hint: "Decide whether to create a focal moment.", value: getCenterpieceStepValue() };
-    case 10: return { title: "Curate Centerpiece Style", hint: "Shape the visual story at the center of the table.", value: state.hasCenterpiece ? (getCenterpieceStyleLabel(state.centerpieceStyle) || "Not selected") : "Skipped" };
-    case 11: return { title: "Refine Table Styling", hint: "Layer in final editorial details.", value: getTableStylingStepValue() };
-    case 12: return { title: "Your Tablescape", hint: "A final reveal of your configured design.", value: "Ready" };
-    case 13: return { title: "Materials & Next Steps", hint: "Turn your design into an actionable sourcing list.", value: `${generateMaterialsList().length} items` };
+    case 1: return { title: "Table shape", hint: "Choose the base table shape.", value: formatTableShape(state.tableShape) };
+    case 2: return { title: "Table size", hint: "Choose a size for the selected shape.", value: typeof state.tableSize === "number" ? `${state.tableSize}"` : state.tableSize };
+    case 3: return { title: "Choose Tablecloth Texture", hint: "Choose a fabric.", value: tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || state.tableclothTexture };
+    case 4: return { title: "Tablecloth color", hint: "Choose a color.", value: tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory" };
+    case 5: return { title: "Number of place settings", hint: "How many guests are you planning for?", value: state.placeSettingsCount == null ? "Not selected" : formatGuestLabel(state.placeSettingsCount) };
+    case 6: return { title: "Charger plate", hint: "Select your charger style.", value: getChargerStepValue() };
+    case 7: return { title: "Napkin color", hint: "Choose a color.", value: getNapkinStepValue() };
+    case 8: return { title: "Choose Napkin Texture", hint: "Choose a fabric.", value: getNapkinTextureStepValue() };
+    case 9: return { title: "Centerpiece", hint: "Would you like to add a centerpiece?", value: getCenterpieceStepValue() };
+    case 10: return { title: "Centerpiece", hint: "Choose a centerpiece style", value: state.hasCenterpiece ? (getCenterpieceStyleLabel(state.centerpieceStyle) || "Not selected") : "Skipped" };
+    case 11: return { title: "Table styling", hint: "Add optional finishing touches.", value: getTableStylingStepValue() };
+    case 12: return { title: "Final Preview / Review", hint: "Review your completed tablescape.", value: "Ready" };
+    case 13: return { title: "Export materials list", hint: "Convert your design into a sourcing checklist.", value: `${generateMaterialsList().length} items` };
     default: return { title: "", hint: "", value: "" };
   }
 }
+
 function setActiveButtons(selector, attrName, value) {
   document.querySelectorAll(selector).forEach((button) => {
     const isActive = button.getAttribute(attrName) === value;
@@ -1861,6 +1776,10 @@ function renderStepContent() {
   refs.stepContent.innerHTML = "";
 
   if (currentStepNumber === 1) {
+    tableShapeOptions.forEach((option) => {
+      console.log(`[Tablescape] Step 1 table shape image src for ${option.label}: ${option.thumbnail}`);
+    });
+
     renderVisualOptionCards({
       name: "tableShape",
       options: tableShapeOptions,
@@ -2158,7 +2077,7 @@ function renderStepContent() {
 
     refs.stepContent.innerHTML = `
       <div class="review-card review-card--final">
-        <div class="review-card__headline">Your Tablescape</div>
+        <div class="review-card__headline">Your design is complete</div>
         <dl class="summary__grid kv">
           ${sections.map((section) => `
             <div>
@@ -2262,7 +2181,6 @@ function updateUI() {
     renderJumpStepList();
   }
 
-  renderMajorStepper();
   renderStepContent();
   renderPreview();
 }
@@ -2366,9 +2284,9 @@ function init() {
   refs.btnBack.addEventListener("click", prevStep);
   refs.btnNext.addEventListener("click", nextStep);
   refs.btnReset.addEventListener("click", resetCurrentStep);
-  refs.btnJumpTo?.addEventListener("click", openJumpModal);
-  refs.jumpClose?.addEventListener("click", closeJumpModal);
-  refs.jumpBackdrop?.addEventListener("click", closeJumpModal);
+  refs.btnJumpTo.addEventListener("click", openJumpModal);
+  refs.jumpClose.addEventListener("click", closeJumpModal);
+  refs.jumpBackdrop.addEventListener("click", closeJumpModal);
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       if (isJumpModalOpen) {

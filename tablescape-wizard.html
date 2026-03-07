@@ -165,25 +165,86 @@
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="index.html" aria-label="Preview Suite home">
-      <div class="brand__name">Preview Suite</div>
+    <a class="brand" href="index.html" aria-label="The Preview Suite home">
+      <div class="brand__mark" aria-hidden="true"></div>
+      <div class="brand__text">
+        <div class="brand__name">The Preview Suite</div>
+        <div class="brand__tag">Tablescape Wizard</div>
+      </div>
     </a>
-    <button class="btn btn--ghost" type="button">Save</button>
+
+    <nav class="main-nav" aria-label="Primary">
+      <a href="index.html">Home</a>
+      <a href="tablescape.html">Tablescape Modes</a>
+      <a href="experience.html">Experiences</a>
+    </nav>
+
+    <a class="btn" href="tablescape.html">Change Mode</a>
   </header>
 
-  <nav class="wizard-stepper" aria-label="Wizard steps">
-    <div class="wizard-stepper__track" id="majorStepper"></div>
-  </nav>
-
   <main class="shell">
-    <section class="panel panel--preview" aria-label="Live preview">
+    <section class="panel panel--builder" aria-label="Tablescape wizard controls">
+      <div class="panel__header">
+        <div class="builder-head builder-head--stack">
+          <div>
+            <h1 class="h1">I know what I want</h1>
+            <p class="subtle">Answer one question per step. Your preview updates live as you go.</p>
+          </div>
+          <div class="wizard-progress-wrap">
+            <p class="wizard-progress" id="wizardProgress">Step 1 of 12</p>
+            <div class="progress-track" aria-hidden="true">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="wizard-progress-actions">
+              <button id="btnJumpTo" class="btn btn--ghost btn--sm" type="button">Jump to…</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="steps">
+        <div class="step" id="wizardStepCard">
+          <div class="step__top">
+            <div>
+              <div class="step__title" id="stepTitle">Table shape</div>
+              <div class="step__hint" id="stepHint">Choose the base table shape.</div>
+            </div>
+            <span class="pill" id="stepValue">Round</span>
+          </div>
+
+          <div id="stepContent"></div>
+
+          <div class="wizard-controls">
+            <button id="btnBack" class="btn btn--ghost" type="button">Back</button>
+            <div class="wizard-controls__right">
+              <button id="btnReset" class="btn btn--ghost" type="button">Reset</button>
+              <button id="btnNext" class="btn" type="button">Next</button>
+            </div>
+          </div>
+          <p class="note" id="exportNote" aria-live="polite"></p>
+        </div>
+      </div>
+    </section>
+
+    <div class="jump-modal is-hidden" id="jumpModal" hidden aria-hidden="true">
+      <div class="jump-modal__backdrop" id="jumpBackdrop"></div>
+      <section class="jump-modal__panel" role="dialog" aria-modal="true" aria-labelledby="jumpModalTitle">
+        <div class="jump-modal__header">
+          <h3 id="jumpModalTitle">Jump to step</h3>
+          <button id="jumpClose" class="btn btn--ghost btn--sm" type="button" aria-label="Close jump to step dialog">Close</button>
+        </div>
+        <div class="jump-modal__content" id="jumpStepList"></div>
+      </section>
+    </div>
+
+    <section class="panel" aria-label="Live preview">
       <div class="panel__header">
         <h2 class="h2">Live Preview</h2>
-        <p class="subtle">A high-fidelity view updates instantly with each choice.</p>
+        <p class="subtle">Visual response updates with each selection.</p>
       </div>
 
       <div class="preview">
-        <div id="previewStage" class="preview__stage">
+          <div id="previewStage" class="preview__stage">
           <div id="table" class="table" aria-hidden="true">
             <img id="tableclothLayer" class="table__cloth" src="./assets/tablescape/tablecloth-texture.svg" alt="Selected tablecloth" loading="lazy" />
             <div id="centerpieceEl" class="centerpiece"></div>
@@ -212,54 +273,6 @@
         </div>
       </div>
     </section>
-
-    <section class="panel panel--builder" aria-label="Tablescape wizard controls">
-      <div class="panel__header">
-        <div class="builder-head builder-head--stack">
-          <h1 class="h1">Create Your Tablescape</h1>
-          <div class="wizard-progress-wrap">
-            <p class="wizard-progress" id="wizardProgress">Step 1 of 12</p>
-            <div class="progress-track" aria-hidden="true">
-              <div class="progress-fill" id="progressFill"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="steps">
-        <div class="step" id="wizardStepCard">
-          <div class="step__top">
-            <div>
-              <div class="step__title" id="stepTitle">Table shape</div>
-              <div class="step__hint" id="stepHint">Choose the base table shape.</div>
-            </div>
-            <span class="pill" id="stepValue">Round</span>
-          </div>
-
-          <div id="stepContent"></div>
-
-          <div class="wizard-controls">
-            <button id="btnBack" class="btn btn--ghost" type="button">Back</button>
-            <div class="wizard-controls__right">
-              <button id="btnReset" class="btn btn--ghost btn--sm" type="button">Reset</button>
-              <button id="btnNext" class="btn" type="button">Next</button>
-            </div>
-          </div>
-          <p class="note" id="exportNote" aria-live="polite"></p>
-        </div>
-      </div>
-    </section>
-
-    <div class="jump-modal is-hidden" id="jumpModal" hidden aria-hidden="true">
-      <div class="jump-modal__backdrop" id="jumpBackdrop"></div>
-      <section class="jump-modal__panel" role="dialog" aria-modal="true" aria-labelledby="jumpModalTitle">
-        <div class="jump-modal__header">
-          <h3 id="jumpModalTitle">Jump to step</h3>
-          <button id="jumpClose" class="btn btn--ghost btn--sm" type="button" aria-label="Close jump to step dialog">Close</button>
-        </div>
-        <div class="jump-modal__content" id="jumpStepList"></div>
-      </section>
-    </div>
   </main>
 
   <footer class="footer">
