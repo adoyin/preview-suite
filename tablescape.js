@@ -444,9 +444,9 @@ const refs = {
 };
 
 const sizeScaleMap = {
-  round: { 60: 1.32, 72: 1.45, 84: 1.56 },
-  rectangle: { "6ft": 1.3, "8ft": 1.42, king: 1.54 },
-  square: { 36: 1.28, 48: 1.4 },
+  round: { 60: 1.02, 72: 1.08, 84: 1.14 },
+  rectangle: { "6ft": 1.0, "8ft": 1.07, king: 1.13 },
+  square: { 36: 1.0, 48: 1.07 },
 };
 
 let currentPreviewScale = 1;
