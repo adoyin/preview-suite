@@ -152,6 +152,23 @@
     #wizard-size-carousel .size-carousel__arrow--left { left: -6px; }
     #wizard-size-carousel .size-carousel__arrow--right { right: -6px; }
 
+
+    @media (min-width: 981px) {
+      #wizard-shape-carousel .option-card {
+        flex-basis: clamp(190px, calc((100% - 24px) / 2), 244px);
+      }
+
+      #wizard-size-carousel .option-cards--table-size .option-card--size {
+        flex-basis: clamp(190px, calc((100% - 24px) / 2), 244px);
+      }
+
+      #wizard-shape-carousel .shape-carousel__arrow,
+      #wizard-size-carousel .size-carousel__arrow {
+        width: 28px;
+        height: 28px;
+      }
+    }
+
     @media (max-width: 760px) {
       #wizard-size-carousel .option-cards--table-size .option-card--size {
         flex-basis: min(260px, calc(100vw - 98px));
