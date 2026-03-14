@@ -444,9 +444,9 @@ const refs = {
 };
 
 const sizeScaleMap = {
-  round: { 60: 0.9, 72: 0.95, 84: 1.0 },
-  rectangle: { "6ft": 0.88, "8ft": 0.94, king: 0.99 },
-  square: { 36: 0.86, 48: 0.92 },
+  round: { 60: 1.32, 72: 1.45, 84: 1.56 },
+  rectangle: { "6ft": 1.3, "8ft": 1.42, king: 1.54 },
+  square: { 36: 1.28, 48: 1.4 },
 };
 
 let currentPreviewScale = 1;
@@ -754,25 +754,25 @@ function applyTableShape(shape, size, options = {}) {
   refs.table.classList.remove("table--round", "table--rectangle", "table--oval", "table--square");
 
   if (shape === "round") {
-    refs.table.style.width = "540px";
-    refs.table.style.height = "540px";
+    refs.table.style.width = "580px";
+    refs.table.style.height = "580px";
     refs.table.style.borderRadius = "999px";
     refs.table.classList.add("table--round");
   } else if (shape === "rectangle") {
-    refs.table.style.width = "620px";
-    refs.table.style.height = "400px";
+    refs.table.style.width = "680px";
+    refs.table.style.height = "440px";
     refs.table.style.borderRadius = "26px";
     refs.table.classList.add("table--rectangle");
   } else if (shape === "square") {
     if (Number(size) === 60) {
+      refs.table.style.width = "620px";
+      refs.table.style.height = "620px";
+    } else if (Number(size) === 48) {
       refs.table.style.width = "560px";
       refs.table.style.height = "560px";
-    } else if (Number(size) === 48) {
-      refs.table.style.width = "520px";
-      refs.table.style.height = "520px";
     } else {
-      refs.table.style.width = "480px";
-      refs.table.style.height = "480px";
+      refs.table.style.width = "510px";
+      refs.table.style.height = "510px";
     }
     refs.table.style.borderRadius = "26px";
     refs.table.classList.add("table--square");
