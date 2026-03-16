@@ -1298,30 +1298,30 @@ body.wizard-layout .footer .dot{
 
 @media (min-width: 981px){
   body.wizard-layout{
-    font-size: 14px;
-  }
-
-  body.wizard-layout .topbar{
-    padding: 16px clamp(18px, 3.6vw, 28px);
-    gap: 10px;
-  }
-
-  body.wizard-layout .brand{
-    gap: 10px;
-  }
-
-  body.wizard-layout .brand__mark{
-    width: 32px;
-    height: 32px;
-    border-radius: 10px;
-  }
-
-  body.wizard-layout .brand__name{
     font-size: 13px;
   }
 
+  body.wizard-layout .topbar{
+    padding: 10px clamp(14px, 3vw, 22px);
+    gap: 8px;
+  }
+
+  body.wizard-layout .brand{
+    gap: 8px;
+  }
+
+  body.wizard-layout .brand__mark{
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+  }
+
+  body.wizard-layout .brand__name{
+    font-size: 12px;
+  }
+
   body.wizard-layout .brand__tag{
-    font-size: 10px;
+    font-size: 9px;
   }
 
   body.wizard-layout .main-nav{
@@ -1329,18 +1329,18 @@ body.wizard-layout .footer .dot{
   }
 
   body.wizard-layout .main-nav a{
-    font-size: 12px;
+    font-size: 11px;
   }
 
   body.wizard-layout .btn{
-    font-size: 13px;
-    padding: 8px 14px;
+    font-size: 12px;
+    padding: 6px 11px;
   }
 
   body.wizard-layout .shell{
-    grid-template-columns: minmax(300px, 29%) minmax(0, 71%);
-    gap: clamp(10px, 1.8vw, 20px);
-    padding: clamp(10px, 1.6vh, 16px) clamp(14px, 2.3vw, 24px) 10px;
+    grid-template-columns: minmax(248px, 25.5%) minmax(0, 74.5%);
+    gap: clamp(8px, 1.4vw, 14px);
+    padding: clamp(6px, 1.1vh, 10px) clamp(10px, 1.8vw, 16px) 8px;
   }
 
   body.wizard-layout .panel--wizard-controls,
@@ -1349,22 +1349,22 @@ body.wizard-layout .footer .dot{
   }
 
   body.wizard-layout .panel__header{
-    padding: 16px 16px 6px;
+    padding: 12px 12px 4px;
   }
 
   body.wizard-layout .h1{
-    font-size: 23px;
-    margin-bottom: 4px;
+    font-size: 19px;
+    margin-bottom: 3px;
   }
 
   body.wizard-layout .h2{
-    font-size: clamp(24px, 2.3vw, 30px);
-    margin-bottom: 4px;
+    font-size: clamp(20px, 2vw, 25px);
+    margin-bottom: 3px;
   }
 
   body.wizard-layout .subtle{
-    font-size: 13px;
-    line-height: 1.45;
+    font-size: 12px;
+    line-height: 1.35;
   }
 
   body.wizard-layout .wizard-progress-wrap--sectioned{
@@ -1378,12 +1378,12 @@ body.wizard-layout .footer .dot{
   }
 
   body.wizard-layout .steps{
-    padding: 6px 10px 10px;
-    gap: 10px;
+    padding: 4px 8px 8px;
+    gap: 8px;
   }
 
   body.wizard-layout .step{
-    padding: 12px;
+    padding: 10px;
   }
 
   body.wizard-layout .step__title{
@@ -1411,21 +1411,21 @@ body.wizard-layout .footer .dot{
   }
 
   body.wizard-layout .section-container__header{
-    padding: 12px;
+    padding: 10px;
   }
 
   body.wizard-layout .section-container__title{
-    font-size: 19px;
+    font-size: 17px;
   }
 
   body.wizard-layout .section-container__body{
-    padding: 0 12px 12px;
-    gap: 12px;
+    padding: 0 10px 10px;
+    gap: 10px;
   }
 
   body.wizard-layout .question-row{
-    gap: 8px;
-    padding-top: 8px;
+    gap: 6px;
+    padding-top: 6px;
   }
 
   body.wizard-layout .question-row__head h3,
@@ -1436,11 +1436,11 @@ body.wizard-layout .footer .dot{
   body.wizard-layout .place-settings-panel__helper,
   body.wizard-layout .centerpiece-style-helper,
   body.wizard-layout .kv dd{
-    font-size: 12px;
+    font-size: 11px;
   }
 
   body.wizard-layout .summary{
-    padding: 10px;
+    padding: 8px;
   }
 
   body.wizard-layout .summary__grid{
@@ -1448,17 +1448,17 @@ body.wizard-layout .footer .dot{
   }
 
   body.wizard-layout .option-cards{
-    gap: 8px;
+    gap: 7px;
   }
 
   body.wizard-layout .option-card{
     border-radius: 12px;
-    padding: 8px;
-    gap: 6px;
+    padding: 7px;
+    gap: 5px;
   }
 
   body.wizard-layout .option-card__media{
-    min-height: 96px;
+    min-height: 78px;
     border-radius: 8px;
   }
 
@@ -1473,14 +1473,14 @@ body.wizard-layout .footer .dot{
   }
 
   body.wizard-layout #wizard-texture-carousel .option-card__media--texture{
-    min-height: 136px;
+    min-height: 108px;
     border-radius: 10px;
   }
 
   body.wizard-layout .option-card__meta,
   body.wizard-layout .centerpiece-decision-card__description,
   body.wizard-layout .charger-toggle{
-    font-size: 13px;
+    font-size: 12px;
   }
 
   body.wizard-layout .centerpiece-decision-cards{
@@ -1488,51 +1488,51 @@ body.wizard-layout .footer .dot{
   }
 
   body.wizard-layout .centerpiece-decision-card{
-    padding: 16px;
+    padding: 12px;
     border-radius: 14px;
     gap: 6px;
   }
 
   body.wizard-layout .centerpiece-decision-card__title{
-    font-size: 20px;
+    font-size: 17px;
   }
 
   body.wizard-layout .preview{
-    padding: 0 8px 8px;
-    gap: 6px;
+    padding: 0 6px 6px;
+    gap: 5px;
   }
 
   body.wizard-layout .preview__stage{
-    min-height: 340px;
-    border-radius: clamp(16px, 1.8vw, 26px);
+    min-height: 280px;
+    border-radius: clamp(14px, 1.5vw, 22px);
   }
 
   body.wizard-layout .table{
-    width: 500px;
-    height: 500px;
+    width: 390px;
+    height: 390px;
   }
 
   body.wizard-layout .centerpiece{
-    width: 154px;
-    height: 112px;
+    width: 122px;
+    height: 88px;
   }
 
   body.wizard-layout .setting{
-    width: 120px;
-    height: 120px;
+    width: 96px;
+    height: 96px;
   }
 
-  body.wizard-layout .setting__charger{ width: 62px; height: 62px; left: 29px; top: 35px; }
-  body.wizard-layout .setting__plate-wrap{ width: 50px; height: 50px; left: 35px; top: 41px; }
-  body.wizard-layout .setting__napkin{ width: 28px; height: 28px; left: 46px; top: 49px; }
-  body.wizard-layout .setting__fork{ width: 10px; height: 38px; left: 19px; top: 48px; }
-  body.wizard-layout .setting__knife{ width: 9px; height: 38px; left: 94px; top: 48px; }
-  body.wizard-layout .setting__spoon{ width: 10px; height: 38px; left: 102px; top: 48px; }
-  body.wizard-layout .setting__glass{ width: 27px; height: 35px; left: 79px; top: 21px; }
+  body.wizard-layout .setting__charger{ width: 50px; height: 50px; left: 23px; top: 28px; }
+  body.wizard-layout .setting__plate-wrap{ width: 40px; height: 40px; left: 28px; top: 33px; }
+  body.wizard-layout .setting__napkin{ width: 22px; height: 22px; left: 36px; top: 40px; }
+  body.wizard-layout .setting__fork{ width: 8px; height: 31px; left: 16px; top: 39px; }
+  body.wizard-layout .setting__knife{ width: 7px; height: 31px; left: 74px; top: 39px; }
+  body.wizard-layout .setting__spoon{ width: 8px; height: 31px; left: 81px; top: 39px; }
+  body.wizard-layout .setting__glass{ width: 22px; height: 28px; left: 64px; top: 17px; }
 
   body.wizard-layout .preview-status{
     border-radius: 12px;
-    padding: 6px 8px;
+    padding: 5px 7px;
   }
 
   body.wizard-layout .wizard-controls{
