@@ -365,7 +365,7 @@ a:focus-visible{
 body.wizard-layout .shell{
   max-width: none;
   width: 100%;
-  grid-template-columns: minmax(320px, 32%) minmax(0, 68%);
+  grid-template-columns: minmax(320px, 30%) minmax(0, 70%);
   gap: clamp(14px, 2.2vw, 28px);
   align-items: stretch;
 }
@@ -1243,13 +1243,34 @@ body.wizard-layout .panel--wizard-preview .panel__header{
 @media (min-width: 981px){
   body.wizard-layout .panel--wizard-preview .preview{
     flex: 1;
+    min-height: 0;
   }
 
   body.wizard-layout .preview__stage{
-    max-height: 100%;
+    height: max(280px, min(440px, calc(440px / var(--preview-stage-scale))));
+    min-height: max(280px, min(440px, calc(440px / var(--preview-stage-scale))));
+    max-height: 440px;
+    flex: 0 0 auto;
+    transform-origin: 50% 0%;
   }
 
-  body.wizard-layout .table{ width: 580px; height: 580px; }
+  body.wizard-layout .table{
+    max-width: 82%;
+    max-height: 82%;
+    transform-origin: center;
+  }
+
+  body.wizard-layout .table--round{
+    transform: translateY(0) scale(0.39);
+  }
+
+  body.wizard-layout .table--rectangle{
+    transform: translateY(0) scale(0.52);
+  }
+
+  body.wizard-layout .table--square{
+    transform: translateY(0) scale(0.45);
+  }
 }
 
 @media (max-width: 980px){
