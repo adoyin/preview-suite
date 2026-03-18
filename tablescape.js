@@ -449,13 +449,6 @@ const sizeScaleMap = {
   square: { 36: 1.28, 48: 1.4 },
 };
 
-const desktopSizeScaleMap = {
-  round: { 60: 1.02, 72: 1.08, 84: 1.15 },
-  rectangle: { "6ft": 1.02, "8ft": 1.08, king: 1.14 },
-  square: { 36: 0.96, 48: 1.04 },
-};
-
-const desktopPreviewQuery = window.matchMedia("(min-width: 981px)");
 let currentPreviewScale = 1;
 
 const ASSET_BASE = "./assets/tablescape";
@@ -759,28 +752,27 @@ function formatTableSelection(shape, size) {
 
 function applyTableShape(shape, size, options = {}) {
   refs.table.classList.remove("table--round", "table--rectangle", "table--oval", "table--square");
-  const isDesktop = desktopPreviewQuery.matches;
 
   if (shape === "round") {
-    refs.table.style.width = isDesktop ? "350px" : "580px";
-    refs.table.style.height = isDesktop ? "350px" : "580px";
+    refs.table.style.width = "580px";
+    refs.table.style.height = "580px";
     refs.table.style.borderRadius = "999px";
     refs.table.classList.add("table--round");
   } else if (shape === "rectangle") {
-    refs.table.style.width = isDesktop ? "430px" : "680px";
-    refs.table.style.height = isDesktop ? "280px" : "440px";
+    refs.table.style.width = "680px";
+    refs.table.style.height = "440px";
     refs.table.style.borderRadius = "26px";
     refs.table.classList.add("table--rectangle");
   } else if (shape === "square") {
     if (Number(size) === 60) {
-      refs.table.style.width = isDesktop ? "376px" : "620px";
-      refs.table.style.height = isDesktop ? "376px" : "620px";
+      refs.table.style.width = "620px";
+      refs.table.style.height = "620px";
     } else if (Number(size) === 48) {
-      refs.table.style.width = isDesktop ? "340px" : "560px";
-      refs.table.style.height = isDesktop ? "340px" : "560px";
+      refs.table.style.width = "560px";
+      refs.table.style.height = "560px";
     } else {
-      refs.table.style.width = isDesktop ? "310px" : "510px";
-      refs.table.style.height = isDesktop ? "310px" : "510px";
+      refs.table.style.width = "510px";
+      refs.table.style.height = "510px";
     }
     refs.table.style.borderRadius = "26px";
     refs.table.classList.add("table--square");
@@ -790,8 +782,7 @@ function applyTableShape(shape, size, options = {}) {
 }
 
 function getPreviewScale(shape, size) {
-  const scaleMap = desktopPreviewQuery.matches ? desktopSizeScaleMap : sizeScaleMap;
-  return scaleMap[shape]?.[size] || scaleMap[shape]?.[Number(size)] || 1;
+  return sizeScaleMap[shape]?.[size] || sizeScaleMap[shape]?.[Number(size)] || 1;
 }
 
 function applyPreviewScale(shape, size, { animate = false } = {}) {
@@ -2255,17 +2246,6 @@ function init() {
   refs.tableclothLayer.addEventListener("error", () => {
     refs.tableclothLayer.src = TABLECLOTH_FALLBACK_ASSET;
   });
-
-  const handleDesktopPreviewChange = () => {
-    applyTableShape(state.tableShape, state.tableSize);
-    renderPlaceSettings();
-  };
-
-  if (typeof desktopPreviewQuery.addEventListener === "function") {
-    desktopPreviewQuery.addEventListener("change", handleDesktopPreviewChange);
-  } else if (typeof desktopPreviewQuery.addListener === "function") {
-    desktopPreviewQuery.addListener(handleDesktopPreviewChange);
-  }
 
   setJumpModalOpen(false);
   updateUI();
