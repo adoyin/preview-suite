@@ -1297,265 +1297,113 @@ body.wizard-layout .footer .dot{
 }
 
 @media (min-width: 981px){
-  body.wizard-layout{
-    font-size: 13px;
-  }
-
   body.wizard-layout .topbar{
-    padding: 10px clamp(14px, 3vw, 22px);
-    gap: 8px;
-  }
-
-  body.wizard-layout .brand{
-    gap: 8px;
-  }
-
-  body.wizard-layout .brand__mark{
-    width: 26px;
-    height: 26px;
-    border-radius: 8px;
-  }
-
-  body.wizard-layout .brand__name{
-    font-size: 12px;
-  }
-
-  body.wizard-layout .brand__tag{
-    font-size: 9px;
-  }
-
-  body.wizard-layout .main-nav{
-    gap: clamp(12px, 2vw, 24px);
-  }
-
-  body.wizard-layout .main-nav a{
-    font-size: 11px;
-  }
-
-  body.wizard-layout .btn{
-    font-size: 12px;
-    padding: 6px 11px;
+    padding-block: 12px;
   }
 
   body.wizard-layout .shell{
-    grid-template-columns: minmax(248px, 25.5%) minmax(0, 74.5%);
-    gap: clamp(8px, 1.4vw, 14px);
-    padding: clamp(6px, 1.1vh, 10px) clamp(10px, 1.8vw, 16px) 8px;
+    grid-template-columns: minmax(320px, 29%) minmax(0, 71%);
+    gap: clamp(18px, 2.4vw, 30px);
+    padding: clamp(14px, 2vh, 22px) clamp(18px, 2.8vw, 30px) 10px;
   }
 
   body.wizard-layout .panel--wizard-controls,
   body.wizard-layout .panel--wizard-preview{
-    border-radius: 22px;
+    border-radius: 24px;
   }
 
   body.wizard-layout .panel__header{
-    padding: 12px 12px 4px;
-  }
-
-  body.wizard-layout .h1{
-    font-size: 19px;
-    margin-bottom: 3px;
-  }
-
-  body.wizard-layout .h2{
-    font-size: clamp(20px, 2vw, 25px);
-    margin-bottom: 3px;
-  }
-
-  body.wizard-layout .subtle{
-    font-size: 12px;
-    line-height: 1.35;
+    padding: 20px 20px 8px;
   }
 
   body.wizard-layout .wizard-progress-wrap--sectioned{
-    padding: 8px 10px;
-    border-radius: 12px;
-  }
-
-  body.wizard-layout .wizard-progress,
-  body.wizard-layout .wizard-sticky-progress{
-    font-size: 11px;
+    padding: 9px 12px;
   }
 
   body.wizard-layout .steps{
-    padding: 4px 8px 8px;
-    gap: 8px;
+    padding: 6px 12px 14px;
+    gap: 10px;
   }
 
   body.wizard-layout .step{
-    padding: 10px;
+    padding: 14px;
+    margin-bottom: 0;
   }
 
-  body.wizard-layout .step__title{
-    font-size: 14px;
-  }
-
-  body.wizard-layout .step__hint,
-  body.wizard-layout .section-container__hint,
-  body.wizard-layout .question-row__head p,
-  body.wizard-layout .note,
-  body.wizard-layout .preview-status__line,
-  body.wizard-layout .preview-status__next{
-    font-size: 11px;
-  }
-
-  body.wizard-layout .pill,
-  body.wizard-layout .section-container__status,
-  body.wizard-layout .section-container__eyebrow,
-  body.wizard-layout .kv dt{
-    font-size: 10px;
-  }
-
-  body.wizard-layout .section-container{
-    border-radius: 14px;
+  body.wizard-layout .sectioned-builder{
+    gap: 12px;
   }
 
   body.wizard-layout .section-container__header{
-    padding: 10px;
-  }
-
-  body.wizard-layout .section-container__title{
-    font-size: 17px;
+    padding: 14px;
   }
 
   body.wizard-layout .section-container__body{
-    padding: 0 10px 10px;
-    gap: 10px;
+    padding: 0 14px 14px;
+    gap: 12px;
   }
 
   body.wizard-layout .question-row{
-    gap: 6px;
-    padding-top: 6px;
-  }
-
-  body.wizard-layout .question-row__head h3,
-  body.wizard-layout .option-card__title,
-  body.wizard-layout .option-card--size .option-card__title,
-  body.wizard-layout #wizard-texture-carousel .option-card__title--texture,
-  body.wizard-layout .place-settings-panel__subtitle,
-  body.wizard-layout .place-settings-panel__helper,
-  body.wizard-layout .centerpiece-style-helper,
-  body.wizard-layout .kv dd{
-    font-size: 11px;
-  }
-
-  body.wizard-layout .summary{
-    padding: 8px;
-  }
-
-  body.wizard-layout .summary__grid{
-    gap: 8px 12px;
+    gap: 8px;
+    padding-top: 8px;
   }
 
   body.wizard-layout .option-cards{
-    gap: 7px;
+    gap: 8px;
   }
 
   body.wizard-layout .option-card{
-    border-radius: 12px;
-    padding: 7px;
-    gap: 5px;
-  }
-
-  body.wizard-layout .option-card__media{
-    min-height: 78px;
-    border-radius: 8px;
-  }
-
-  body.wizard-layout .option-cards--table-size,
-  body.wizard-layout #wizard-texture-carousel .option-cards--table-texture{
-    gap: 10px;
-  }
-
-  body.wizard-layout .option-card--size,
-  body.wizard-layout #wizard-texture-carousel .option-card--texture{
-    border-radius: 14px;
-  }
-
-  body.wizard-layout #wizard-texture-carousel .option-card__media--texture{
-    min-height: 108px;
-    border-radius: 10px;
-  }
-
-  body.wizard-layout .option-card__meta,
-  body.wizard-layout .centerpiece-decision-card__description,
-  body.wizard-layout .charger-toggle{
-    font-size: 12px;
-  }
-
-  body.wizard-layout .centerpiece-decision-cards{
-    gap: 10px;
-  }
-
-  body.wizard-layout .centerpiece-decision-card{
-    padding: 12px;
-    border-radius: 14px;
+    padding: 8px;
     gap: 6px;
   }
 
-  body.wizard-layout .centerpiece-decision-card__title{
-    font-size: 17px;
+  body.wizard-layout .option-card__media{
+    min-height: 104px;
+  }
+
+  body.wizard-layout .centerpiece-decision-cards{
+    gap: 12px;
+  }
+
+  body.wizard-layout .centerpiece-decision-card{
+    padding: 18px 18px 16px;
   }
 
   body.wizard-layout .preview{
-    padding: 0 6px 6px;
-    gap: 5px;
+    padding: 0 10px 10px;
+    gap: 8px;
   }
 
   body.wizard-layout .preview__stage{
-    min-height: 280px;
-    border-radius: clamp(14px, 1.5vw, 22px);
+    min-height: clamp(360px, 46vh, 500px);
+    max-height: calc(100dvh - 220px);
   }
 
   body.wizard-layout .table{
-    width: 390px;
-    height: 390px;
+    width: 500px;
+    height: 500px;
   }
 
   body.wizard-layout .centerpiece{
-    width: 122px;
-    height: 88px;
+    width: 155px;
+    height: 112px;
   }
 
   body.wizard-layout .setting{
-    width: 96px;
-    height: 96px;
+    width: 118px;
+    height: 118px;
   }
 
-  body.wizard-layout .setting__charger{ width: 50px; height: 50px; left: 23px; top: 28px; }
-  body.wizard-layout .setting__plate-wrap{ width: 40px; height: 40px; left: 28px; top: 33px; }
-  body.wizard-layout .setting__napkin{ width: 22px; height: 22px; left: 36px; top: 40px; }
-  body.wizard-layout .setting__fork{ width: 8px; height: 31px; left: 16px; top: 39px; }
-  body.wizard-layout .setting__knife{ width: 7px; height: 31px; left: 74px; top: 39px; }
-  body.wizard-layout .setting__spoon{ width: 8px; height: 31px; left: 81px; top: 39px; }
-  body.wizard-layout .setting__glass{ width: 22px; height: 28px; left: 64px; top: 17px; }
+  body.wizard-layout .setting__charger{ width: 62px; height: 62px; left: 29px; top: 34px; }
+  body.wizard-layout .setting__plate-wrap{ width: 50px; height: 50px; left: 35px; top: 40px; }
+  body.wizard-layout .setting__napkin{ width: 28px; height: 28px; left: 45px; top: 49px; }
+  body.wizard-layout .setting__fork{ width: 10px; height: 38px; left: 19px; top: 49px; }
+  body.wizard-layout .setting__knife{ width: 9px; height: 38px; left: 92px; top: 48px; }
+  body.wizard-layout .setting__spoon{ width: 10px; height: 38px; left: 101px; top: 49px; }
+  body.wizard-layout .setting__glass{ width: 28px; height: 36px; left: 78px; top: 21px; }
 
   body.wizard-layout .preview-status{
-    border-radius: 12px;
-    padding: 5px 7px;
-  }
-
-  body.wizard-layout .wizard-controls{
-    margin-top: 14px;
-    gap: 8px;
-  }
-
-  body.wizard-layout .wizard-controls__right,
-  body.wizard-layout .pill-row,
-  body.wizard-layout .swatches{
-    gap: 8px;
-  }
-
-  body.wizard-layout .swatch{
-    width: 34px;
-    height: 34px;
-    border-radius: 11px;
-  }
-
-  body.wizard-layout .swatch--sm{
-    width: 30px;
-    height: 30px;
-    border-radius: 10px;
+    padding: 7px 10px;
   }
 }
 
