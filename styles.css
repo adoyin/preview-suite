@@ -1110,7 +1110,7 @@ body.wizard-layout .panel--wizard-preview .panel__header{
   border-radius: clamp(20px, 2.2vw, 32px);
   background: radial-gradient(circle at 50% 18%, #fffefb, #f1e7d8 74%);
   height: auto;
-  min-height: 420px;
+  min-height: 520px; /* INCREASED HEIGHT */
   flex: 1 1 auto;
   display:flex;
   align-items:center;
@@ -1127,8 +1127,8 @@ body.wizard-layout .panel--wizard-preview .panel__header{
 }
 
 .table{
-  width: 420px !important;
-  height: 420px !important;
+  width: 420px !important; /* FORCED SIZE */
+  height: 420px !important; /* FORCED SIZE */
   border-radius: 999px;
   position:relative;
   border: 1px solid rgba(37,29,20,0.15);
@@ -1236,7 +1236,7 @@ body.wizard-layout .panel--wizard-preview .panel__header{
   }
 
   body.wizard-layout .preview__stage{
-    min-height: 360px;
+    min-height: 520px; /* SYNCED HEIGHT */
   }
 }
 
@@ -1250,13 +1250,13 @@ body.wizard-layout .panel--wizard-preview .panel__header{
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    min-height: 380px;
-    max-height: 380px;
-    height: 380px;
+    min-height: 520px; /* SYNCED HEIGHT */
+    max-height: 520px;
+    height: 520px;
   
   }
 
-  body.wizard-layout .table{ width: 300px; height: 300px; }
+  body.wizard-layout .table{ width: 420px !important; height: 420px !important; } /* SYNCED TABLE SIZE */
 }
 
 @media (max-width: 980px){
@@ -1286,7 +1286,7 @@ body.wizard-layout .panel--wizard-preview .panel__header{
   }
   .steps{ overflow: visible; }
   .preview{ padding: 8px 18px 20px; }
-  .preview__stage{ height: 380px; min-height: 380px; flex: initial; }
+  .preview__stage{ height: 520px; min-height: 520px; flex: initial; }
   .builder-head{ flex-direction: column; }
   .experience-card{ min-height: 270px; }
 }
@@ -1510,16 +1510,16 @@ body.wizard-layout .footer .dot{
   }
 
   body.wizard-layout .preview__stage{
-  min-height: 380px;
-  max-height: 380px;
-  height: 380px;
+  min-height: 520px; /* SYNCED HEIGHT */
+  max-height: 520px;
+  height: 520px;
   border-radius: clamp(14px, 1.5vw, 22px);
   
   }
 
   body.wizard-layout .table{
-    width: 300px;
-    height: 300px;
+    width: 420px !important; /* SYNCED TABLE SIZE */
+    height: 420px !important;
   }
 
   body.wizard-layout .centerpiece{
