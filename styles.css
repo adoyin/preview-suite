@@ -1127,8 +1127,8 @@ body.wizard-layout .panel--wizard-preview .panel__header{
 }
 
 .table{
-  width: 420px;
-  height: 420px;
+  width: 420px !important;
+  height: 420px !important;
   border-radius: 999px;
   position:relative;
   border: 1px solid rgba(37,29,20,0.15);
@@ -1567,6 +1567,10 @@ body.wizard-layout .footer .dot{
     height: 30px;
     border-radius: 10px;
   }
+
+  body.wizard-layout .shell{
+    grid-template-columns: 400px 1fr;
+  }
 }
 
 
@@ -1674,9 +1678,9 @@ body.wizard-layout .footer .dot{
   cursor: pointer;
 }
 
-.jump-step:hover{ border-color: rgba(182,154,112,0.65); }
+.jump-step:hover{ border-color: rgba(182, 154, 112, 0.65); }
 .jump-step:disabled{ cursor: not-allowed; opacity: 0.6; }
-.jump-step--current{ border-color: rgba(182,154,112,0.85); box-shadow: 0 0 0 2px rgba(182,154,112,0.2); }
+.jump-step--current{ border-color: rgba(182, 154, 112, 0.85); box-shadow: 0 0 0 2px rgba(182, 154, 112,0.2); }
 .jump-step__label{ font-weight: 500; color: var(--text); }
 .jump-step__meta{ font-size: 12px; color: var(--text-soft); }
 .jump-step--completed .jump-step__meta{ color: #3f7c52; }
