@@ -9,14 +9,17 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
   <style>
-    #wizard-shape-carousel.shape-carousel {
+    /* Internal Wizard Fixes for Carousel Sizing */
+    #wizard-shape-carousel.shape-carousel, 
+    #wizard-size-carousel.size-carousel {
       position: relative;
       display: grid;
       align-items: center;
       margin-top: 4px;
+      width: 100%;
     }
 
-    #wizard-shape-carousel .shape-carousel__viewport {
+    .shape-carousel__viewport, .size-carousel__viewport {
       overflow-x: auto;
       scroll-snap-type: x mandatory;
       scrollbar-width: none;
@@ -24,159 +27,50 @@
       scroll-behavior: smooth;
     }
 
-    #wizard-shape-carousel .shape-carousel__viewport::-webkit-scrollbar {
+    .shape-carousel__viewport::-webkit-scrollbar, 
+    .size-carousel__viewport::-webkit-scrollbar {
       display: none;
     }
 
-    #wizard-shape-carousel .option-cards {
+    .option-cards, .option-cards--table-size {
       display: flex;
       gap: 10px;
       flex-wrap: nowrap;
-      padding: 2px 24px;
+      padding: 5px;
       width: max-content;
     }
 
-    #wizard-shape-carousel .option-card {
-      flex: 0 0 clamp(230px, calc((100% - 34px) / 2), 300px);
+    .option-card {
+      flex: 0 0 240px; /* Fixed width for cards inside the scrollable area */
       scroll-snap-align: center;
     }
 
-    #wizard-shape-carousel .shape-carousel__arrow {
+    .shape-carousel__arrow, .size-carousel__arrow {
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
-      width: 32px;
-      height: 32px;
-      border-radius: 999px;
-      border: 1px solid rgba(92, 74, 49, 0.22);
-      background: rgba(247, 243, 236, 0.9);
-      color: #5c4a31;
-      display: grid;
-      place-items: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,0,0,0.1);
+      background: white;
+      z-index: 5;
       cursor: pointer;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .16s ease, background .16s ease;
-      z-index: 1;
     }
 
-    #wizard-shape-carousel:hover .shape-carousel__arrow,
-    #wizard-shape-carousel:focus-within .shape-carousel__arrow {
-      opacity: 1;
-      pointer-events: auto;
+    .shape-carousel__arrow--left, .size-carousel__arrow--left { left: -5px; }
+    .shape-carousel__arrow--right, .size-carousel__arrow--right { right: -5px; }
+
+    /* Fix the preview stage to ensure it never scrolls */
+    .preview__stage {
+      max-height: calc(100vh - 200px);
+      min-height: 400px;
     }
 
-    #wizard-shape-carousel .shape-carousel__arrow:hover,
-    #wizard-shape-carousel .shape-carousel__arrow:focus-visible {
-      background: rgba(240, 234, 225, 0.98);
-      outline: none;
-    }
-
-    #wizard-shape-carousel .shape-carousel__arrow--left { left: -6px; }
-    #wizard-shape-carousel .shape-carousel__arrow--right { right: -6px; }
-
-    @media (max-width: 760px) {
-      #wizard-shape-carousel .option-card {
-        flex-basis: min(260px, calc(100vw - 98px));
-      }
-
-      #wizard-shape-carousel .shape-carousel__arrow {
-        display: none;
-      }
-    }
-
-    #wizard-size-carousel.size-carousel {
-      position: relative;
-      display: grid;
-      align-items: center;
-      margin-top: 4px;
-    }
-
-    #wizard-size-carousel .size-carousel__viewport {
-      overflow-x: auto;
-      overflow-y: hidden;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-      -webkit-overflow-scrolling: touch;
-      scroll-behavior: smooth;
-      padding: 2px 0;
-    }
-
-    #wizard-size-carousel .size-carousel__viewport::-webkit-scrollbar {
-      display: none;
-    }
-
-    #wizard-size-carousel .option-cards--table-size {
-      display: flex;
-      flex-wrap: nowrap;
-      gap: 14px;
-      width: max-content;
-      padding-right: 22px;
-    }
-
-    #wizard-size-carousel .option-cards--table-size .option-card--size {
-      flex: 0 0 clamp(230px, calc((100% - 34px) / 2), 300px);
-    }
-
-    #wizard-size-carousel .size-carousel__arrow {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 32px;
-      height: 32px;
-      border-radius: 999px;
-      border: 1px solid rgba(92, 74, 49, 0.16);
-      background: rgba(247, 243, 236, 0.82);
-      color: rgba(92, 74, 49, 0.78);
-      display: grid;
-      place-items: center;
-      cursor: pointer;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .16s ease, background .16s ease;
-      z-index: 1;
-    }
-
-    #wizard-size-carousel:hover .size-carousel__arrow,
-    #wizard-size-carousel:focus-within .size-carousel__arrow {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    #wizard-size-carousel .size-carousel__arrow:hover,
-    #wizard-size-carousel .size-carousel__arrow:focus-visible {
-      background: rgba(240, 234, 225, 0.96);
-      outline: none;
-    }
-
-    #wizard-size-carousel .size-carousel__arrow--left { left: -6px; }
-    #wizard-size-carousel .size-carousel__arrow--right { right: -6px; }
-
-
-    @media (min-width: 981px) {
-      #wizard-shape-carousel .option-card {
-        flex-basis: clamp(190px, calc((100% - 24px) / 2), 244px);
-      }
-
-      #wizard-size-carousel .option-cards--table-size .option-card--size {
-        flex-basis: clamp(190px, calc((100% - 24px) / 2), 244px);
-      }
-
-      #wizard-shape-carousel .shape-carousel__arrow,
-      #wizard-size-carousel .size-carousel__arrow {
-        width: 28px;
-        height: 28px;
-      }
-    }
-
-    @media (max-width: 760px) {
-      #wizard-size-carousel .option-cards--table-size .option-card--size {
-        flex-basis: min(260px, calc(100vw - 98px));
-      }
-
-      #wizard-size-carousel .size-carousel__arrow {
-        display: none;
-      }
+    /* Force the table to be a reasonable size at 100% zoom */
+    .table {
+      width: min(400px, 70vh) !important;
+      height: min(400px, 70vh) !important;
     }
   </style>
 </head>
@@ -205,15 +99,15 @@
         <div class="builder-head builder-head--stack">
           <div>
             <h1 class="h1">I know what I want</h1>
-            <p class="subtle">Curate your table by section. Your preview updates live as you refine each detail.</p>
+            <p class="subtle">Curate your table by section. Your preview updates live.</p>
           </div>
           <div class="wizard-progress-wrap wizard-progress-wrap--sectioned">
             <p class="wizard-progress" id="wizardProgress">Section 1 of 4</p>
             <div class="progress-track" aria-hidden="true">
               <div class="progress-fill" id="progressFill"></div>
             </div>
-            <div class="wizard-sticky-progress" id="stickySectionProgress" aria-live="polite">
-              Currently editing: <span id="stickySectionLabel">Table Setup</span>
+            <div class="wizard-sticky-progress" id="stickySectionProgress">
+              Editing: <span id="stickySectionLabel">Table Setup</span>
             </div>
           </div>
         </div>
@@ -221,71 +115,36 @@
 
       <div class="steps">
         <div class="step" id="wizardStepCard">
-          <div class="step__top">
-            <div>
-              <div class="step__title" id="stepTitle">Grouped Builder</div>
-              <div class="step__hint" id="stepHint">Move through curated sections while keeping every option visible inside its group.</div>
-            </div>
-            <span class="pill" id="stepValue">Table Setup</span>
-          </div>
-
           <div id="stepContent"></div>
-
-          <div class="wizard-controls" hidden>
+          
+          <div class="wizard-controls" style="margin-top: 20px; display: flex; gap: 10px;">
             <button id="btnBack" class="btn btn--ghost" type="button">Back</button>
-            <div class="wizard-controls__right">
-              <button id="btnReset" class="btn btn--ghost" type="button">Reset</button>
-              <button id="btnNext" class="btn" type="button">Next</button>
-            </div>
+            <button id="btnNext" class="btn" type="button" style="flex: 1;">Next Step</button>
           </div>
-          <p class="note" id="exportNote" aria-live="polite"></p>
         </div>
       </div>
     </section>
 
-    <div class="jump-modal is-hidden" id="jumpModal" hidden aria-hidden="true">
-      <div class="jump-modal__backdrop" id="jumpBackdrop"></div>
-      <section class="jump-modal__panel" role="dialog" aria-modal="true" aria-labelledby="jumpModalTitle">
-        <div class="jump-modal__header">
-          <h3 id="jumpModalTitle">Jump to step</h3>
-          <button id="jumpClose" class="btn btn--ghost btn--sm" type="button" aria-label="Close jump to step dialog">Close</button>
-        </div>
-        <div class="jump-modal__content" id="jumpStepList"></div>
-      </section>
-    </div>
-
     <section class="panel panel--wizard-preview" aria-label="Live preview">
-      <div class="panel__header">
-        <h2 class="h2">Live Preview</h2>
-        <p class="subtle">Visual response updates with each selection.</p>
-      </div>
-
       <div class="preview">
-          <div id="previewStage" class="preview__stage">
+        <div id="previewStage" class="preview__stage">
           <div id="table" class="table" aria-hidden="true">
-            <img id="tableclothLayer" class="table__cloth" src="./assets/tablescape/tablecloth-texture.svg" alt="Selected tablecloth" loading="lazy" />
+            <img id="tableclothLayer" class="table__cloth" src="./assets/tablescape/tablecloth-texture.svg" alt="Selected tablecloth" />
             <div id="centerpieceEl" class="centerpiece"></div>
             <div id="settingsEl" class="settings"></div>
             <div id="stylingEl" class="styling-overlays"></div>
           </div>
         </div>
 
-        <div class="preview-status" aria-live="polite">
-          <p class="preview-status__line" id="previewStepText">Designing your table — Step 1 of 12</p>
+        <div class="preview-status" style="margin-top: 15px;">
+          <p class="preview-status__line" id="previewStepText">Step 1 of 12</p>
           <p class="preview-status__next" id="previewNextText">Next: Table size</p>
         </div>
 
-        <div class="summary" id="previewSummary" hidden>
-          <div class="summary__title">Selections</div>
-          <dl class="summary__grid kv" id="summaryGrid">
-            <div><dt>Table</dt><dd id="sumTable"></dd></div>
-            <div><dt>Place Settings</dt><dd id="sumSettings"></dd></div>
-            <div><dt>Tablecloth</dt><dd id="sumCloth"></dd></div>
-            <div><dt>Charger</dt><dd id="sumCharger"></dd></div>
-            <div><dt>Napkin</dt><dd id="sumNapkin"></dd></div>
-            <div><dt>Napkin Texture</dt><dd id="sumNapkinTexture"></dd></div>
-            <div><dt>Centerpiece</dt><dd id="sumCenterpiece"></dd></div>
-            <div><dt>Table Styling</dt><dd id="sumTableStyling"></dd></div>
+        <div class="summary" id="previewSummary" style="margin-top: 15px;">
+          <dl class="summary__grid kv" id="summaryGrid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div><dt>Table</dt><dd id="sumTable">-</dd></div>
+            <div><dt>Linen</dt><dd id="sumCloth">-</dd></div>
           </dl>
         </div>
       </div>
@@ -293,94 +152,9 @@
   </main>
 
   <footer class="footer">
-    <span>© <span id="year"></span> The Preview Suite</span>
-    <span class="dot">•</span>
-    <span class="subtle">Material export available in final review step</span>
+    <span>© 2026 The Preview Suite • Material export in final step</span>
   </footer>
 
   <script src="tablescape.js"></script>
-  <script>
-    (() => {
-      const stepContent = document.getElementById("stepContent");
-      if (!stepContent) return;
-
-      function getCardWidth(carousel) {
-        const card = carousel.querySelector(".option-card");
-        const cards = carousel.querySelector(".option-cards");
-        if (!card || !cards) return 0;
-        const cardWidth = card.getBoundingClientRect().width;
-        const gap = parseFloat(getComputedStyle(cards).columnGap || getComputedStyle(cards).gap || "0");
-        return cardWidth + gap;
-      }
-
-      function centerCard(card) {
-        if (!card) return;
-        card.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
-      }
-
-      function setupShapeCarousel() {
-        const tableShapeCards = [...stepContent.querySelectorAll('.option-cards')]
-          .find((cards) => cards.querySelector('input[name="tableShape"]'));
-        if (!tableShapeCards || document.getElementById("wizard-shape-carousel")) return;
-
-        const carousel = document.createElement("div");
-        carousel.id = "wizard-shape-carousel";
-        carousel.className = "shape-carousel";
-
-        const viewport = document.createElement("div");
-        viewport.className = "shape-carousel__viewport";
-        tableShapeCards.replaceWith(carousel);
-        viewport.appendChild(tableShapeCards);
-        carousel.appendChild(viewport);
-
-        const leftArrow = document.createElement("button");
-        leftArrow.type = "button";
-        leftArrow.className = "shape-carousel__arrow shape-carousel__arrow--left";
-        leftArrow.setAttribute("aria-label", "Scroll table shape options left");
-        leftArrow.innerHTML = "&#8249;";
-
-        const rightArrow = document.createElement("button");
-        rightArrow.type = "button";
-        rightArrow.className = "shape-carousel__arrow shape-carousel__arrow--right";
-        rightArrow.setAttribute("aria-label", "Scroll table shape options right");
-        rightArrow.innerHTML = "&#8250;";
-
-        carousel.append(leftArrow, rightArrow);
-
-        function scrollByCard(direction) {
-          const offset = getCardWidth(carousel);
-          if (!offset) return;
-          viewport.scrollBy({ left: direction * offset, behavior: "smooth" });
-        }
-
-        leftArrow.addEventListener("click", () => scrollByCard(-1));
-        rightArrow.addEventListener("click", () => scrollByCard(1));
-
-        const cards = [...carousel.querySelectorAll(".option-card")];
-        cards.forEach((card, index) => {
-          card.tabIndex = 0;
-          card.dataset.shapeCardIndex = String(index);
-          card.addEventListener("click", () => centerCard(card));
-          card.addEventListener("keydown", (event) => {
-            if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
-            event.preventDefault();
-            const nextIndex = event.key === "ArrowRight"
-              ? Math.min(cards.length - 1, index + 1)
-              : Math.max(0, index - 1);
-            const nextCard = cards[nextIndex];
-            nextCard?.focus();
-            centerCard(nextCard);
-          });
-        });
-
-        const checked = carousel.querySelector('input[name="tableShape"]:checked')?.closest(".option-card");
-        if (checked) centerCard(checked);
-      }
-
-      const observer = new MutationObserver(() => setupShapeCarousel());
-      observer.observe(stepContent, { childList: true, subtree: true });
-      setupShapeCarousel();
-    })();
-  </script>
 </body>
 </html>
