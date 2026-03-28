@@ -365,7 +365,7 @@ a:focus-visible{
 body.wizard-layout .shell{
   max-width: none;
   width: 100%;
-  grid-template-columns: 380px 1fr;
+  grid-template-columns: 580px 1fr;
   gap: clamp(14px, 2.2vw, 28px);
   align-items: stretch;
 }
