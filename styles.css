@@ -1345,7 +1345,7 @@ body.wizard-layout .footer .dot{
   }
 
   body.wizard-layout .shell{
-    grid-template-columns: minmax(220px, 23%) minmax(0, 77%);
+    grid-template-columns: 400px 1fr;
     gap: clamp(8px, 1.4vw, 14px);
     padding: clamp(6px, 1.1vh, 10px) clamp(10px, 1.8vw, 16px) 8px;
   }
