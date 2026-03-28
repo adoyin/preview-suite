@@ -1127,8 +1127,8 @@ body.wizard-layout .panel--wizard-preview .panel__header{
 }
 
 .table{
-  width: 580px;
-  height: 580px;
+  width: 420px;
+  height: 420px;
   border-radius: 999px;
   position:relative;
   border: 1px solid rgba(37,29,20,0.15);
