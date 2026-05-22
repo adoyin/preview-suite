@@ -805,6 +805,16 @@ body.wizard-layout .panel--wizard-preview .panel__header{
 }
 
 
+.shape-carousel__viewport,
+.size-carousel__viewport,
+.texture-carousel__viewport,
+.wizard-color-carousel__viewport{
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-inline: 16px;
+  scroll-padding-inline: 16px;
+}
+
 #wizard-texture-carousel.texture-carousel{
   position: relative;
   display: grid;
@@ -819,7 +829,6 @@ body.wizard-layout .panel--wizard-preview .panel__header{
   -ms-overflow-style: none;
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
-  padding: 2px 0;
 }
 
 #wizard-texture-carousel .texture-carousel__viewport::-webkit-scrollbar{
@@ -1763,7 +1772,6 @@ body.wizard-layout .footer .dot{
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   scroll-behavior: smooth;
-  padding: 2px 0;
 }
 
 .option-cards--table-color{
@@ -1771,7 +1779,7 @@ body.wizard-layout .footer .dot{
   flex-wrap: nowrap;
   gap: 12px;
   width: max-content;
-  padding: 2px 0 2px 2px;
+  padding-block: 2px;
 }
 
 .option-card--color{
