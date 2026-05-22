@@ -2021,16 +2021,19 @@ function renderStepContent() {
       ${builderSections.map((section, index) => {
         const unlocked = index <= maxRevealedIndex;
         const open = index === activeSectionIndex;
+        const showSectionHeader = index !== 0;
         return `
           <section class="section-container ${open ? "section-container--open" : ""} ${unlocked ? "" : "section-container--locked"}" data-section-index="${index}">
-            <button class="section-container__header" type="button" data-open-section="${index}" ${unlocked ? "" : "disabled"}>
-              <span>
-                <span class="section-container__eyebrow">Section ${index + 1}</span>
-                <span class="section-container__title">${section.title}</span>
-                <span class="section-container__hint">${section.hint}</span>
-              </span>
-              <span class="section-container__status">${isSectionComplete(index) ? "Completed" : (open ? "In progress" : "Open")}</span>
-            </button>
+            ${showSectionHeader ? `
+              <button class="section-container__header" type="button" data-open-section="${index}" ${unlocked ? "" : "disabled"}>
+                <span>
+                  <span class="section-container__eyebrow">Section ${index + 1}</span>
+                  <span class="section-container__title">${section.title}</span>
+                  <span class="section-container__hint">${section.hint}</span>
+                </span>
+                <span class="section-container__status">${isSectionComplete(index) ? "Completed" : (open ? "In progress" : "Open")}</span>
+              </button>
+            ` : ""}
             <div class="section-container__body" ${open ? "" : "hidden"}></div>
           </section>
         `;
@@ -2113,7 +2116,7 @@ function updateUI() {
   const activeSection = builderSections[activeSectionIndex] || builderSections[0];
   refs.stepTitle.textContent = activeSection.title;
   refs.stepHint.textContent = activeSection.hint;
-  refs.stepValue.textContent = isSectionComplete(activeSectionIndex) ? "Completed" : "In progress";
+  refs.stepValue.hidden = true;
   if (refs.stickySectionLabel) refs.stickySectionLabel.textContent = activeSection.title;
 
   renderStepContent();
