@@ -444,6 +444,7 @@ body.wizard-layout .panel--wizard-preview .panel__header{
   flex-direction:column;
   gap: 12px;
   overflow-y: auto;
+  overflow-x: hidden;
   min-height: 0;
   flex: 1 1 auto;
   scrollbar-gutter: stable;
