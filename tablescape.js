@@ -2082,7 +2082,11 @@ function renderStepContent() {
     renderStepInto(stepNumber, question.querySelector(".question-row__content"));
   });
 
-  if (isSectionComplete(activeSectionIndex) && activeSectionIndex < builderSections.length - 1) {
+  if (
+    activeSectionIndex !== 0
+    && isSectionComplete(activeSectionIndex)
+    && activeSectionIndex < builderSections.length - 1
+  ) {
     activeSectionIndex += 1;
     currentStepIndex = sectionStepMap[activeSectionIndex] || 0;
   }
