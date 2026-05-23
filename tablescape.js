@@ -1595,7 +1595,7 @@ function getStepMeta() {
   switch (currentStepNumber) {
     case 1: return { title: "Table shape", hint: "Choose the base table shape.", value: formatTableShape(state.tableShape) };
     case 2: return { title: "Table size", hint: "Choose a size for the selected shape.", value: state.tableSize ? (typeof state.tableSize === "number" ? `${state.tableSize}"` : state.tableSize) : "Not selected" };
-    case 3: return { title: "Choose Tablecloth Texture", hint: "Choose a fabric.", value: tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || state.tableclothTexture };
+    case 3: return { title: "Tablecloth Texture", hint: "Choose a fabric.", value: tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || state.tableclothTexture };
     case 4: return { title: "Tablecloth color", hint: "Choose a color.", value: tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory" };
     case 5: return { title: "Number of place settings", hint: "How many guests are you planning for?", value: state.placeSettingsCount == null ? "Not selected" : formatGuestLabel(state.placeSettingsCount) };
     case 6: return { title: "Charger plate", hint: "Select your charger style.", value: getChargerStepValue() };
