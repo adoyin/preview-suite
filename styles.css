@@ -851,7 +851,7 @@ body.wizard-layout .panel--wizard-preview .panel__header{
 }
 
 #wizard-texture-carousel .option-card--texture{
-  flex: 0 0 clamp(164px, calc((100% - 14px) / 2), 184px);
+  flex: 0 0 clamp(190px, calc((100% - 24px) / 2), 230px);
   border-radius: 16px;
   background: linear-gradient(180deg, #f9f5ef 0%, #f4ede1 100%);
   border-color: rgba(164, 139, 99, 0.2);
@@ -873,7 +873,7 @@ body.wizard-layout .panel--wizard-preview .panel__header{
 
 #wizard-texture-carousel .option-card__media--texture{
   position: relative;
-  min-height: 108px;
+  min-height: 120px;
   aspect-ratio: 3 / 2;
   border-radius: 12px;
   border-color: rgba(164, 139, 99, 0.24);

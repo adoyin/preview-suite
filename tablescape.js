@@ -269,7 +269,7 @@ const initialState = {
 const stepSequence = [
   "Table shape",
   "Table size",
-  "Tablecloth Texture",
+  "Tablecloth texture",
   "Tablecloth color",
   "Number of place settings",
   "Charger plate",
