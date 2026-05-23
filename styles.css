@@ -851,10 +851,10 @@ body.wizard-layout .panel--wizard-preview .panel__header{
 }
 
 #wizard-texture-carousel .option-card--texture{
-  flex: 0 0 calc((100% - 28px) / 3);
+  flex: 0 0 clamp(190px, calc((100% - 24px) / 2), 230px);
   border-radius: 16px;
-  background: linear-gradient(180deg, #f9f5ef 0%, #f5eee3 100%);
-  border-color: rgba(164, 139, 99, 0.22);
+  background: linear-gradient(180deg, #f9f5ef 0%, #f4ede1 100%);
+  border-color: rgba(164, 139, 99, 0.2);
   box-shadow: 0 10px 20px rgba(48, 33, 18, 0.08);
   transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
 }
@@ -873,7 +873,12 @@ body.wizard-layout .panel--wizard-preview .panel__header{
 
 #wizard-texture-carousel .option-card__media--texture{
   position: relative;
-  background: #f0e8dc;
+  min-height: 120px;
+  aspect-ratio: 3 / 2;
+  border-radius: 12px;
+  border-color: rgba(164, 139, 99, 0.24);
+  background: linear-gradient(145deg, #ece4d8, #ded2c1);
+  overflow: hidden;
 }
 
 #wizard-texture-carousel .option-card__media--charger{
@@ -984,8 +989,8 @@ body.wizard-layout .panel--wizard-preview .panel__header{
 }
 
 #wizard-texture-carousel .option-card__title--texture{
-  font-size: 13px;
-  color: var(--text-soft);
+  font-size: 14px;
+  color: #5f4b35;
 }
 
 #wizard-texture-carousel .option-card__info--texture{
