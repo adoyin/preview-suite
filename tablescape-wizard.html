@@ -43,6 +43,7 @@
     }
 
     #wizard-shape-carousel .shape-carousel__arrow {
+      display: none;
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
@@ -55,9 +56,16 @@
       display: grid;
       place-items: center;
       cursor: pointer;
-      opacity: 1;
+      opacity: 0;
+      pointer-events: none;
       transition: opacity .16s ease, background .16s ease;
       z-index: 1;
+    }
+
+    #wizard-shape-carousel:hover .shape-carousel__arrow,
+    #wizard-shape-carousel:focus-within .shape-carousel__arrow {
+      opacity: 1;
+      pointer-events: auto;
     }
 
     #wizard-shape-carousel .shape-carousel__arrow:hover,
@@ -74,7 +82,9 @@
         flex-basis: min(260px, calc(100vw - 98px));
       }
 
-      #wizard-shape-carousel .shape-carousel__arrow { width: 26px; height: 26px; }
+      #wizard-shape-carousel .shape-carousel__arrow {
+        display: none;
+      }
     }
 
     #wizard-size-carousel.size-carousel {
@@ -110,6 +120,7 @@
     }
 
     #wizard-size-carousel .size-carousel__arrow {
+      display: none;
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
@@ -122,9 +133,16 @@
       display: grid;
       place-items: center;
       cursor: pointer;
-      opacity: 1;
+      opacity: 0;
+      pointer-events: none;
       transition: opacity .16s ease, background .16s ease;
       z-index: 1;
+    }
+
+    #wizard-size-carousel:hover .size-carousel__arrow,
+    #wizard-size-carousel:focus-within .size-carousel__arrow {
+      opacity: 1;
+      pointer-events: auto;
     }
 
     #wizard-size-carousel .size-carousel__arrow:hover,
@@ -148,6 +166,7 @@
 
       #wizard-shape-carousel .shape-carousel__arrow,
       #wizard-size-carousel .size-carousel__arrow {
+      display: none;
         width: 28px;
         height: 28px;
       }
@@ -158,7 +177,9 @@
         flex-basis: min(260px, calc(100vw - 98px));
       }
 
-      #wizard-size-carousel .size-carousel__arrow { width: 26px; height: 26px; }
+      #wizard-size-carousel .size-carousel__arrow {
+        display: none;
+      }
     }
   </style>
 </head>
@@ -335,19 +356,8 @@
           viewport.scrollBy({ left: direction * offset, behavior: "smooth" });
         }
 
-        function updateArrowState() {
-          const maxScrollLeft = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
-          const hasOverflow = maxScrollLeft > 1;
-          leftArrow.disabled = !hasOverflow || viewport.scrollLeft <= 1;
-          rightArrow.disabled = !hasOverflow || viewport.scrollLeft >= maxScrollLeft - 1;
-          leftArrow.hidden = !hasOverflow;
-          rightArrow.hidden = !hasOverflow;
-        }
-
         leftArrow.addEventListener("click", () => scrollByCard(-1));
         rightArrow.addEventListener("click", () => scrollByCard(1));
-        viewport.addEventListener("scroll", updateArrowState, { passive: true });
-        window.addEventListener("resize", updateArrowState);
 
         const cards = [...carousel.querySelectorAll(".option-card")];
         cards.forEach((card, index) => {
@@ -368,7 +378,6 @@
 
         const checked = carousel.querySelector('input[name="tableShape"]:checked')?.closest(".option-card");
         if (checked) centerCard(checked);
-        requestAnimationFrame(updateArrowState);
       }
 
       const observer = new MutationObserver(() => setupShapeCarousel());
