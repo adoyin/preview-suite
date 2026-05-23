@@ -33,7 +33,7 @@
       display: flex;
       gap: 10px;
       flex-wrap: nowrap;
-      padding: 2px 24px;
+      padding: 2px 0;
       width: max-content;
     }
 
@@ -43,6 +43,7 @@
     }
 
     #wizard-shape-carousel .shape-carousel__arrow {
+      display: none;
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
@@ -111,7 +112,7 @@
       flex-wrap: nowrap;
       gap: 14px;
       width: max-content;
-      padding-right: 22px;
+      padding-right: 0;
     }
 
     #wizard-size-carousel .option-cards--table-size .option-card--size {
@@ -119,6 +120,7 @@
     }
 
     #wizard-size-carousel .size-carousel__arrow {
+      display: none;
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
@@ -164,6 +166,7 @@
 
       #wizard-shape-carousel .shape-carousel__arrow,
       #wizard-size-carousel .size-carousel__arrow {
+      display: none;
         width: 28px;
         height: 28px;
       }
