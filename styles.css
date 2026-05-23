@@ -815,6 +815,13 @@ body.wizard-layout .panel--wizard-preview .panel__header{
   scroll-padding-inline: 16px;
 }
 
+.option-cards,
+.option-cards--table-size,
+.option-cards--table-texture,
+.option-cards--colors{
+  padding-inline: 0;
+}
+
 #wizard-texture-carousel.texture-carousel{
   position: relative;
   display: grid;
@@ -840,7 +847,7 @@ body.wizard-layout .panel--wizard-preview .panel__header{
   flex-wrap: nowrap;
   gap: 14px;
   width: max-content;
-  padding-right: 22px;
+  padding-right: 0;
 }
 
 #wizard-texture-carousel .option-card--texture{
@@ -1048,6 +1055,13 @@ body.wizard-layout .panel--wizard-preview .panel__header{
 
 #wizard-texture-carousel .texture-carousel__arrow--left{ left: -6px; }
 #wizard-texture-carousel .texture-carousel__arrow--right{ right: -6px; }
+
+
+.shape-carousel__arrow,
+.size-carousel__arrow,
+.texture-carousel__arrow{
+  display: none !important;
+}
 
 .row{ margin-top: 6px; }
 .range{ width:100%; }
