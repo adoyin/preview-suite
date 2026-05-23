@@ -1545,20 +1545,8 @@ function setupSizeCarousel() {
     viewport.scrollBy({ left: direction * amount, behavior: "smooth" });
   };
 
-  const updateArrowState = () => {
-    const maxScrollLeft = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
-    const hasOverflow = maxScrollLeft > 1;
-    leftArrow.disabled = !hasOverflow || viewport.scrollLeft <= 1;
-    rightArrow.disabled = !hasOverflow || viewport.scrollLeft >= maxScrollLeft - 1;
-    leftArrow.hidden = !hasOverflow;
-    rightArrow.hidden = !hasOverflow;
-  };
-
   leftArrow.addEventListener("click", () => scrollByOneCard(-1));
   rightArrow.addEventListener("click", () => scrollByOneCard(1));
-  viewport.addEventListener("scroll", updateArrowState, { passive: true });
-  window.addEventListener("resize", updateArrowState);
-  requestAnimationFrame(updateArrowState);
   carousel.dataset.carouselReady = "true";
 }
 
@@ -1587,20 +1575,8 @@ function setupTextureCarousel() {
     viewport.scrollBy({ left: direction * amount, behavior: "smooth" });
   };
 
-  const updateArrowState = () => {
-    const maxScrollLeft = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
-    const hasOverflow = maxScrollLeft > 1;
-    leftArrow.disabled = !hasOverflow || viewport.scrollLeft <= 1;
-    rightArrow.disabled = !hasOverflow || viewport.scrollLeft >= maxScrollLeft - 1;
-    leftArrow.hidden = !hasOverflow;
-    rightArrow.hidden = !hasOverflow;
-  };
-
   leftArrow.addEventListener("click", () => scrollByOneCard(-1));
   rightArrow.addEventListener("click", () => scrollByOneCard(1));
-  viewport.addEventListener("scroll", updateArrowState, { passive: true });
-  window.addEventListener("resize", updateArrowState);
-  requestAnimationFrame(updateArrowState);
   carousel.dataset.carouselReady = "true";
 }
 
