@@ -2021,7 +2021,10 @@ function renderStepContent() {
       ${builderSections.map((section, index) => {
         const unlocked = index <= maxRevealedIndex;
         const open = index === activeSectionIndex;
-        const showSectionHeader = index !== 0;
+        const sectionComplete = isSectionComplete(index);
+        const showTableSetupSummary = index === 0 && sectionComplete && !open;
+        const showSectionHeader = index !== 0 || showTableSetupSummary;
+        const tableSetupSummary = `${formatTableShape(state.tableShape)} · ${typeof state.tableSize === "number" ? `${state.tableSize}"` : state.tableSize} · ${tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || state.tableclothTexture}`;
         return `
           <section class="section-container ${open ? "section-container--open" : ""} ${unlocked ? "" : "section-container--locked"}" data-section-index="${index}">
             ${showSectionHeader ? `
@@ -2029,9 +2032,9 @@ function renderStepContent() {
                 <span>
                   <span class="section-container__eyebrow">Section ${index + 1}</span>
                   <span class="section-container__title">${section.title}</span>
-                  <span class="section-container__hint">${section.hint}</span>
+                  <span class="section-container__hint">${showTableSetupSummary ? tableSetupSummary : section.hint}</span>
                 </span>
-                <span class="section-container__status">${isSectionComplete(index) ? "Completed" : (open ? "In progress" : "Open")}</span>
+                <span class="section-container__status">${showTableSetupSummary ? "Edit" : (sectionComplete ? "Completed" : (open ? "In progress" : "Open"))}</span>
               </button>
             ` : ""}
             <div class="section-container__body" ${open ? "" : "hidden"}></div>
