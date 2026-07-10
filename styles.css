@@ -345,6 +345,68 @@ a:focus-visible{
   border-color: rgba(182, 154, 112, 0.42);
 }
 
+.experience-card--primary{
+  position: relative;
+  border-color: rgba(182, 154, 112, 0.48);
+  background:
+    linear-gradient(145deg, rgba(255,255,255,0.98), rgba(248,243,234,0.96)),
+    var(--surface-strong);
+}
+
+.experience-card--primary::before{
+  content: "";
+  position: absolute;
+  inset: 16px;
+  border: 1px solid rgba(182, 154, 112, 0.22);
+  border-radius: calc(var(--radius) - 8px);
+  pointer-events: none;
+}
+
+.experience-card--primary .experience-card__icon{
+  background: rgba(182, 154, 112, 0.16);
+  border-color: rgba(182, 154, 112, 0.56);
+}
+
+.experience-card__cta,
+.experience-card__status{
+  align-self: flex-start;
+  margin-top: 22px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.experience-card__cta{
+  padding: 10px 15px;
+  background: #17110d;
+  color: #f8f5f0;
+  box-shadow: 0 10px 22px rgba(23, 17, 13, 0.18);
+}
+
+.experience-card--future{
+  background: rgba(255,255,255,0.68);
+  box-shadow: var(--shadow-soft);
+}
+
+.experience-card--future:hover{
+  transform: none;
+  box-shadow: var(--shadow-soft);
+  border-color: var(--stroke);
+}
+
+.experience-card--future .experience-card__icon{
+  opacity: 0.72;
+}
+
+.experience-card__status{
+  padding: 8px 12px;
+  border: 1px solid rgba(182, 154, 112, 0.36);
+  color: var(--accent);
+  background: rgba(182, 154, 112, 0.08);
+}
+
 .placeholder-card{
   min-height: 58vh;
   display:grid;
