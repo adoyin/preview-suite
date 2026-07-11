@@ -271,7 +271,7 @@ const stepSequence = [
   "Table size",
   "Tablecloth texture",
   "Tablecloth color",
-  "Number of place settings",
+  "Guests at this table",
   "Charger plate",
   "Napkin color",
   "Napkin texture",
@@ -313,7 +313,7 @@ const builderSections = [
   {
     id: "place-settings",
     title: "Place Settings",
-    hint: "",
+    hint: "Design one place setting. We'll apply it to every guest.",
     rows: [5, 6, 7, 8],
   },
   {
@@ -1597,7 +1597,7 @@ function getStepMeta() {
     case 2: return { title: "Table size", hint: "", value: state.tableSize ? (typeof state.tableSize === "number" ? `${state.tableSize}"` : state.tableSize) : "Not selected" };
     case 3: return { title: "Tablecloth Texture", hint: "", value: tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || state.tableclothTexture };
     case 4: return { title: "Tablecloth color", hint: "", value: tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory" };
-    case 5: return { title: "Number of place settings", hint: "How many guests are you planning for?", value: state.placeSettingsCount == null ? "Not selected" : formatGuestLabel(state.placeSettingsCount) };
+    case 5: return { title: "Guests at this table", hint: "", value: state.placeSettingsCount == null ? "Not selected" : formatGuestLabel(state.placeSettingsCount) };
     case 6: return { title: "Charger plate", hint: "", value: getChargerStepValue() };
     case 7: return { title: "Napkin color", hint: "", value: getNapkinStepValue() };
     case 8: return { title: "Choose Napkin Texture", hint: "", value: getNapkinTextureStepValue() };
@@ -1764,8 +1764,7 @@ function renderPlaceSettingsStep() {
   const selectedCount = state.placeSettingsCount;
 
   refs.stepContent.innerHTML = `
-    <section class="place-settings-panel" aria-labelledby="placeSettingsHeading">
-      <p id="placeSettingsHeading" class="place-settings-panel__subtitle">How many guests will be seated at this table?</p>
+    <section class="place-settings-panel">
       <div class="pill-row pill--scroll" role="group" aria-label="Select guests">
         ${placeSettingsOptions.map((count) => {
           const isSelected = selectedCount === count;
@@ -1779,9 +1778,6 @@ function renderPlaceSettingsStep() {
           `;
         }).join("")}
       </div>
-      <p class="place-settings-panel__helper" aria-live="polite">
-        ${selectedCount == null ? "Selected: Not selected" : `Selected: ${selectedCount} ${selectedCount === 1 ? "guest" : "guests"}`}
-      </p>
     </section>
   `;
 
@@ -2034,6 +2030,7 @@ function renderStepContent() {
                   <span class="section-container__eyebrow">Section ${index + 1}</span>
                   <span class="section-container__title">${section.title}</span>
                   ${showTableSetupSummary ? `<span class="section-container__hint">${tableSetupSummary}</span>` : ""}
+                  ${!showTableSetupSummary && section.hint ? `<span class="section-container__hint">${section.hint}</span>` : ""}
                 </span>
                 ${statusText ? `<span class="section-container__status">${statusText}</span>` : ""}
               </button>
