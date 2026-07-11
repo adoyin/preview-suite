@@ -207,16 +207,12 @@
       <div class="panel__header">
         <div class="builder-head builder-head--stack">
           <div>
-            <h1 class="h1">I know what I want</h1>
-            <p class="subtle">Curate your table by section. Your preview updates live as you refine each detail.</p>
+            <h1 class="h1">Build My Vision</h1>
           </div>
           <div class="wizard-progress-wrap wizard-progress-wrap--sectioned">
             <p class="wizard-progress" id="wizardProgress">Section 1 of 4</p>
             <div class="progress-track" aria-hidden="true">
               <div class="progress-fill" id="progressFill"></div>
-            </div>
-            <div class="wizard-sticky-progress" id="stickySectionProgress" aria-live="polite">
-              Currently editing: <span id="stickySectionLabel">Table Setup</span>
             </div>
           </div>
         </div>
@@ -227,9 +223,9 @@
           <div class="step__top">
             <div>
               <div class="step__title" id="stepTitle">Grouped Builder</div>
-              <div class="step__hint" id="stepHint">Move through curated sections while keeping every option visible inside its group.</div>
+              <div class="step__hint" id="stepHint" hidden></div>
             </div>
-            <span class="pill" id="stepValue">Table Setup</span>
+            <span class="pill" id="stepValue">Table</span>
           </div>
 
           <div id="stepContent"></div>

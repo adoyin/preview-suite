@@ -306,26 +306,26 @@ const TOTAL_STEPS = stepSequence.length;
 const builderSections = [
   {
     id: "table-setup",
-    title: "Table Setup",
-    hint: "Foundation and linen direction.",
+    title: "Table",
+    hint: "",
     rows: [1, 2, 3, 4],
   },
   {
     id: "place-settings",
     title: "Place Settings",
-    hint: "Layer each seat with charger and napkin details.",
+    hint: "",
     rows: [5, 6, 7, 8],
   },
   {
     id: "centerpiece",
     title: "Centerpiece",
-    hint: "Define the focal arrangement.",
+    hint: "",
     rows: [9, 10],
   },
   {
     id: "review",
     title: "Review",
-    hint: "Confirm your final selections.",
+    hint: "",
     rows: [12],
   },
 ];
@@ -558,7 +558,7 @@ const centerpieceDecisionOptions = [
   {
     value: "yes",
     label: "Add centerpiece",
-    description: "Choose a centerpiece style",
+    description: "",
   },
 ];
 
@@ -1593,18 +1593,18 @@ function getStepMeta() {
   const currentStepNumber = currentStepIndex + 1;
 
   switch (currentStepNumber) {
-    case 1: return { title: "Table shape", hint: "Choose the base table shape.", value: formatTableShape(state.tableShape) };
-    case 2: return { title: "Table size", hint: "Choose a size for the selected shape.", value: state.tableSize ? (typeof state.tableSize === "number" ? `${state.tableSize}"` : state.tableSize) : "Not selected" };
-    case 3: return { title: "Tablecloth Texture", hint: "Choose a fabric.", value: tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || state.tableclothTexture };
-    case 4: return { title: "Tablecloth color", hint: "Choose a color.", value: tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory" };
+    case 1: return { title: "Table shape", hint: "", value: formatTableShape(state.tableShape) };
+    case 2: return { title: "Table size", hint: "", value: state.tableSize ? (typeof state.tableSize === "number" ? `${state.tableSize}"` : state.tableSize) : "Not selected" };
+    case 3: return { title: "Tablecloth Texture", hint: "", value: tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || state.tableclothTexture };
+    case 4: return { title: "Tablecloth color", hint: "", value: tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory" };
     case 5: return { title: "Number of place settings", hint: "How many guests are you planning for?", value: state.placeSettingsCount == null ? "Not selected" : formatGuestLabel(state.placeSettingsCount) };
-    case 6: return { title: "Charger plate", hint: "Select your charger style.", value: getChargerStepValue() };
-    case 7: return { title: "Napkin color", hint: "Choose a color.", value: getNapkinStepValue() };
-    case 8: return { title: "Choose Napkin Texture", hint: "Choose a fabric.", value: getNapkinTextureStepValue() };
-    case 9: return { title: "Centerpiece", hint: "Would you like to add a centerpiece?", value: getCenterpieceStepValue() };
-    case 10: return { title: "Centerpiece", hint: "Choose a centerpiece style", value: state.hasCenterpiece ? (getCenterpieceStyleLabel(state.centerpieceStyle) || "Not selected") : "Skipped" };
+    case 6: return { title: "Charger plate", hint: "", value: getChargerStepValue() };
+    case 7: return { title: "Napkin color", hint: "", value: getNapkinStepValue() };
+    case 8: return { title: "Choose Napkin Texture", hint: "", value: getNapkinTextureStepValue() };
+    case 9: return { title: "Centerpiece", hint: "", value: getCenterpieceStepValue() };
+    case 10: return { title: "Centerpiece", hint: "", value: state.hasCenterpiece ? (getCenterpieceStyleLabel(state.centerpieceStyle) || "Not selected") : "Skipped" };
     case 11: return { title: "Table styling", hint: "Add optional finishing touches.", value: getTableStylingStepValue() };
-    case 12: return { title: "Final Preview / Review", hint: "Review your completed tablescape.", value: "Ready" };
+    case 12: return { title: "Final Preview / Review", hint: "", value: "Ready" };
     case 13: return { title: "Export materials list", hint: "Convert your design into a sourcing checklist.", value: `${generateMaterialsList().length} items` };
     default: return { title: "", hint: "", value: "" };
   }
@@ -1940,7 +1940,7 @@ function renderStepInto(stepNumber, container) {
                 data-centerpiece-decision="${option.value}"
               >
                 <span class="centerpiece-decision-card__title">${option.label}</span>
-                <span class="centerpiece-decision-card__description">${option.description}</span>
+                ${option.description ? `<span class="centerpiece-decision-card__description">${option.description}</span>` : ""}
               </button>
             `;
           }).join("")}
@@ -2025,6 +2025,7 @@ function renderStepContent() {
         const showTableSetupSummary = index === 0 && sectionComplete && !open;
         const showSectionHeader = index !== 0 || showTableSetupSummary;
         const tableSetupSummary = `${formatTableShape(state.tableShape)} · ${typeof state.tableSize === "number" ? `${state.tableSize}"` : state.tableSize} · ${tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || state.tableclothTexture}`;
+        const statusText = showTableSetupSummary ? "Edit" : (sectionComplete ? "Completed" : (open ? "In progress" : ""));
         return `
           <section class="section-container ${open ? "section-container--open" : ""} ${unlocked ? "" : "section-container--locked"}" data-section-index="${index}">
             ${showSectionHeader ? `
@@ -2032,9 +2033,9 @@ function renderStepContent() {
                 <span>
                   <span class="section-container__eyebrow">Section ${index + 1}</span>
                   <span class="section-container__title">${section.title}</span>
-                  <span class="section-container__hint">${showTableSetupSummary ? tableSetupSummary : section.hint}</span>
+                  ${showTableSetupSummary ? `<span class="section-container__hint">${tableSetupSummary}</span>` : ""}
                 </span>
-                <span class="section-container__status">${showTableSetupSummary ? "Edit" : (sectionComplete ? "Completed" : (open ? "In progress" : "Open"))}</span>
+                ${statusText ? `<span class="section-container__status">${statusText}</span>` : ""}
               </button>
             ` : ""}
             <div class="section-container__body" ${open ? "" : "hidden"}></div>
@@ -2073,7 +2074,7 @@ function renderStepContent() {
     question.innerHTML = `
       <div class="question-row__head">
         <h3>${meta.title}</h3>
-        <p>${meta.hint || ""}</p>
+        ${meta.hint ? `<p>${meta.hint}</p>` : ""}
       </div>
       <div class="question-row__content"></div>
     `;
@@ -2122,7 +2123,8 @@ function updateUI() {
 
   const activeSection = builderSections[activeSectionIndex] || builderSections[0];
   refs.stepTitle.textContent = activeSection.title;
-  refs.stepHint.textContent = activeSection.hint;
+  refs.stepHint.textContent = "";
+  refs.stepHint.hidden = true;
   refs.stepValue.hidden = true;
   if (refs.stickySectionLabel) refs.stickySectionLabel.textContent = activeSection.title;
 
