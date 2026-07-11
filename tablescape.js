@@ -272,9 +272,9 @@ const stepSequence = [
   "Tablecloth texture",
   "Tablecloth color",
   "Guests at this table",
-  "Charger plate",
-  "Napkin color",
-  "Napkin texture",
+  "Charger",
+  "Napkin Color",
+  "Napkin Material",
   "Centerpiece",
   "Centerpiece style",
   "Table styling",
@@ -314,7 +314,7 @@ const builderSections = [
     id: "place-settings",
     title: "Place Settings",
     hint: "Design one place setting. We'll apply it to every guest.",
-    rows: [5, 6, 7, 8],
+    rows: [5, 6, "napkin-decision", 8, 7],
   },
   {
     id: "centerpiece",
@@ -399,7 +399,7 @@ let maxStepReached = 0;
 let isJumpModalOpen = false;
 let activeSectionIndex = 0;
 
-const placeSettingsOptions = Array.from({ length: 11 }, (_, index) => index + 2);
+const placeSettingsOptions = Array.from({ length: 9 }, (_, index) => index + 4);
 
 const el = (id) => document.getElementById(id);
 
@@ -479,7 +479,7 @@ function getChargerStepValue() {
 
 function getNapkinStepValue() {
   if (!state.includeNapkin) {
-    return "No napkin";
+    return "No Napkin";
   }
 
   return napkinColorOptions.find((option) => option.value === state.napkinType)?.label || "Ivory";
@@ -487,7 +487,7 @@ function getNapkinStepValue() {
 
 function getNapkinTextureStepValue() {
   if (!state.includeNapkin) {
-    return "No napkin";
+    return "No Napkin";
   }
 
   return napkinTextureOptions.find((option) => option.value === state.napkinTexture)?.label || "Polyester";
@@ -1021,7 +1021,7 @@ function renderSummary() {
   refs.summary.settings.textContent = state.placeSettingsCount == null ? "—" : String(state.placeSettingsCount);
   refs.summary.cloth.textContent = `${state.tableclothTexture[0].toUpperCase()}${state.tableclothTexture.slice(1)} — ${tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory"}`;
   refs.summary.charger.textContent = getSelectedChargerLabel() || "—";
-  refs.summary.napkin.textContent = state.includeNapkin ? (state.napkinType || "—") : "No napkin";
+  refs.summary.napkin.textContent = state.includeNapkin ? (state.napkinType || "—") : "No Napkin";
   refs.summary.napkinTexture.textContent = getNapkinTextureStepValue();
   refs.summary.centerpiece.textContent = getCenterpieceStepValue();
   refs.summary.tableStyling.textContent = getTableStylingStepValue();
@@ -1445,13 +1445,6 @@ function renderNapkinColorCards() {
     selectedValue: state.napkinType,
     groupSelectId: "napkinColorGroup",
     colorInputName: "napkinColor",
-    extraToolbarControls: `
-      <label class="charger-toggle charger-toggle--no-charger" for="noNapkinToggle">
-        <input id="noNapkinToggle" class="charger-toggle__input" type="checkbox" ${state.includeNapkin ? "" : "checked"} />
-        <span class="charger-toggle__label">No napkin</span>
-      </label>
-    `,
-    carouselDisabled: !state.includeNapkin,
     onGroupChange: (group) => {
       state.napkinColorGroup = group;
       renderNapkinColorCards();
@@ -1466,32 +1459,6 @@ function renderNapkinColorCards() {
       state.napkinColorGroup = selectedOption.group;
       updateUI();
     },
-  });
-
-  refs.stepContent.querySelector("#noNapkinToggle")?.addEventListener("change", (event) => {
-    const noNapkin = event.target.checked;
-    const includeNapkin = !noNapkin;
-
-    if (!includeNapkin && state.napkinType) {
-      state.lastSelectedNapkin = state.napkinType;
-    }
-
-    if (includeNapkin) {
-      state.includeNapkin = true;
-      const fallbackNapkin = napkinColorOptions.find((option) => option.value === state.lastSelectedNapkin)
-        || napkinColorOptions.find((option) => option.value === "Ivory")
-        || napkinColorOptions[0];
-
-      if (fallbackNapkin) {
-        state.napkinType = fallbackNapkin.value;
-        state.napkinColor = fallbackNapkin.hex;
-        state.napkinColorGroup = fallbackNapkin.group;
-      }
-    } else {
-      state.includeNapkin = false;
-    }
-
-    updateUI();
   });
 }
 
@@ -1598,9 +1565,9 @@ function getStepMeta() {
     case 3: return { title: "Tablecloth Texture", hint: "", value: tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || state.tableclothTexture };
     case 4: return { title: "Tablecloth color", hint: "", value: tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory" };
     case 5: return { title: "Guests at this table", hint: "", value: state.placeSettingsCount == null ? "Not selected" : formatGuestLabel(state.placeSettingsCount) };
-    case 6: return { title: "Charger plate", hint: "", value: getChargerStepValue() };
-    case 7: return { title: "Napkin color", hint: "", value: getNapkinStepValue() };
-    case 8: return { title: "Choose Napkin Texture", hint: "", value: getNapkinTextureStepValue() };
+    case 6: return { title: "Charger", hint: "", value: getChargerStepValue() };
+    case 7: return { title: "Napkin Color", hint: "", value: getNapkinStepValue() };
+    case 8: return { title: "Napkin Material", hint: "", value: getNapkinTextureStepValue() };
     case 9: return { title: "Centerpiece", hint: "", value: getCenterpieceStepValue() };
     case 10: return { title: "Centerpiece", hint: "", value: state.hasCenterpiece ? (getCenterpieceStyleLabel(state.centerpieceStyle) || "Not selected") : "Skipped" };
     case 11: return { title: "Table styling", hint: "Add optional finishing touches.", value: getTableStylingStepValue() };
@@ -1790,6 +1757,60 @@ function renderPlaceSettingsStep() {
   });
 }
 
+function restoreSelectedNapkin() {
+  const fallbackNapkin = napkinColorOptions.find((option) => option.value === state.lastSelectedNapkin)
+    || napkinColorOptions.find((option) => option.value === state.napkinType)
+    || napkinColorOptions.find((option) => option.value === "Ivory")
+    || napkinColorOptions[0];
+
+  if (!fallbackNapkin) return;
+
+  state.napkinType = fallbackNapkin.value;
+  state.napkinColor = fallbackNapkin.hex;
+  state.napkinColorGroup = fallbackNapkin.group;
+  state.lastSelectedNapkin = fallbackNapkin.value;
+}
+
+function renderNapkinDecisionStep() {
+  const options = [
+    { value: "include", label: "Include Napkin" },
+    { value: "none", label: "No Napkin" },
+  ];
+
+  refs.stepContent.innerHTML = `
+    <div class="napkin-choice-group" role="radiogroup" aria-label="Napkin inclusion">
+      ${options.map((option) => {
+        const isSelected = option.value === "include" ? state.includeNapkin : !state.includeNapkin;
+        return `
+          <button
+            class="napkin-choice ${isSelected ? "napkin-choice--selected" : ""}"
+            type="button"
+            role="radio"
+            aria-checked="${isSelected ? "true" : "false"}"
+            data-napkin-choice="${option.value}"
+          >${option.label}</button>
+        `;
+      }).join("")}
+    </div>
+  `;
+
+  refs.stepContent.querySelectorAll("[data-napkin-choice]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const choice = button.getAttribute("data-napkin-choice");
+
+      if (choice === "include") {
+        state.includeNapkin = true;
+        restoreSelectedNapkin();
+      } else {
+        if (state.napkinType) state.lastSelectedNapkin = state.napkinType;
+        state.includeNapkin = false;
+      }
+
+      updateUI();
+    });
+  });
+}
+
 function isSectionComplete(sectionIndex) {
   switch (sectionIndex) {
     case 0:
@@ -1822,6 +1843,8 @@ function withScopedStepContent(container, renderFn) {
 
 function renderStepInto(stepNumber, container) {
   withScopedStepContent(container, () => {
+    if (stepNumber === "napkin-decision") return renderNapkinDecisionStep();
+
     if (stepNumber === 1) {
       renderVisualOptionCards({
         name: "tableShape",
@@ -2021,13 +2044,12 @@ function renderStepContent() {
         const showTableSetupSummary = index === 0 && sectionComplete && !open;
         const showSectionHeader = index !== 0 || showTableSetupSummary;
         const tableSetupSummary = `${formatTableShape(state.tableShape)} · ${typeof state.tableSize === "number" ? `${state.tableSize}"` : state.tableSize} · ${tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || state.tableclothTexture}`;
-        const statusText = showTableSetupSummary ? "Edit" : (sectionComplete ? "Completed" : (open ? "In progress" : ""));
+        const statusText = showTableSetupSummary ? "Edit" : (sectionComplete ? "Completed" : "");
         return `
           <section class="section-container ${open ? "section-container--open" : ""} ${unlocked ? "" : "section-container--locked"}" data-section-index="${index}">
             ${showSectionHeader ? `
               <button class="section-container__header" type="button" data-open-section="${index}" ${unlocked ? "" : "disabled"}>
                 <span>
-                  <span class="section-container__eyebrow">Section ${index + 1}</span>
                   <span class="section-container__title">${section.title}</span>
                   ${showTableSetupSummary ? `<span class="section-container__hint">${tableSetupSummary}</span>` : ""}
                   ${!showTableSetupSummary && section.hint ? `<span class="section-container__hint">${section.hint}</span>` : ""}
@@ -2057,16 +2079,19 @@ function renderStepContent() {
   if (!openSection || !body) return;
 
   openSection.rows.forEach((stepNumber) => {
+    if (!state.includeNapkin && (stepNumber === 7 || stepNumber === 8)) return;
     if (stepNumber === 10 && state.hasCenterpiece === false) return;
     const question = document.createElement("article");
     question.className = "question-row";
-    const meta = (() => {
-      const previousIndex = currentStepIndex;
-      currentStepIndex = stepNumber - 1;
-      const data = getStepMeta();
-      currentStepIndex = previousIndex;
-      return data;
-    })();
+    const meta = stepNumber === "napkin-decision"
+      ? { title: "Napkin", hint: "", value: state.includeNapkin ? "Include Napkin" : "No Napkin" }
+      : (() => {
+          const previousIndex = currentStepIndex;
+          currentStepIndex = stepNumber - 1;
+          const data = getStepMeta();
+          currentStepIndex = previousIndex;
+          return data;
+        })();
 
     question.innerHTML = `
       <div class="question-row__head">
@@ -2115,7 +2140,7 @@ function updateUI() {
   const sectionNumber = activeSectionIndex + 1;
   const totalSections = builderSections.length;
 
-  refs.wizardProgress.textContent = `Section ${sectionNumber} of ${totalSections}`;
+  if (refs.wizardProgress) refs.wizardProgress.textContent = "";
   refs.progressFill.style.width = `${(sectionNumber / totalSections) * 100}%`;
 
   const activeSection = builderSections[activeSectionIndex] || builderSections[0];
