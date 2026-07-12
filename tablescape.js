@@ -330,7 +330,7 @@ const builderSections = [
   },
 ];
 
-const sectionStepMap = [0, STEP_INDEX.NAPKIN_COLOR, STEP_INDEX.CENTERPIECE_DECISION, STEP_INDEX.FINAL_REVIEW];
+const sectionStepMap = [0, 4, STEP_INDEX.CENTERPIECE_DECISION, STEP_INDEX.FINAL_REVIEW];
 
 function shouldSkipNapkinTextureStep() {
   return !state.includeNapkin;
@@ -672,6 +672,22 @@ function getPlaceSettingsSectionSummary() {
     : "No napkin";
 
   return `Place Settings: ${guests} · ${charger} · ${napkin}`;
+}
+
+function getWizardScroller() {
+  return refs.stepsPanel || refs.stepCard?.closest(".steps") || null;
+}
+
+function getMaxHorizontalScroll(viewport) {
+  if (!viewport) return 0;
+  return Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+}
+
+function scrollViewportByBoundedCard(viewport, amount, direction) {
+  if (!viewport || !amount) return;
+  const maxScroll = getMaxHorizontalScroll(viewport);
+  const nextLeft = Math.max(0, Math.min(maxScroll, viewport.scrollLeft + direction * amount));
+  viewport.scrollTo({ left: nextLeft, behavior: "smooth" });
 }
 
 function getReadableSummary() {
@@ -1157,16 +1173,19 @@ function renderPreview() {
 function renderVisualOptionCards({ name, options, selectedValue, onSelect }) {
   refs.stepContent.innerHTML = `
     <div class="option-cards">
-      ${options.map((option) => `
-        <label class="option-card ${selectedValue === option.value ? "option-card--selected" : ""}">
-          <input type="radio" name="${name}" value="${option.value}" ${selectedValue === option.value ? "checked" : ""} />
+      ${options.map((option) => {
+        const isSelected = selectedValue === option.value;
+        return `
+        <label class="option-card ${isSelected ? "option-card--selected" : ""}" aria-selected="${isSelected ? "true" : "false"}">
+          <input type="radio" name="${name}" value="${option.value}" ${isSelected ? "checked" : ""} />
           <div class="option-card__media">
             <img class="option-card__image" src="${option.thumbnail || PLACEHOLDER_ASSET}" data-fallback-src="${PLACEHOLDER_ASSET}" data-fallback-text="true" alt="${option.label}" loading="lazy" />
             <span class="option-card__fallback" data-fallback-text hidden>Image coming soon</span>
           </div>
           <span class="option-card__title">${option.label}</span>
         </label>
-      `).join("")}
+      `;
+      }).join("")}
     </div>
   `;
 
@@ -1200,7 +1219,7 @@ function renderTableSizeCards(shape, selectedValue) {
           ${shapeOptions.map((option, index) => {
             const tooltipId = `tableSizeTip${index}`;
             return `
-              <label class="option-card option-card--size ${selectedValue === option.value ? "option-card--selected" : ""}">
+              <label class="option-card option-card--size ${selectedValue === option.value ? "option-card--selected" : ""}" aria-selected="${selectedValue === option.value ? "true" : "false"}">
                 <input type="radio" name="tableSize" value="${option.value}" ${selectedValue === option.value ? "checked" : ""} />
                 <div class="option-card__media option-card__media--size">
                   <img class="option-card__image" src="${option.thumbnail}" data-fallback-src="${PLACEHOLDER_ASSET}" data-fallback-text="true" alt="${option.label}" loading="lazy" />
@@ -1304,7 +1323,7 @@ function renderTextureCards({
           ${options.map((option, index) => {
             const tooltipId = `${tooltipPrefix}${index}`;
             return `
-              <label class="option-card option-card--texture ${selectedValue === option.value ? "option-card--selected" : ""}">
+              <label class="option-card option-card--texture ${selectedValue === option.value ? "option-card--selected" : ""}" aria-selected="${selectedValue === option.value ? "true" : "false"}">
                 <input type="radio" name="${inputName}" value="${option.value}" ${selectedValue === option.value ? "checked" : ""} />
                 <div class="option-card__media option-card__media--texture">
                   <img class="option-card__image option-card__image--texture" src="${option.thumbnail}" alt="${option.label} texture swatch" loading="lazy" />
@@ -1400,7 +1419,7 @@ function renderGroupedColorCards({
       <div class="wizard-color-carousel__viewport">
         <div class="option-cards option-cards--table-color">
           ${activeColorOptions.map((option) => `
-            <label class="option-card option-card--color ${selectedValue === option.value ? "option-card--selected" : ""}">
+            <label class="option-card option-card--color ${selectedValue === option.value ? "option-card--selected" : ""}" aria-selected="${selectedValue === option.value ? "true" : "false"}">
               <input type="radio" name="${colorInputName}" value="${option.value}" ${selectedValue === option.value ? "checked" : ""} />
               <div class="option-card__media option-card__media--color">
                 <div class="option-card__swatch" style="background-color: ${option.hex};" aria-hidden="true"></div>
@@ -1528,7 +1547,7 @@ function setupSizeCarousel() {
     if (!amount) {
       return;
     }
-    viewport.scrollBy({ left: direction * amount, behavior: "smooth" });
+    scrollViewportByBoundedCard(viewport, amount, direction);
   };
 
   leftArrow.addEventListener("click", () => scrollByOneCard(-1));
@@ -1558,7 +1577,7 @@ function setupTextureCarousel() {
     if (!amount) {
       return;
     }
-    viewport.scrollBy({ left: direction * amount, behavior: "smooth" });
+    scrollViewportByBoundedCard(viewport, amount, direction);
   };
 
   leftArrow.addEventListener("click", () => scrollByOneCard(-1));
@@ -1760,6 +1779,7 @@ function renderPlaceSettingsStep() {
               class="pill place-settings-pill ${isSelected ? "pill--selected" : ""}"
               data-place-settings-value="${count}"
               aria-pressed="${isSelected ? "true" : "false"}"
+              aria-selected="${isSelected ? "true" : "false"}"
             >${count}</button>
           `;
         }).join("")}
@@ -1791,8 +1811,8 @@ function restoreSelectedNapkin() {
 function renderNapkinDecisionStep() {
   refs.stepContent.innerHTML = `
     <div class="charger-step__controls napkin-step__controls">
-      <label class="charger-toggle charger-toggle--no-charger" for="noNapkinToggleGrouped">
-        <input id="noNapkinToggleGrouped" class="charger-toggle__input" type="checkbox" ${state.includeNapkin ? "" : "checked"} />
+      <label class="charger-toggle charger-toggle--no-charger ${state.includeNapkin ? "" : "charger-toggle--selected"}" for="noNapkinToggleGrouped" aria-selected="${state.includeNapkin ? "false" : "true"}">
+        <input id="noNapkinToggleGrouped" class="charger-toggle__input" type="checkbox" ${state.includeNapkin ? "" : "checked"} aria-pressed="${state.includeNapkin ? "false" : "true"}" />
         <span class="charger-toggle__label">No napkin</span>
       </label>
     </div>
@@ -1881,8 +1901,8 @@ function renderStepInto(stepNumber, container) {
     if (stepNumber === 6) {
       refs.stepContent.innerHTML = `
         <div class="charger-step__controls">
-          <label class="charger-toggle charger-toggle--no-charger" for="noChargerToggleGrouped">
-            <input id="noChargerToggleGrouped" class="charger-toggle__input" type="checkbox" ${state.includeCharger ? "" : "checked"} />
+          <label class="charger-toggle charger-toggle--no-charger ${state.includeCharger ? "" : "charger-toggle--selected"}" for="noChargerToggleGrouped" aria-selected="${state.includeCharger ? "false" : "true"}">
+            <input id="noChargerToggleGrouped" class="charger-toggle__input" type="checkbox" ${state.includeCharger ? "" : "checked"} aria-pressed="${state.includeCharger ? "false" : "true"}" />
             <span class="charger-toggle__label">No charger</span>
           </label>
         </div>
@@ -1891,7 +1911,7 @@ function renderStepInto(stepNumber, container) {
           <div class="texture-carousel__viewport">
             <div class="option-cards option-cards--table-texture">
               ${chargerOptions.map((option) => `
-                <label class="option-card option-card--texture option-card--charger ${state.selectedCharger === option.value ? "option-card--selected" : ""}">
+                <label class="option-card option-card--texture option-card--charger ${state.selectedCharger === option.value ? "option-card--selected" : ""}" aria-selected="${state.selectedCharger === option.value ? "true" : "false"}">
                   <input type="radio" name="selectedCharger" value="${option.value}" ${state.selectedCharger === option.value ? "checked" : ""} />
                   <div class="option-card__media option-card__media--texture option-card__media--charger">
                     <img class="option-card__image option-card__image--texture option-card__image--charger" src="${option.image}" data-fallback-src="${PLACEHOLDER_ASSET}" data-fallback-text="true" alt="${option.label}" loading="lazy" />
@@ -1950,6 +1970,7 @@ function renderStepInto(stepNumber, container) {
                 type="button"
                 role="radio"
                 aria-checked="${isSelected ? "true" : "false"}"
+                aria-pressed="${isSelected ? "true" : "false"}"
                 data-centerpiece-decision="${option.value}"
               >
                 <span class="centerpiece-decision-card__title">${option.label}</span>
@@ -1986,7 +2007,7 @@ function renderStepInto(stepNumber, container) {
         <p class="centerpiece-style-helper">Not sure? Start with Floral (Low).</p>
         <div class="option-cards">
           ${centerpieceStyleOptions.map((option) => `
-            <button class="option-card ${state.centerpieceStyle === option.value ? "option-card--selected" : ""}" type="button" data-centerpiece-style="${option.value}">
+            <button class="option-card ${state.centerpieceStyle === option.value ? "option-card--selected" : ""}" type="button" data-centerpiece-style="${option.value}" aria-pressed="${state.centerpieceStyle === option.value ? "true" : "false"}" aria-selected="${state.centerpieceStyle === option.value ? "true" : "false"}">
               <div class="option-card__media">
                 <img class="option-card__image" src="${option.thumbnail}" alt="${option.label} centerpiece" loading="lazy" />
               </div>
@@ -2150,7 +2171,7 @@ function scrollPendingSectionIntoView() {
   pendingSectionScrollIndex = null;
 
   requestAnimationFrame(() => {
-    const scroller = refs.stepsPanel || refs.stepCard?.closest(".steps");
+    const scroller = getWizardScroller();
     const section = refs.stepContent.querySelector(`.section-container[data-section-index="${sectionIndex}"]`);
     if (!scroller || !section) return;
 
@@ -2162,6 +2183,9 @@ function scrollPendingSectionIntoView() {
 }
 
 function updateUI() {
+  const scroller = getWizardScroller();
+  const shouldRestoreScroll = pendingSectionScrollIndex == null && scroller;
+  const previousScrollTop = shouldRestoreScroll ? scroller.scrollTop : 0;
   const sectionNumber = activeSectionIndex + 1;
   const totalSections = builderSections.length;
 
@@ -2178,6 +2202,13 @@ function updateUI() {
   renderStepContent();
   renderPreview();
   updateWizardControls();
+
+  if (shouldRestoreScroll) {
+    scroller.scrollTop = previousScrollTop;
+    requestAnimationFrame(() => {
+      scroller.scrollTop = previousScrollTop;
+    });
+  }
 }
 
 function goToStep(index, options = {}) {
