@@ -479,7 +479,7 @@ function getChargerStepValue() {
 
 function getNapkinStepValue() {
   if (!state.includeNapkin) {
-    return "No Napkin";
+    return "No napkin";
   }
 
   return napkinColorOptions.find((option) => option.value === state.napkinType)?.label || "Ivory";
@@ -487,7 +487,7 @@ function getNapkinStepValue() {
 
 function getNapkinTextureStepValue() {
   if (!state.includeNapkin) {
-    return "No Napkin";
+    return "No napkin";
   }
 
   return napkinTextureOptions.find((option) => option.value === state.napkinTexture)?.label || "Polyester";
@@ -1021,7 +1021,7 @@ function renderSummary() {
   refs.summary.settings.textContent = state.placeSettingsCount == null ? "—" : String(state.placeSettingsCount);
   refs.summary.cloth.textContent = `${state.tableclothTexture[0].toUpperCase()}${state.tableclothTexture.slice(1)} — ${tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory"}`;
   refs.summary.charger.textContent = getSelectedChargerLabel() || "—";
-  refs.summary.napkin.textContent = state.includeNapkin ? (state.napkinType || "—") : "No Napkin";
+  refs.summary.napkin.textContent = state.includeNapkin ? (state.napkinType || "—") : "No napkin";
   refs.summary.napkinTexture.textContent = getNapkinTextureStepValue();
   refs.summary.centerpiece.textContent = getCenterpieceStepValue();
   refs.summary.tableStyling.textContent = getTableStylingStepValue();
@@ -1260,6 +1260,7 @@ function renderNapkinTextureCards() {
     leftArrowLabel: "Scroll napkin textures left",
     rightArrowLabel: "Scroll napkin textures right",
     onChange: (value) => {
+      state.includeNapkin = true;
       state.napkinTexture = value;
       updateUI();
     },
@@ -1732,7 +1733,7 @@ function renderPlaceSettingsStep() {
 
   refs.stepContent.innerHTML = `
     <section class="place-settings-panel">
-      <div class="pill-row pill--scroll" role="group" aria-label="Select guests">
+      <div class="pill-row place-settings-pill-row" role="group" aria-label="Select guests">
         ${placeSettingsOptions.map((count) => {
           const isSelected = selectedCount === count;
           return `
@@ -1772,42 +1773,25 @@ function restoreSelectedNapkin() {
 }
 
 function renderNapkinDecisionStep() {
-  const options = [
-    { value: "include", label: "Include Napkin" },
-    { value: "none", label: "No Napkin" },
-  ];
-
   refs.stepContent.innerHTML = `
-    <div class="napkin-choice-group" role="radiogroup" aria-label="Napkin inclusion">
-      ${options.map((option) => {
-        const isSelected = option.value === "include" ? state.includeNapkin : !state.includeNapkin;
-        return `
-          <button
-            class="napkin-choice ${isSelected ? "napkin-choice--selected" : ""}"
-            type="button"
-            role="radio"
-            aria-checked="${isSelected ? "true" : "false"}"
-            data-napkin-choice="${option.value}"
-          >${option.label}</button>
-        `;
-      }).join("")}
+    <div class="charger-step__controls napkin-step__controls">
+      <label class="charger-toggle charger-toggle--no-charger" for="noNapkinToggleGrouped">
+        <input id="noNapkinToggleGrouped" class="charger-toggle__input" type="checkbox" ${state.includeNapkin ? "" : "checked"} />
+        <span class="charger-toggle__label">No napkin</span>
+      </label>
     </div>
   `;
 
-  refs.stepContent.querySelectorAll("[data-napkin-choice]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const choice = button.getAttribute("data-napkin-choice");
-
-      if (choice === "include") {
-        state.includeNapkin = true;
-        restoreSelectedNapkin();
-      } else {
-        if (state.napkinType) state.lastSelectedNapkin = state.napkinType;
-        state.includeNapkin = false;
-      }
-
-      updateUI();
-    });
+  refs.stepContent.querySelector("#noNapkinToggleGrouped")?.addEventListener("change", (event) => {
+    const includeNapkin = !event.target.checked;
+    if (!includeNapkin && state.napkinType) state.lastSelectedNapkin = state.napkinType;
+    if (includeNapkin) {
+      state.includeNapkin = true;
+      restoreSelectedNapkin();
+    } else {
+      state.includeNapkin = false;
+    }
+    updateUI();
   });
 }
 
@@ -2042,15 +2026,15 @@ function renderStepContent() {
         const open = index === activeSectionIndex;
         const sectionComplete = isSectionComplete(index);
         const showTableSetupSummary = index === 0 && sectionComplete && !open;
-        const showSectionHeader = index !== 0 || showTableSetupSummary;
-        const tableSetupSummary = `${formatTableShape(state.tableShape)} · ${typeof state.tableSize === "number" ? `${state.tableSize}"` : state.tableSize} · ${tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || state.tableclothTexture}`;
+        const showSectionHeader = !open && (index !== 0 || showTableSetupSummary);
+        const tableSetupSummary = `${formatTableShape(state.tableShape)} &middot; ${typeof state.tableSize === "number" ? `${state.tableSize}"` : state.tableSize} &middot; ${tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || state.tableclothTexture}`;
         const statusText = showTableSetupSummary ? "Edit" : (sectionComplete ? "Completed" : "");
         return `
-          <section class="section-container ${open ? "section-container--open" : ""} ${unlocked ? "" : "section-container--locked"}" data-section-index="${index}">
+          <section class="section-container ${open ? "section-container--open" : ""} ${showTableSetupSummary ? "section-container--context" : ""} ${unlocked ? "" : "section-container--locked"}" data-section-index="${index}">
             ${showSectionHeader ? `
               <button class="section-container__header" type="button" data-open-section="${index}" ${unlocked ? "" : "disabled"}>
                 <span>
-                  <span class="section-container__title">${section.title}</span>
+                  ${showTableSetupSummary ? "" : `<span class="section-container__title">${section.title}</span>`}
                   ${showTableSetupSummary ? `<span class="section-container__hint">${tableSetupSummary}</span>` : ""}
                   ${!showTableSetupSummary && section.hint ? `<span class="section-container__hint">${section.hint}</span>` : ""}
                 </span>
@@ -2084,7 +2068,7 @@ function renderStepContent() {
     const question = document.createElement("article");
     question.className = "question-row";
     const meta = stepNumber === "napkin-decision"
-      ? { title: "Napkin", hint: "", value: state.includeNapkin ? "Include Napkin" : "No Napkin" }
+      ? { title: "Napkin", hint: "", value: state.includeNapkin ? "Napkin included" : "No napkin" }
       : (() => {
           const previousIndex = currentStepIndex;
           currentStepIndex = stepNumber - 1;
@@ -2140,13 +2124,13 @@ function updateUI() {
   const sectionNumber = activeSectionIndex + 1;
   const totalSections = builderSections.length;
 
-  if (refs.wizardProgress) refs.wizardProgress.textContent = "";
+  if (refs.wizardProgress) refs.wizardProgress.textContent = `${sectionNumber} of ${totalSections}`;
   refs.progressFill.style.width = `${(sectionNumber / totalSections) * 100}%`;
 
   const activeSection = builderSections[activeSectionIndex] || builderSections[0];
   refs.stepTitle.textContent = activeSection.title;
-  refs.stepHint.textContent = "";
-  refs.stepHint.hidden = true;
+  refs.stepHint.textContent = activeSection.hint || "";
+  refs.stepHint.hidden = !activeSection.hint;
   refs.stepValue.hidden = true;
   if (refs.stickySectionLabel) refs.stickySectionLabel.textContent = activeSection.title;
 
