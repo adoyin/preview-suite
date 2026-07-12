@@ -1277,7 +1277,7 @@ function renderTextureCards({
   onChange,
 }) {
   refs.stepContent.innerHTML = `
-    <div id="wizard-texture-carousel" class="texture-carousel" data-tooltip-root>
+    <div class="texture-carousel texture-carousel--wizard" data-tooltip-root>
       <button class="texture-carousel__arrow texture-carousel__arrow--left" type="button" data-texture-scroll="left" aria-label="${leftArrowLabel}">&#8249;</button>
       <div class="texture-carousel__viewport">
         <div class="option-cards option-cards--table-texture">
@@ -1315,7 +1315,7 @@ function renderTextureCards({
     });
   });
 
-  refs.stepContent.querySelectorAll("#wizard-texture-carousel [data-tooltip-toggle]").forEach((button) => {
+  refs.stepContent.querySelectorAll(".texture-carousel--wizard [data-tooltip-toggle]").forEach((button) => {
     button.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
@@ -1523,7 +1523,7 @@ function getTextureCarouselScrollAmount(carousel) {
 }
 
 function setupTextureCarousel() {
-  const carousel = refs.stepContent.querySelector("#wizard-texture-carousel");
+  const carousel = refs.stepContent.querySelector(".texture-carousel--wizard");
   if (!carousel || carousel.dataset.carouselReady === "true") {
     return;
   }
@@ -1876,7 +1876,7 @@ function renderStepInto(stepNumber, container) {
             <span class="charger-toggle__label">No charger</span>
           </label>
         </div>
-        <div id="wizard-texture-carousel" class="texture-carousel ${state.includeCharger ? "" : "texture-carousel--disabled"}" ${state.includeCharger ? "" : "aria-disabled=\"true\""}>
+        <div class="texture-carousel texture-carousel--wizard texture-carousel--charger ${state.includeCharger ? "" : "texture-carousel--disabled"}" ${state.includeCharger ? "" : "aria-disabled=\"true\""}>
           <button class="texture-carousel__arrow texture-carousel__arrow--left" type="button" data-texture-scroll="left" aria-label="Scroll charger options left">&#8249;</button>
           <div class="texture-carousel__viewport">
             <div class="option-cards option-cards--table-texture">
