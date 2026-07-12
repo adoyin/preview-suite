@@ -248,8 +248,8 @@ const initialState = {
   selectedCharger: null,
   lastSelectedCharger: null,
   includeNapkin: true,
-  napkinType: "Ivory",
-  napkinTexture: "polyester",
+  napkinType: null,
+  napkinTexture: null,
   lastSelectedNapkin: null,
   napkinColorGroup: "Neutrals",
   flatwareType: null,
@@ -257,7 +257,7 @@ const initialState = {
   centerpieceDecision: null,
   centerpieceStyle: null,
   napkinStyle: null,
-  napkinColor: "#F3EBDD",
+  napkinColor: null,
   tableStyling: {
     menuCard: { enabled: false, style: null, placement: null },
     placeCard: { enabled: false, style: null, placement: null },
@@ -398,6 +398,8 @@ let currentStepIndex = 0;
 let maxStepReached = 0;
 let isJumpModalOpen = false;
 let activeSectionIndex = 0;
+let highestSectionReached = 0;
+let pendingSectionScrollIndex = 0;
 
 const placeSettingsOptions = Array.from({ length: 9 }, (_, index) => index + 4);
 
@@ -415,6 +417,7 @@ const refs = {
   stepValue: el("stepValue"),
   stepContent: el("stepContent"),
   stepCard: el("wizardStepCard"),
+  stepsPanel: document.querySelector(".steps"),
   wizardProgress: el("wizardProgress"),
   progressFill: el("progressFill"),
   btnJumpTo: el("btnJumpTo"),
@@ -482,7 +485,7 @@ function getNapkinStepValue() {
     return "No napkin";
   }
 
-  return napkinColorOptions.find((option) => option.value === state.napkinType)?.label || "Ivory";
+  return napkinColorOptions.find((option) => option.value === state.napkinType)?.label || "Not selected";
 }
 
 function getNapkinTextureStepValue() {
@@ -490,7 +493,7 @@ function getNapkinTextureStepValue() {
     return "No napkin";
   }
 
-  return napkinTextureOptions.find((option) => option.value === state.napkinTexture)?.label || "Polyester";
+  return napkinTextureOptions.find((option) => option.value === state.napkinTexture)?.label || "Not selected";
 }
 
 function getCenterpieceStepValue() {
@@ -652,6 +655,23 @@ function getTableStylingSummaryParts() {
 function getTableStylingStepValue() {
   const parts = getTableStylingSummaryParts();
   return parts.length ? parts.join(" · ") : "None";
+}
+
+function getTableSectionSummary() {
+  const shape = formatTableShape(state.tableShape);
+  const size = typeof state.tableSize === "number" ? `${state.tableSize}"` : state.tableSize;
+  const material = tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || state.tableclothTexture;
+  return `Table: ${shape} · ${size} · ${material}`;
+}
+
+function getPlaceSettingsSectionSummary() {
+  const guests = state.placeSettingsCount == null ? "Not selected" : `${state.placeSettingsCount} guests`;
+  const charger = state.includeCharger ? (getSelectedChargerLabel() || "Charger not selected") : "No charger";
+  const napkin = state.includeNapkin
+    ? `${getNapkinStepValue()} ${getNapkinTextureStepValue()} napkin`
+    : "No napkin";
+
+  return `Place Settings: ${guests} · ${charger} · ${napkin}`;
 }
 
 function getReadableSummary() {
@@ -1430,20 +1450,18 @@ function renderTableColorCards() {
 }
 
 function renderNapkinColorCards() {
-  const selectedNapkin = napkinColorOptions.find((option) => option.value === state.napkinType) || napkinColorOptions[0];
+  const selectedNapkin = napkinColorOptions.find((option) => option.value === state.napkinType) || null;
   const selectedGroup = napkinColorGroups[state.napkinColorGroup]
     ? state.napkinColorGroup
     : (selectedNapkin?.group || "Neutrals");
 
-  state.napkinType = selectedNapkin?.value || "Ivory";
-  state.napkinColor = selectedNapkin?.hex || "#F3EBDD";
   state.napkinColorGroup = selectedGroup;
 
   renderGroupedColorCards({
     groups: napkinColorGroups,
     groupNames: napkinColorGroupNames,
     selectedGroup: state.napkinColorGroup,
-    selectedValue: state.napkinType,
+    selectedValue: selectedNapkin?.value || null,
     groupSelectId: "napkinColorGroup",
     colorInputName: "napkinColor",
     onGroupChange: (group) => {
@@ -1760,9 +1778,7 @@ function renderPlaceSettingsStep() {
 
 function restoreSelectedNapkin() {
   const fallbackNapkin = napkinColorOptions.find((option) => option.value === state.lastSelectedNapkin)
-    || napkinColorOptions.find((option) => option.value === state.napkinType)
-    || napkinColorOptions.find((option) => option.value === "Ivory")
-    || napkinColorOptions[0];
+    || napkinColorOptions.find((option) => option.value === state.napkinType);
 
   if (!fallbackNapkin) return;
 
@@ -1800,7 +1816,9 @@ function isSectionComplete(sectionIndex) {
     case 0:
       return Boolean(state.tableShape && state.tableSize && state.tableclothTexture && state.tableclothColor);
     case 1:
-      return state.placeSettingsCount != null && (!state.includeCharger || state.selectedCharger) && (!state.includeNapkin || state.napkinType);
+      return state.placeSettingsCount != null
+        && (!state.includeCharger || Boolean(state.selectedCharger))
+        && (!state.includeNapkin || (Boolean(state.napkinType) && Boolean(state.napkinTexture)));
     case 2:
       return state.hasCenterpiece === false || (state.hasCenterpiece === true && state.centerpieceStyle);
     case 3:
@@ -1808,14 +1826,6 @@ function isSectionComplete(sectionIndex) {
     default:
       return false;
   }
-}
-
-function getHighestRevealedSectionIndex() {
-  let index = 0;
-  while (index < builderSections.length - 1 && isSectionComplete(index)) {
-    index += 1;
-  }
-  return index;
 }
 
 function withScopedStepContent(container, renderFn) {
@@ -2016,27 +2026,28 @@ function renderStepInto(stepNumber, container) {
 }
 
 function renderStepContent() {
-  const maxRevealedIndex = getHighestRevealedSectionIndex();
-  if (activeSectionIndex > maxRevealedIndex) activeSectionIndex = maxRevealedIndex;
+  if (activeSectionIndex > highestSectionReached) activeSectionIndex = highestSectionReached;
 
   refs.stepContent.innerHTML = `
     <div class="sectioned-builder">
       ${builderSections.map((section, index) => {
-        const unlocked = index <= maxRevealedIndex;
+        const unlocked = index <= highestSectionReached;
         const open = index === activeSectionIndex;
         const sectionComplete = isSectionComplete(index);
         const showTableSetupSummary = index === 0 && sectionComplete && !open;
-        const showSectionHeader = !open && (index !== 0 || showTableSetupSummary);
-        const tableSetupSummary = `Table: ${formatTableShape(state.tableShape)} &middot; ${typeof state.tableSize === "number" ? `${state.tableSize}"` : state.tableSize} &middot; ${tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || state.tableclothTexture}`;
-        const statusText = showTableSetupSummary ? "Edit" : (sectionComplete ? "Completed" : "");
+        const showPlaceSettingsSummary = index === 1 && sectionComplete && !open;
+        const showInlineSummary = showTableSetupSummary || showPlaceSettingsSummary;
+        const showSectionHeader = true;
+        const inlineSummary = showTableSetupSummary ? getTableSectionSummary() : getPlaceSettingsSectionSummary();
+        const statusText = showInlineSummary ? "Edit" : "";
         return `
-          <section class="section-container ${open ? "section-container--open" : ""} ${showTableSetupSummary ? "section-container--context" : ""} ${unlocked ? "" : "section-container--locked"}" data-section-index="${index}">
+          <section class="section-container ${open ? "section-container--open" : ""} ${showInlineSummary ? "section-container--context" : ""} ${unlocked ? "" : "section-container--locked"}" data-section-index="${index}">
             ${showSectionHeader ? `
               <button class="section-container__header" type="button" data-open-section="${index}" ${unlocked ? "" : "disabled"}>
                 <span>
-                  ${showTableSetupSummary ? "" : `<span class="section-container__title">${section.title}</span>`}
-                  ${showTableSetupSummary ? `<span class="section-container__hint">${tableSetupSummary}</span>` : ""}
-                  ${!showTableSetupSummary && section.hint ? `<span class="section-container__hint">${section.hint}</span>` : ""}
+                  ${showInlineSummary ? "" : `<span class="section-container__title">${section.title}</span>`}
+                  ${showInlineSummary ? `<span class="section-container__hint">${inlineSummary}</span>` : ""}
+                  ${!showInlineSummary && section.hint && unlocked ? `<span class="section-container__hint">${section.hint}</span>` : ""}
                 </span>
                 ${statusText ? `<span class="section-container__status">${statusText}</span>` : ""}
               </button>
@@ -2054,6 +2065,7 @@ function renderStepContent() {
       if (Number.isNaN(nextSection)) return;
       activeSectionIndex = nextSection;
       currentStepIndex = sectionStepMap[nextSection] || 0;
+      pendingSectionScrollIndex = nextSection;
       updateUI();
     });
   });
@@ -2061,6 +2073,13 @@ function renderStepContent() {
   const openSection = builderSections[activeSectionIndex];
   const body = refs.stepContent.querySelector(`.section-container[data-section-index="${activeSectionIndex}"] .section-container__body`);
   if (!openSection || !body) return;
+
+  if (activeSectionIndex === 1) {
+    const tableContext = document.createElement("p");
+    tableContext.className = "section-context-summary";
+    tableContext.textContent = getTableSectionSummary();
+    body.appendChild(tableContext);
+  }
 
   openSection.rows.forEach((stepNumber) => {
     if (!state.includeNapkin && (stepNumber === 7 || stepNumber === 8)) return;
@@ -2089,14 +2108,7 @@ function renderStepContent() {
     renderStepInto(stepNumber, question.querySelector(".question-row__content"));
   });
 
-  if (
-    activeSectionIndex !== 0
-    && isSectionComplete(activeSectionIndex)
-    && activeSectionIndex < builderSections.length - 1
-  ) {
-    activeSectionIndex += 1;
-    currentStepIndex = sectionStepMap[activeSectionIndex] || 0;
-  }
+  scrollPendingSectionIntoView();
 }
 
 function exportMaterials() {
@@ -2120,6 +2132,35 @@ function exportMaterials() {
   refs.exportNote.textContent = "Downloaded: preview-suite-materials.txt";
 }
 
+function canAdvanceFromActiveSection() {
+  return activeSectionIndex < builderSections.length - 1 && isSectionComplete(activeSectionIndex);
+}
+
+function updateWizardControls() {
+  const controls = refs.btnNext?.closest(".wizard-controls");
+  if (controls) controls.hidden = false;
+  if (refs.btnBack) refs.btnBack.disabled = activeSectionIndex === 0;
+  if (refs.btnNext) refs.btnNext.disabled = !canAdvanceFromActiveSection();
+}
+
+function scrollPendingSectionIntoView() {
+  if (pendingSectionScrollIndex == null) return;
+
+  const sectionIndex = pendingSectionScrollIndex;
+  pendingSectionScrollIndex = null;
+
+  requestAnimationFrame(() => {
+    const scroller = refs.stepsPanel || refs.stepCard?.closest(".steps");
+    const section = refs.stepContent.querySelector(`.section-container[data-section-index="${sectionIndex}"]`);
+    if (!scroller || !section) return;
+
+    const scrollerRect = scroller.getBoundingClientRect();
+    const sectionRect = section.getBoundingClientRect();
+    const targetTop = scroller.scrollTop + sectionRect.top - scrollerRect.top;
+    scroller.scrollTo({ top: Math.max(0, targetTop), behavior: "auto" });
+  });
+}
+
 function updateUI() {
   const sectionNumber = activeSectionIndex + 1;
   const totalSections = builderSections.length;
@@ -2136,6 +2177,7 @@ function updateUI() {
 
   renderStepContent();
   renderPreview();
+  updateWizardControls();
 }
 
 function goToStep(index, options = {}) {
@@ -2173,27 +2215,27 @@ function goToStep(index, options = {}) {
 }
 
 function nextStep() {
+  if (!canAdvanceFromActiveSection()) return;
   activeSectionIndex = Math.min(builderSections.length - 1, activeSectionIndex + 1);
+  highestSectionReached = Math.max(highestSectionReached, activeSectionIndex);
   currentStepIndex = sectionStepMap[activeSectionIndex] || 0;
+  pendingSectionScrollIndex = activeSectionIndex;
   updateUI();
 }
 
 function prevStep() {
   activeSectionIndex = Math.max(0, activeSectionIndex - 1);
   currentStepIndex = sectionStepMap[activeSectionIndex] || 0;
+  pendingSectionScrollIndex = activeSectionIndex;
   updateUI();
 }
 
 function resetCurrentStep() {
   if (currentStepIndex + 1 === 7) {
-    const configuredDefaultNapkin = napkinColorOptions.find((option) => option.value === initialState.napkinType)
-      || napkinColorOptions.find((option) => option.value === "Ivory")
-      || napkinColorOptions[0];
-
     state.includeNapkin = initialState.includeNapkin;
-    state.napkinType = configuredDefaultNapkin?.value || initialState.napkinType;
-    state.napkinColor = configuredDefaultNapkin?.hex || initialState.napkinColor;
-    state.napkinColorGroup = configuredDefaultNapkin?.group || initialState.napkinColorGroup;
+    state.napkinType = initialState.napkinType;
+    state.napkinColor = initialState.napkinColor;
+    state.napkinColorGroup = initialState.napkinColorGroup;
     state.lastSelectedNapkin = initialState.lastSelectedNapkin;
     updateUI();
     return;
@@ -2228,6 +2270,8 @@ function resetWizard() {
   Object.assign(state, initialState);
   currentStepIndex = 0;
   activeSectionIndex = 0;
+  highestSectionReached = 0;
+  pendingSectionScrollIndex = 0;
   maxStepReached = 0;
   refs.exportNote.textContent = "";
   updateUI();
