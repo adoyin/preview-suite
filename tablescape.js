@@ -2027,7 +2027,7 @@ function renderStepContent() {
         const sectionComplete = isSectionComplete(index);
         const showTableSetupSummary = index === 0 && sectionComplete && !open;
         const showSectionHeader = !open && (index !== 0 || showTableSetupSummary);
-        const tableSetupSummary = `${formatTableShape(state.tableShape)} &middot; ${typeof state.tableSize === "number" ? `${state.tableSize}"` : state.tableSize} &middot; ${tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || state.tableclothTexture}`;
+        const tableSetupSummary = `Table: ${formatTableShape(state.tableShape)} &middot; ${typeof state.tableSize === "number" ? `${state.tableSize}"` : state.tableSize} &middot; ${tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || state.tableclothTexture}`;
         const statusText = showTableSetupSummary ? "Edit" : (sectionComplete ? "Completed" : "");
         return `
           <section class="section-container ${open ? "section-container--open" : ""} ${showTableSetupSummary ? "section-container--context" : ""} ${unlocked ? "" : "section-container--locked"}" data-section-index="${index}">
