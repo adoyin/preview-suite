@@ -237,10 +237,10 @@ const clothPalette = {
 };
 
 const initialState = {
-  tableShape: "round",
-  tableSize: 60,
-  tableclothTexture: "polyester",
-  tableclothColor: "ivory",
+  tableShape: "",
+  tableSize: "",
+  tableclothTexture: "",
+  tableclothColor: "",
   tableclothColorGroup: "Neutrals",
   customTableclothColor: "",
   placeSettingsCount: null,
@@ -455,6 +455,10 @@ const sizeScaleMap = {
 let currentPreviewScale = 1;
 
 const ASSET_BASE = "./assets/tablescape";
+const PREVIEW_TABLE_PLACEHOLDER = {
+  shape: "round",
+  size: 60,
+};
 
 const chargerAssetMap = {
   gold: `${ASSET_BASE}/charger-gold.svg`,
@@ -658,6 +662,10 @@ function getTableStylingStepValue() {
 }
 
 function getTableSectionSummary() {
+  if (!isSectionComplete(0)) {
+    return "Table: Not selected";
+  }
+
   const shape = formatTableShape(state.tableShape);
   const size = typeof state.tableSize === "number" ? `${state.tableSize}"` : state.tableSize;
   const material = tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || state.tableclothTexture;
@@ -691,9 +699,12 @@ function scrollViewportByBoundedCard(viewport, amount, direction) {
 }
 
 function getReadableSummary() {
+  const tableclothTextureLabel = tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label;
+  const tableclothColorLabel = tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label;
+
   return {
     table: `${formatTableSelection(state.tableShape, state.tableSize)}, ${state.placeSettingsCount || "—"} place settings`,
-    linens: `${tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || state.tableclothTexture}, ${tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory"}`,
+    linens: tableclothTextureLabel && tableclothColorLabel ? `${tableclothTextureLabel}, ${tableclothColorLabel}` : "Not selected",
     charger: getChargerStepValue(),
     napkin: `${getNapkinStepValue()}, ${getNapkinTextureStepValue()}`,
     centerpiece: getCenterpieceStepValue(),
@@ -711,9 +722,13 @@ function toTitleCase(value) {
 function generateMaterialsList() {
   const count = Number(state.placeSettingsCount) || 0;
   const list = [];
+  const tableclothTextureLabel = tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label;
+  const tableclothColorLabel = tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label;
 
   list.push({ category: "Table", label: `${formatTableSelection(state.tableShape, state.tableSize)} Table`, quantity: 1 });
-  list.push({ category: "Linens", label: `${tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || toTitleCase(state.tableclothTexture)} ${tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory"} Tablecloth`, quantity: 1 });
+  if (tableclothTextureLabel && tableclothColorLabel) {
+    list.push({ category: "Linens", label: `${tableclothTextureLabel} ${tableclothColorLabel} Tablecloth`, quantity: 1 });
+  }
 
   if (state.includeCharger && state.selectedCharger && count) {
     list.push({ category: "Charger", label: getSelectedChargerLabel() || "Charger", quantity: count });
@@ -778,10 +793,14 @@ function attachImageFallbacks(root = document) {
 
 function formatTableShape(shape) {
   const selected = tableShapeOptions.find((option) => option.value === shape);
-  return selected ? selected.label : shape;
+  return selected ? selected.label : (shape || "Not selected");
 }
 
 function formatTableSelection(shape, size) {
+  if (!shape || !size) {
+    return "Not selected";
+  }
+
   const formattedSize = typeof size === "number" ? `${size}\"` : size;
   return `${formatTableShape(shape)} — ${formattedSize}`;
 }
@@ -1055,7 +1074,9 @@ function renderStylingOverlays() {
 function renderSummary() {
   refs.summary.table.textContent = formatTableSelection(state.tableShape, state.tableSize);
   refs.summary.settings.textContent = state.placeSettingsCount == null ? "—" : String(state.placeSettingsCount);
-  refs.summary.cloth.textContent = `${state.tableclothTexture[0].toUpperCase()}${state.tableclothTexture.slice(1)} — ${tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory"}`;
+  const selectedTexture = tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label;
+  const selectedColor = tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label;
+  refs.summary.cloth.textContent = selectedTexture && selectedColor ? `${selectedTexture} — ${selectedColor}` : "Not selected";
   refs.summary.charger.textContent = getSelectedChargerLabel() || "—";
   refs.summary.napkin.textContent = state.includeNapkin ? (state.napkinType || "—") : "No napkin";
   refs.summary.napkinTexture.textContent = getNapkinTextureStepValue();
@@ -1142,10 +1163,19 @@ function renderPreview() {
   refs.table.classList.add("is-refreshing");
   requestAnimationFrame(() => refs.table.classList.remove("is-refreshing"));
 
+  const previewShape = state.tableShape || PREVIEW_TABLE_PLACEHOLDER.shape;
+  const previewSize = state.tableSize || PREVIEW_TABLE_PLACEHOLDER.size;
+
   refs.tableclothLayer.classList.add("table__cloth--changing");
-  refs.tableclothLayer.dataset.texture = state.tableclothTexture;
-  refs.tableclothLayer.src = getTableclothAssetPath(state.tableclothTexture, state.tableclothColor);
-  refs.tableclothLayer.alt = `${state.tableclothTexture} ${state.tableclothColor} tablecloth`;
+  if (state.tableclothTexture && state.tableclothColor) {
+    refs.tableclothLayer.dataset.texture = state.tableclothTexture;
+    refs.tableclothLayer.src = getTableclothAssetPath(state.tableclothTexture, state.tableclothColor);
+    refs.tableclothLayer.alt = `${state.tableclothTexture} ${state.tableclothColor} tablecloth`;
+  } else {
+    refs.tableclothLayer.dataset.texture = "";
+    refs.tableclothLayer.src = TABLECLOTH_FALLBACK_ASSET;
+    refs.tableclothLayer.alt = "Neutral tablecloth placeholder";
+  }
   requestAnimationFrame(() => refs.tableclothLayer.classList.remove("table__cloth--changing"));
 
   refs.tableclothLayer.onerror = () => {
@@ -1153,7 +1183,7 @@ function renderPreview() {
     refs.tableclothLayer.onerror = null;
   };
 
-  applyTableShape(state.tableShape, state.tableSize);
+  applyTableShape(previewShape, previewSize);
   refs.table.dataset.napkinTexture = state.napkinTexture;
 
   const currentStepNumber = currentStepIndex + 1;
@@ -1600,8 +1630,8 @@ function getStepMeta() {
   switch (currentStepNumber) {
     case 1: return { title: "Table shape", hint: "", value: formatTableShape(state.tableShape) };
     case 2: return { title: "Table size", hint: "", value: state.tableSize ? (typeof state.tableSize === "number" ? `${state.tableSize}"` : state.tableSize) : "Not selected" };
-    case 3: return { title: "Tablecloth Texture", hint: "", value: tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || state.tableclothTexture };
-    case 4: return { title: "Tablecloth color", hint: "", value: tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Ivory" };
+    case 3: return { title: "Tablecloth Texture", hint: "", value: tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || "Not selected" };
+    case 4: return { title: "Tablecloth color", hint: "", value: tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Not selected" };
     case 5: return { title: "Guests at this table", hint: "", value: state.placeSettingsCount == null ? "Not selected" : formatGuestLabel(state.placeSettingsCount) };
     case 6: return { title: "Charger", hint: "", value: getChargerStepValue() };
     case 7: return { title: "Napkin Color", hint: "", value: getNapkinStepValue() };
@@ -1742,7 +1772,7 @@ function renderClothMatches(container, matches) {
     <div class="match-results__grid">
       ${matches.map((match) => `
         <article class="match-card">
-          <img class="match-card__image" src="${getTableclothAssetPath(state.tableclothTexture, match.value)}" data-fallback-src="${PLACEHOLDER_ASSET}" alt="${match.label} tablecloth" loading="lazy" />
+          <img class="match-card__image" src="${state.tableclothTexture ? getTableclothAssetPath(state.tableclothTexture, match.value) : PLACEHOLDER_ASSET}" data-fallback-src="${PLACEHOLDER_ASSET}" alt="${match.label} tablecloth" loading="lazy" />
           <div class="match-card__body">
             <p class="match-card__name">${match.label}</p>
             <button class="btn btn--ghost match-card__select" type="button" data-cloth-match="${match.value}">Select</button>
