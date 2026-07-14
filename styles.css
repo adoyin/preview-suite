@@ -1087,6 +1087,56 @@ body.wizard-layout .section-container--context .section-container__header{
   margin-bottom: 4px;
 }
 
+#wizard-tablecloth-texture-carousel{
+  min-width: 0;
+  width: 100%;
+}
+
+.question-row:has(#wizard-tablecloth-texture-carousel),
+.question-row__content:has(#wizard-tablecloth-texture-carousel){
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+#wizard-tablecloth-texture-carousel .texture-carousel__viewport{
+  min-width: 0;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-top: 2px;
+}
+
+#wizard-tablecloth-texture-carousel .option-cards--table-texture{
+  display: flex;
+  flex-wrap: nowrap;
+  width: max-content;
+}
+
+#wizard-tablecloth-texture-carousel .option-card--texture{
+  box-sizing: border-box;
+  flex: 0 0 190px;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease, background-color .15s ease;
+}
+
+#wizard-tablecloth-texture-carousel .option-card--texture.option-card--selected{
+  border-width: 1px;
+  border-color: rgba(167, 132, 78, 0.78);
+  box-shadow: 0 4px 10px rgba(63, 52, 41, 0.13);
+  transform: translateY(-1px);
+}
+
+#wizard-tablecloth-texture-carousel .option-card--texture:not(.option-card--selected):hover{
+  transform: translateY(-1px);
+  background: #fff;
+  box-shadow: 0 16px 24px rgba(48, 33, 18, 0.12);
+}
+
+#wizard-tablecloth-texture-carousel .option-card--texture.option-card--selected:hover,
+#wizard-tablecloth-texture-carousel .option-card--texture.option-card--selected:focus-within{
+  transform: translateY(-1px);
+}
+
 .texture-carousel--charger.texture-carousel{
   margin-top: 0;
 }

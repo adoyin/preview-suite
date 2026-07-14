@@ -1296,10 +1296,30 @@ function renderTableTextureCards() {
     leftArrowLabel: "Scroll tablecloth textures left",
     rightArrowLabel: "Scroll tablecloth textures right",
     onChange: (value) => {
-      state.tableclothTexture = value;
-      updateUI();
+      handleTableclothTextureSelection(value);
     },
   });
+}
+
+function handleTableclothTextureSelection(value) {
+  if (state.tableclothTexture === value) {
+    return;
+  }
+
+  state.tableclothTexture = value;
+
+  refs.stepContent.querySelectorAll('input[name="tableclothTexture"]').forEach((radio) => {
+    const isSelected = radio.value === value;
+    radio.checked = isSelected;
+    const card = radio.closest(".option-card--texture");
+    card?.classList.toggle("option-card--selected", isSelected);
+    card?.setAttribute("aria-selected", String(isSelected));
+  });
+
+  renderPreview();
+  renderSummary();
+  updatePreviewStatus();
+  updateWizardControls();
 }
 
 function renderNapkinTextureCards() {
@@ -1329,7 +1349,7 @@ function renderTextureCards({
   onChange,
 }) {
   refs.stepContent.innerHTML = `
-    <div class="texture-carousel texture-carousel--wizard"${showTooltips ? " data-tooltip-root" : ""}>
+    <div${inputName === "tableclothTexture" ? ' id="wizard-tablecloth-texture-carousel"' : ""} class="texture-carousel texture-carousel--wizard"${showTooltips ? " data-tooltip-root" : ""}>
       <button class="texture-carousel__arrow texture-carousel__arrow--left" type="button" data-texture-scroll="left" aria-label="${leftArrowLabel}">&#8249;</button>
       <div class="texture-carousel__viewport">
         <div class="option-cards option-cards--table-texture">
@@ -1366,6 +1386,22 @@ function renderTextureCards({
       onChange(event.target.value);
     });
   });
+
+  if (inputName === "tableclothTexture") {
+    const viewport = refs.stepContent.querySelector("#wizard-tablecloth-texture-carousel .texture-carousel__viewport");
+    refs.stepContent.querySelectorAll('#wizard-tablecloth-texture-carousel .option-card--texture').forEach((card) => {
+      card.addEventListener("mousedown", (event) => {
+        if (event.button === 0) event.preventDefault();
+      });
+    });
+
+    if (viewport) {
+      const clampScrollLeft = () => {
+        viewport.scrollLeft = Math.max(0, Math.min(getMaxHorizontalScroll(viewport), viewport.scrollLeft));
+      };
+      viewport.addEventListener("scrollend", clampScrollLeft);
+    }
+  }
 
   refs.stepContent.querySelectorAll(".texture-carousel--wizard [data-tooltip-toggle]").forEach((button) => {
     button.addEventListener("click", (event) => {
@@ -1511,6 +1547,7 @@ function renderNapkinColorCards() {
       updateUI();
     },
   });
+
 }
 
 function getCarouselScrollAmount(carousel, viewportSelector, trackSelector) {
