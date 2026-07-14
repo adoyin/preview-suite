@@ -53,37 +53,31 @@ const tableclothTextureOptions = [
     value: "polyester",
     label: "Polyester",
     thumbnail: "assets/textures/polyester-pearl.png",
-    helperText: "Crisp, structured event styling",
   },
   {
     value: "satin",
     label: "Satin",
     thumbnail: "assets/textures/satin-champagne.png",
-    helperText: "Soft sheen with a formal finish",
   },
   {
     value: "velvet",
     label: "Velvet",
     thumbnail: "assets/textures/velvet-cream.png",
-    helperText: "Rich texture with a dramatic feel",
   },
   {
     value: "linen",
     label: "Linen",
     thumbnail: "assets/textures/linen-ivory.png",
-    helperText: "Natural weave, relaxed elegance",
   },
   {
     value: "crinkle-taffeta",
     label: "Crinkle Taffeta",
     thumbnail: "assets/textures/crinkle-taffeta-champagne.png",
-    helperText: "Textured shimmer with structure",
   },
   {
     value: "sequin",
     label: "Sequin",
     thumbnail: "assets/textures/sequin-soft-champagne.png",
-    helperText: "High-glam sparkle and reflection",
   },
 ];
 
@@ -1298,7 +1292,7 @@ function renderTableTextureCards() {
     options: tableclothTextureOptions,
     selectedValue: state.tableclothTexture,
     inputName: "tableclothTexture",
-    tooltipPrefix: "tableTextureTip",
+    showTooltips: false,
     leftArrowLabel: "Scroll tablecloth textures left",
     rightArrowLabel: "Scroll tablecloth textures right",
     onChange: (value) => {
@@ -1329,23 +1323,24 @@ function renderTextureCards({
   selectedValue,
   inputName,
   tooltipPrefix,
+  showTooltips = true,
   leftArrowLabel,
   rightArrowLabel,
   onChange,
 }) {
   refs.stepContent.innerHTML = `
-    <div class="texture-carousel texture-carousel--wizard" data-tooltip-root>
+    <div class="texture-carousel texture-carousel--wizard"${showTooltips ? " data-tooltip-root" : ""}>
       <button class="texture-carousel__arrow texture-carousel__arrow--left" type="button" data-texture-scroll="left" aria-label="${leftArrowLabel}">&#8249;</button>
       <div class="texture-carousel__viewport">
         <div class="option-cards option-cards--table-texture">
           ${options.map((option, index) => {
-            const tooltipId = `${tooltipPrefix}${index}`;
+            const tooltipId = showTooltips ? `${tooltipPrefix}${index}` : "";
             return `
               <label class="option-card option-card--texture ${selectedValue === option.value ? "option-card--selected" : ""}" aria-selected="${selectedValue === option.value ? "true" : "false"}">
                 <input type="radio" name="${inputName}" value="${option.value}" ${selectedValue === option.value ? "checked" : ""} />
                 <div class="option-card__media option-card__media--texture">
                   <img class="option-card__image option-card__image--texture" src="${option.thumbnail}" alt="${option.label} texture swatch" loading="lazy" />
-                  <button
+                  ${showTooltips ? `<button
                     class="option-card__info option-card__info--texture"
                     type="button"
                     aria-label="More details about ${option.label}"
@@ -1353,7 +1348,7 @@ function renderTextureCards({
                     aria-describedby="${tooltipId}"
                     data-tooltip-toggle="${tooltipId}"
                   >ⓘ</button>
-                  <span class="option-card__tooltip option-card__tooltip--texture" role="tooltip" id="${tooltipId}">${option.helperText}</span>
+                  <span class="option-card__tooltip option-card__tooltip--texture" role="tooltip" id="${tooltipId}">${option.helperText}</span>` : ""}
                 </div>
                 <span class="option-card__title option-card__title--texture">${option.label}</span>
               </label>
