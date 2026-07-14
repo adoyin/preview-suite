@@ -13,13 +13,26 @@
       position: relative;
       display: grid;
       align-items: center;
+      min-width: 0;
+      width: 100%;
       margin-top: 4px;
     }
 
+    .question-row:has(#wizard-shape-carousel) {
+      min-width: 0;
+    }
+
+    .question-row__content:has(#wizard-shape-carousel) {
+      min-width: 0;
+      width: 100%;
+      max-width: 100%;
+    }
+
     #wizard-shape-carousel .shape-carousel__viewport {
+      min-width: 0;
+      width: 100%;
       overflow-x: auto;
       overflow-y: hidden;
-      scroll-snap-type: x mandatory;
       scrollbar-width: none;
       -webkit-overflow-scrolling: touch;
       scroll-behavior: smooth;
@@ -39,7 +52,6 @@
 
     #wizard-shape-carousel .option-card {
       flex: 0 0 190px;
-      scroll-snap-align: center;
     }
 
     #wizard-shape-carousel .shape-carousel__arrow {
@@ -302,6 +314,7 @@
     (() => {
       const stepContent = document.getElementById("stepContent");
       if (!stepContent) return;
+      let tableStyleScrollLeft = 0;
 
       function getCardWidth(carousel) {
         const card = carousel.querySelector(".option-card");
@@ -310,11 +323,6 @@
         const cardWidth = card.getBoundingClientRect().width;
         const gap = parseFloat(getComputedStyle(cards).columnGap || getComputedStyle(cards).gap || "0");
         return cardWidth + gap;
-      }
-
-      function centerCard(card) {
-        if (!card) return;
-        card.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
       }
 
       function setupShapeCarousel() {
@@ -346,10 +354,27 @@
 
         carousel.append(leftArrow, rightArrow);
 
+        const sectionBody = carousel.closest(".section-container__body");
+        const questionRow = carousel.closest(".question-row");
+        const syncCarouselWidth = () => {
+          if (!sectionBody || !questionRow) return;
+          const bodyStyle = getComputedStyle(sectionBody);
+          const availableWidth = sectionBody.clientWidth
+            - parseFloat(bodyStyle.paddingLeft || "0")
+            - parseFloat(bodyStyle.paddingRight || "0");
+          questionRow.style.width = `${Math.max(0, availableWidth)}px`;
+        };
+        syncCarouselWidth();
+        if (sectionBody && "ResizeObserver" in window) {
+          new ResizeObserver(syncCarouselWidth).observe(sectionBody);
+        }
+
         function scrollByCard(direction) {
           const offset = getCardWidth(carousel);
           if (!offset) return;
-          viewport.scrollBy({ left: direction * offset, behavior: "smooth" });
+          const maxScroll = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+          const target = Math.max(0, Math.min(maxScroll, viewport.scrollLeft + direction * offset));
+          viewport.scrollTo({ left: target, behavior: "smooth" });
         }
 
         leftArrow.addEventListener("click", () => scrollByCard(-1));
@@ -359,22 +384,29 @@
         cards.forEach((card, index) => {
           card.tabIndex = 0;
           card.dataset.shapeCardIndex = String(index);
-          card.addEventListener("click", () => centerCard(card));
           card.addEventListener("keydown", (event) => {
             if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
             event.preventDefault();
             const nextIndex = event.key === "ArrowRight"
               ? Math.min(cards.length - 1, index + 1)
               : Math.max(0, index - 1);
-            const nextCard = cards[nextIndex];
-            nextCard?.focus();
-            centerCard(nextCard);
+            cards[nextIndex]?.focus();
           });
         });
 
-        const checked = carousel.querySelector('input[name="tableOption"]:checked')?.closest(".option-card");
-        if (checked) centerCard(checked);
+        const restoreScrollPosition = () => {
+          const maxScroll = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+          viewport.scrollLeft = Math.max(0, Math.min(maxScroll, tableStyleScrollLeft));
+        };
+        restoreScrollPosition();
+        requestAnimationFrame(restoreScrollPosition);
       }
+
+      stepContent.addEventListener("change", (event) => {
+        if (!event.target.matches('input[name="tableOption"]')) return;
+        const viewport = event.target.closest(".shape-carousel__viewport");
+        if (viewport) tableStyleScrollLeft = viewport.scrollLeft;
+      }, true);
 
       const observer = new MutationObserver(() => setupShapeCarousel());
       observer.observe(stepContent, { childList: true, subtree: true });
