@@ -267,8 +267,8 @@ const initialState = {
 };
 
 const stepSequence = [
-  "Table shape",
-  "Table size",
+  "Table",
+  "Tablecloth texture",
   "Tablecloth texture",
   "Tablecloth color",
   "Guests at this table",
@@ -293,7 +293,7 @@ const STEP_INDEX = {
 };
 
 const stepSections = [
-  { label: "Table", steps: [0, 1] },
+  { label: "Table", steps: [0] },
   { label: "Tablecloth", steps: [2, 3] },
   { label: "Place Settings", steps: [4, 5, 6, 7] },
   { label: "Centerpiece", steps: [8, 9] },
@@ -308,7 +308,7 @@ const builderSections = [
     id: "table-setup",
     title: "Table",
     hint: "",
-    rows: [1, 2, 3, 4],
+    rows: [1, 3, 4],
   },
   {
     id: "place-settings",
@@ -459,6 +459,13 @@ const PREVIEW_TABLE_PLACEHOLDER = {
   shape: "round",
   size: 60,
 };
+
+const tableOptions = [
+  { value: "round-60", shape: "round", size: 60, label: '60" Round', thumbnail: "./assets/descriptors/table-shapes/round.png" },
+  { value: "round-72", shape: "round", size: 72, label: '72" Round', thumbnail: "./assets/descriptors/table-shapes/round.png" },
+  { value: "rectangle-6ft", shape: "rectangle", size: "6ft", label: "6' Rectangle", thumbnail: "./assets/descriptors/table-shapes/rectangle.png" },
+  { value: "rectangle-8ft", shape: "rectangle", size: "8ft", label: "8' Rectangle", thumbnail: "./assets/descriptors/table-shapes/rectangle.png" },
+];
 
 const chargerAssetMap = {
   gold: `${ASSET_BASE}/charger-gold.svg`,
@@ -1628,8 +1635,7 @@ function getStepMeta() {
   const currentStepNumber = currentStepIndex + 1;
 
   switch (currentStepNumber) {
-    case 1: return { title: "Table shape", hint: "", value: formatTableShape(state.tableShape) };
-    case 2: return { title: "Table size", hint: "", value: state.tableSize ? (typeof state.tableSize === "number" ? `${state.tableSize}"` : state.tableSize) : "Not selected" };
+    case 1: return { title: "Table", hint: "", value: formatTableSelection(state.tableShape, state.tableSize) };
     case 3: return { title: "Tablecloth Texture", hint: "", value: tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || "Not selected" };
     case 4: return { title: "Tablecloth color", hint: "", value: tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Not selected" };
     case 5: return { title: "Guests at this table", hint: "", value: state.placeSettingsCount == null ? "Not selected" : formatGuestLabel(state.placeSettingsCount) };
@@ -1891,36 +1897,19 @@ function renderStepInto(stepNumber, container) {
 
     if (stepNumber === 1) {
       renderVisualOptionCards({
-        name: "tableShape",
-        options: tableShapeOptions,
-        selectedValue: state.tableShape,
+        name: "tableOption",
+        options: tableOptions,
+        selectedValue: tableOptions.find((option) => (
+          option.shape === state.tableShape && option.size === state.tableSize
+        ))?.value || "",
         onSelect: (value) => {
-          if (state.tableShape !== value) {
-            state.tableShape = value;
-            const shapeSizes = tableSizeOptions[value] || [];
-            if (!shapeSizes.some((option) => option.value === state.tableSize)) {
-              state.tableSize = "";
-            }
-          }
+          const selected = tableOptions.find((option) => option.value === value);
+          if (!selected) return;
+          state.tableShape = selected.shape;
+          state.tableSize = selected.size;
           updateUI();
         },
       });
-      return;
-    }
-
-    if (stepNumber === 2) {
-      if (!state.tableShape) {
-        refs.stepContent.innerHTML = '<p class="subtle">Choose a table shape first to unlock matching size options.</p>';
-        return;
-      }
-
-      const shapeSizes = tableSizeOptions[state.tableShape] || [];
-      if (!shapeSizes.some((option) => option.value === state.tableSize)) {
-        state.tableSize = "";
-      }
-      if (state.tableShape === "round") renderRoundSizeCards();
-      else if (state.tableShape === "rectangle") renderRectangleSizeCards();
-      else if (state.tableShape === "square") renderSquareSizeCards();
       return;
     }
 

@@ -271,7 +271,7 @@
 
         <div class="preview-status" aria-live="polite">
           <p class="preview-status__line" id="previewStepText">Designing your table — Step 1 of 12</p>
-          <p class="preview-status__next" id="previewNextText">Next: Table size</p>
+          <p class="preview-status__next" id="previewNextText">Next: Tablecloth texture</p>
         </div>
 
         <div class="summary" id="previewSummary" hidden>
@@ -319,7 +319,7 @@
 
       function setupShapeCarousel() {
         const tableShapeCards = [...stepContent.querySelectorAll('.option-cards')]
-          .find((cards) => cards.querySelector('input[name="tableShape"]'));
+          .find((cards) => cards.querySelector('input[name="tableOption"]'));
         if (!tableShapeCards || document.getElementById("wizard-shape-carousel")) return;
 
         const carousel = document.createElement("div");
@@ -335,13 +335,13 @@
         const leftArrow = document.createElement("button");
         leftArrow.type = "button";
         leftArrow.className = "shape-carousel__arrow shape-carousel__arrow--left";
-        leftArrow.setAttribute("aria-label", "Scroll table shape options left");
+        leftArrow.setAttribute("aria-label", "Scroll table options left");
         leftArrow.innerHTML = "&#8249;";
 
         const rightArrow = document.createElement("button");
         rightArrow.type = "button";
         rightArrow.className = "shape-carousel__arrow shape-carousel__arrow--right";
-        rightArrow.setAttribute("aria-label", "Scroll table shape options right");
+        rightArrow.setAttribute("aria-label", "Scroll table options right");
         rightArrow.innerHTML = "&#8250;";
 
         carousel.append(leftArrow, rightArrow);
@@ -372,7 +372,7 @@
           });
         });
 
-        const checked = carousel.querySelector('input[name="tableShape"]:checked')?.closest(".option-card");
+        const checked = carousel.querySelector('input[name="tableOption"]:checked')?.closest(".option-card");
         if (checked) centerCard(checked);
       }
 
