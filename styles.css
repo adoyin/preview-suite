@@ -830,6 +830,25 @@ body.wizard-layout .section-container--context .section-container__header{
   box-shadow: 0 2px 6px rgba(63, 52, 41, 0.08);
 }
 
+#wizard-shape-carousel .option-card{
+  box-sizing: border-box;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease, background-color .15s ease;
+}
+
+#wizard-shape-carousel .option-card input{
+  inset: 50% auto auto 50%;
+  width: 1px;
+  height: 1px;
+}
+
+#wizard-shape-carousel .option-card--selected{
+  border-width: 1px;
+  border-color: rgba(167, 132, 78, 0.78);
+  background-color: rgba(247, 240, 226, 0.7);
+  box-shadow: 0 4px 10px rgba(63, 52, 41, 0.13);
+  transform: translateY(-1px);
+}
+
 .option-card--selected::after,
 .pill--selected::after,
 .charger-toggle--selected::after,

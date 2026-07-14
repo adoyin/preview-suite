@@ -381,9 +381,26 @@
         rightArrow.addEventListener("click", () => scrollByCard(1));
 
         const cards = [...carousel.querySelectorAll(".option-card")];
+        let pointerSelectionScrollLeft = null;
         cards.forEach((card, index) => {
           card.tabIndex = 0;
           card.dataset.shapeCardIndex = String(index);
+          card.addEventListener("mousedown", (event) => {
+            if (event.button !== 0) return;
+            pointerSelectionScrollLeft = viewport.scrollLeft;
+            event.preventDefault();
+          });
+          card.addEventListener("click", () => {
+            const preservedScrollLeft = pointerSelectionScrollLeft ?? viewport.scrollLeft;
+            pointerSelectionScrollLeft = null;
+            tableStyleScrollLeft = preservedScrollLeft;
+            requestAnimationFrame(() => {
+              viewport.scrollLeft = preservedScrollLeft;
+            });
+            setTimeout(() => {
+              viewport.scrollLeft = preservedScrollLeft;
+            }, 0);
+          });
           card.addEventListener("keydown", (event) => {
             if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
             event.preventDefault();

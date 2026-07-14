@@ -1883,7 +1883,17 @@ function renderStepInto(stepNumber, container) {
           if (!selected) return;
           state.tableShape = selected.shape;
           state.tableSize = selected.size;
-          updateUI();
+
+          refs.stepContent.querySelectorAll('input[name="tableOption"]').forEach((radio) => {
+            const card = radio.closest(".option-card");
+            const isSelected = radio.value === value;
+            radio.checked = isSelected;
+            card?.classList.toggle("option-card--selected", isSelected);
+            card?.setAttribute("aria-selected", String(isSelected));
+          });
+
+          renderPreview();
+          updateWizardControls();
         },
       });
       return;
