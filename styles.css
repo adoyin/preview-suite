@@ -2028,7 +2028,7 @@ body.wizard-layout .section-container--open .section-container__body{
   position: relative;
   min-height: 112px;
   background: transparent;
-  border-color: rgba(140, 119, 87, 0.16);
+  border: 0;
   padding: 0;
   overflow: visible;
 }
