@@ -849,6 +849,11 @@ body.wizard-layout .section-container--context .section-container__header{
   transform: translateY(-1px);
 }
 
+#wizard-shape-carousel .option-card:not(.option-card--selected):hover{
+  transform: translateY(-1px);
+  box-shadow: 0 16px 24px rgba(48, 33, 18, 0.12);
+}
+
 .option-card--selected::after,
 .pill--selected::after,
 .charger-toggle--selected::after,
