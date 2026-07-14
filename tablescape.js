@@ -4,7 +4,6 @@ const TABLECLOTH_FALLBACK_ASSET = "./assets/tablescape/tablecloth-texture.svg";
 const tableShapeOptions = [
   { value: "round", label: "Round", thumbnail: "./assets/descriptors/table-shapes/round.png" },
   { value: "rectangle", label: "Rectangle", thumbnail: "./assets/descriptors/table-shapes/rectangle.png" },
-  { value: "square", label: "Square", thumbnail: "./assets/descriptors/table-shapes/square.png" },
 ];
 
 const tableSizeOptions = {
@@ -23,51 +22,28 @@ const tableSizeOptions = {
       helperText: "A versatile choice for gatherings of 8–10 guests",
       thumbnail: "./assets/descriptors/table-shapes/round.png",
     },
-    {
-      value: 84,
-      label: '84" Round',
-      descriptor: "Grand",
-      helperText: "Ideal for larger group seating with refined spacing",
-      thumbnail: "./assets/descriptors/table-shapes/round.png",
-    },
   ],
   rectangle: [
     {
       value: "6ft",
-      label: "6ft Banquet",
+      label: "6' Rectangle",
       descriptor: "Compact",
       helperText: "Great for smaller layouts and supporting tables",
       thumbnail: "./assets/descriptors/table-shapes/rectangle.png",
     },
     {
       value: "8ft",
-      label: "8ft Banquet",
+      label: "8' Rectangle",
       descriptor: "Classic",
       helperText: "The most common banquet table length for events",
       thumbnail: "./assets/descriptors/table-shapes/rectangle.png",
     },
     {
-      value: "king",
-      label: "King Table",
+      value: "9'",
+      label: "9' Rectangle",
       descriptor: "Statement",
       helperText: "Ideal for head tables and dramatic linear styling",
       thumbnail: "./assets/descriptors/table-shapes/rectangle.png",
-    },
-  ],
-  square: [
-    {
-      value: 36,
-      label: '36" Square',
-      descriptor: "Cozy",
-      helperText: "Often styled for intimate layouts and smaller group seating",
-      thumbnail: "./assets/descriptors/table-shapes/square.png",
-    },
-    {
-      value: 48,
-      label: '48" Square',
-      descriptor: "Social",
-      helperText: "A flexible choice for most small celebrations and gatherings",
-      thumbnail: "./assets/descriptors/table-shapes/square.png",
     },
   ],
 };
@@ -447,9 +423,8 @@ const refs = {
 };
 
 const sizeScaleMap = {
-  round: { 60: 1.32, 72: 1.45, 84: 1.56 },
-  rectangle: { "6ft": 1.3, "8ft": 1.42, king: 1.54 },
-  square: { 36: 1.28, 48: 1.4 },
+  round: { 60: 1.32, 72: 1.45 },
+  rectangle: { "6ft": 1.3, "8ft": 1.42, "9'": 1.54 },
 };
 
 let currentPreviewScale = 1;
@@ -465,6 +440,7 @@ const tableOptions = [
   { value: "round-72", shape: "round", size: 72, label: '72" Round', thumbnail: "./assets/descriptors/table-shapes/round.png" },
   { value: "rectangle-6ft", shape: "rectangle", size: "6ft", label: "6' Rectangle", thumbnail: "./assets/descriptors/table-shapes/rectangle.png" },
   { value: "rectangle-8ft", shape: "rectangle", size: "8ft", label: "8' Rectangle", thumbnail: "./assets/descriptors/table-shapes/rectangle.png" },
+  { value: "rectangle-9ft", shape: "rectangle", size: "9'", label: "9' Rectangle", thumbnail: "./assets/descriptors/table-shapes/rectangle.png" },
 ];
 
 const chargerAssetMap = {
@@ -806,6 +782,11 @@ function formatTableShape(shape) {
 function formatTableSelection(shape, size) {
   if (!shape || !size) {
     return "Not selected";
+  }
+
+  const selected = tableOptions.find((option) => option.shape === shape && option.size === size);
+  if (selected) {
+    return selected.label;
   }
 
   const formattedSize = typeof size === "number" ? `${size}\"` : size;
@@ -1635,7 +1616,7 @@ function getStepMeta() {
   const currentStepNumber = currentStepIndex + 1;
 
   switch (currentStepNumber) {
-    case 1: return { title: "Table", hint: "", value: formatTableSelection(state.tableShape, state.tableSize) };
+    case 1: return { title: "Table Style", hint: "", value: formatTableSelection(state.tableShape, state.tableSize) };
     case 3: return { title: "Tablecloth Texture", hint: "", value: tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || "Not selected" };
     case 4: return { title: "Tablecloth color", hint: "", value: tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Not selected" };
     case 5: return { title: "Guests at this table", hint: "", value: state.placeSettingsCount == null ? "Not selected" : formatGuestLabel(state.placeSettingsCount) };
@@ -2085,7 +2066,7 @@ function renderStepContent() {
             ${showSectionHeader ? `
               <button class="section-container__header" type="button" data-open-section="${index}" ${unlocked ? "" : "disabled"}>
                 <span>
-                  ${showInlineSummary ? "" : `<span class="section-container__title">${section.title}</span>`}
+                  ${showInlineSummary || index === 0 ? "" : `<span class="section-container__title">${section.title}</span>`}
                   ${showInlineSummary ? `<span class="section-container__hint">${inlineSummary}</span>` : ""}
                   ${!showInlineSummary && section.hint && unlocked ? `<span class="section-container__hint">${section.hint}</span>` : ""}
                 </span>
