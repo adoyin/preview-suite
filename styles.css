@@ -2024,6 +2024,11 @@ body.wizard-layout .section-container--open .section-container__body{
   min-height: 2.6em;
 }
 
+.section-container[data-section-index="0"] .question-row:first-child .option-card:not(.option-card--selected):not(:hover),
+.section-container[data-section-index="0"] .question-row:nth-child(3) .option-card--color:not(.option-card--selected):not(:hover){
+  background: linear-gradient(180deg, #f9f5ef 0%, #f4ede1 100%);
+}
+
 .option-card__media--color{
   position: relative;
   min-height: 112px;
