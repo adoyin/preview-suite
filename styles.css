@@ -1009,7 +1009,7 @@ body.wizard-layout .section-container--context .section-container__header{
 .texture-carousel--wizard .option-cards--table-texture{
   display: flex;
   flex-wrap: nowrap;
-  gap: 14px;
+  gap: 10px;
   width: max-content;
   padding-right: 0;
 }
@@ -1993,22 +1993,42 @@ body.wizard-layout .section-container--open .section-container__body{
 .option-cards--table-color{
   display: flex;
   flex-wrap: nowrap;
-  gap: 12px;
+  gap: 10px;
   width: max-content;
   padding-block: 2px;
 }
 
 .option-card--color{
-  flex: 0 0 134px;
+  flex: 0 0 190px;
   padding: 10px;
   border-radius: 14px;
+}
+
+.section-container[data-section-index="0"] .question-row{
+  gap: 8px;
+}
+
+.section-container[data-section-index="0"] .question-row + .question-row{
+  padding-top: 16px;
+}
+
+.section-container[data-section-index="0"].section-container--open .section-container__header{
+  padding-bottom: 8px;
+}
+
+.section-container[data-section-index="0"] .option-card--texture{
+  flex-basis: 190px;
+}
+
+.section-container[data-section-index="0"] .option-card__title{
+  min-height: 2.6em;
 }
 
 .option-card__media--color{
   min-height: 112px;
   background: transparent;
   border-color: rgba(140, 119, 87, 0.16);
-  padding: 6px;
+  padding: 3px;
 }
 
 .option-card__swatch{
@@ -2159,7 +2179,7 @@ body.wizard-layout .section-container--open .section-container__body{
 
 @media (max-width: 640px){
   .option-card--color{
-    flex-basis: 120px;
+    flex-basis: 190px;
   }
 }
 
