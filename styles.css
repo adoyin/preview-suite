@@ -1200,6 +1200,29 @@ body.wizard-layout .section-container--design-options > .question-row + .questio
   transform: translateY(-1px);
 }
 
+#wizard-napkin-texture-carousel .option-card--texture{
+  box-sizing: border-box;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease, background-color .15s ease;
+}
+
+#wizard-napkin-texture-carousel .option-card--texture.option-card--selected{
+  border-width: 1px;
+  border-color: rgba(167, 132, 78, 0.78);
+  box-shadow: 0 4px 10px rgba(63, 52, 41, 0.13);
+  transform: translateY(-1px);
+}
+
+#wizard-napkin-texture-carousel .option-card--texture:not(.option-card--selected):hover{
+  transform: translateY(-1px);
+  background: #fff;
+  box-shadow: 0 16px 24px rgba(48, 33, 18, 0.12);
+}
+
+#wizard-napkin-texture-carousel .option-card--texture.option-card--selected:hover,
+#wizard-napkin-texture-carousel .option-card--texture.option-card--selected:focus-within{
+  transform: translateY(-1px);
+}
+
 .texture-carousel--charger.texture-carousel{
   margin-top: 0;
 }

@@ -1382,11 +1382,31 @@ function renderNapkinTextureCards() {
     leftArrowLabel: "Scroll napkin textures left",
     rightArrowLabel: "Scroll napkin textures right",
     onChange: (value) => {
-      state.includeNapkin = true;
-      state.napkinTexture = value;
-      updateUI();
+      handleNapkinTextureSelection(value);
     },
   });
+}
+
+function handleNapkinTextureSelection(value) {
+  if (state.napkinTexture === value && state.includeNapkin) {
+    return;
+  }
+
+  state.includeNapkin = true;
+  state.napkinTexture = value;
+
+  refs.stepContent.querySelectorAll('input[name="napkinTexture"]').forEach((radio) => {
+    const isSelected = radio.value === value;
+    radio.checked = isSelected;
+    const card = radio.closest(".option-card--texture");
+    card?.classList.toggle("option-card--selected", isSelected);
+    card?.setAttribute("aria-selected", String(isSelected));
+  });
+
+  renderPreview();
+  renderSummary();
+  updatePreviewStatus();
+  updateWizardControls();
 }
 
 function renderTextureCards({
@@ -1400,7 +1420,7 @@ function renderTextureCards({
   onChange,
 }) {
   refs.stepContent.innerHTML = `
-    <div${inputName === "tableclothTexture" ? ' id="wizard-tablecloth-texture-carousel"' : ""} class="texture-carousel texture-carousel--wizard"${showTooltips ? " data-tooltip-root" : ""}>
+    <div${inputName === "tableclothTexture" ? ' id="wizard-tablecloth-texture-carousel"' : inputName === "napkinTexture" ? ' id="wizard-napkin-texture-carousel"' : ""} class="texture-carousel texture-carousel--wizard"${showTooltips ? " data-tooltip-root" : ""}>
       <button class="texture-carousel__arrow texture-carousel__arrow--left" type="button" data-texture-scroll="left" aria-label="${leftArrowLabel}">&#8249;</button>
       <div class="texture-carousel__viewport">
         <div class="option-cards option-cards--table-texture">
@@ -1452,6 +1472,14 @@ function renderTextureCards({
       };
       viewport.addEventListener("scrollend", clampScrollLeft);
     }
+  }
+
+  if (inputName === "napkinTexture") {
+    refs.stepContent.querySelectorAll('#wizard-napkin-texture-carousel .option-card--texture').forEach((card) => {
+      card.addEventListener("mousedown", (event) => {
+        if (event.button === 0) event.preventDefault();
+      });
+    });
   }
 
   refs.stepContent.querySelectorAll(".texture-carousel--wizard [data-tooltip-toggle]").forEach((button) => {
