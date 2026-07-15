@@ -71,13 +71,8 @@ const tableclothTextureOptions = [
   },
   {
     value: "crinkle-taffeta",
-    label: "Crinkle Taffeta",
+    label: "Crinkle",
     thumbnail: "assets/textures/crinkle-taffeta-champagne.png",
-  },
-  {
-    value: "sequin",
-    label: "Sequin",
-    thumbnail: "assets/textures/sequin-soft-champagne.png",
   },
 ];
 
@@ -1464,7 +1459,7 @@ function renderGroupedColorCards({
         </select>
       </label>
     </div>
-    <div id="wizard-color-carousel" class="wizard-color-carousel ${carouselDisabled ? "wizard-color-carousel--disabled" : ""}" ${carouselDisabled ? "aria-disabled=\"true\"" : ""}>
+    <div id="${colorInputName === "tableclothColor" ? "wizard-tablecloth-color-carousel" : "wizard-color-carousel"}" class="wizard-color-carousel ${carouselDisabled ? "wizard-color-carousel--disabled" : ""}" ${carouselDisabled ? "aria-disabled=\"true\"" : ""}>
       <div class="wizard-color-carousel__viewport">
         <div class="option-cards option-cards--table-color">
           ${activeColorOptions.map((option) => `
@@ -1490,6 +1485,37 @@ function renderGroupedColorCards({
       onColorChange(event.target.value);
     });
   });
+
+  if (colorInputName === "tableclothColor") {
+    const carousel = refs.stepContent.querySelector("#wizard-tablecloth-color-carousel");
+    const viewport = carousel?.querySelector(".wizard-color-carousel__viewport");
+
+    carousel?.querySelectorAll(".option-card--color").forEach((card) => {
+      card.addEventListener("mousedown", (event) => {
+        if (event.button === 0) event.preventDefault();
+      });
+    });
+
+    if (viewport) {
+      const clampScrollLeft = () => {
+        viewport.scrollLeft = Math.max(0, Math.min(getMaxHorizontalScroll(viewport), viewport.scrollLeft));
+      };
+      viewport.addEventListener("scrollend", clampScrollLeft);
+    }
+  }
+}
+
+function updateTableclothColorSelection(value) {
+  const carousel = refs.stepContent.querySelector("#wizard-tablecloth-color-carousel");
+  if (!carousel) return;
+
+  carousel.querySelectorAll(".option-card--color").forEach((card) => {
+    const radio = card.querySelector('input[name="tableclothColor"]');
+    const isSelected = radio?.value === value;
+    if (radio) radio.checked = isSelected;
+    card.classList.toggle("option-card--selected", isSelected);
+    card.setAttribute("aria-selected", isSelected ? "true" : "false");
+  });
 }
 
 function renderTableColorCards() {
@@ -1512,7 +1538,9 @@ function renderTableColorCards() {
     onColorChange: (value) => {
       state.tableclothColor = value;
       state.tableclothColorGroup = getOptionGroup(tableclothColorGroups, value) || "Neutrals";
-      updateUI();
+      updateTableclothColorSelection(value);
+      renderPreview();
+      updateWizardControls();
     },
   });
 }
