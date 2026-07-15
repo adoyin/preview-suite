@@ -648,6 +648,54 @@ body.wizard-layout .section-container--context .section-container__header{
   font-size: 12px;
 }
 
+.section-container--table-design.section-container--open{
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+body.wizard-layout .section-container--table-design.section-container--open .section-container__header{
+  display: none;
+}
+
+body.wizard-layout .section-container--table-design.section-container--open .section-container__body{
+  padding: 0 2px 16px;
+  gap: 18px;
+}
+
+.section-context-summary--edit{
+  width: 100%;
+  padding: 0 0 16px;
+  border: 0;
+  border-bottom: 1px solid rgba(92,74,49,0.08);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--text-soft);
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.section-context-summary--edit span:last-child{
+  flex: 0 0 auto;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.section-container--table-design .question-row{
+  padding-top: 18px;
+}
+
+.section-container--table-design .section-context-summary--edit + .question-row{
+  padding-top: 0;
+  border-top: 0;
+}
+
 @keyframes sectionReveal {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
@@ -1144,6 +1192,36 @@ body.wizard-layout .section-container--context .section-container__header{
 
 .texture-carousel--charger.texture-carousel{
   margin-top: 0;
+}
+
+#wizard-charger-carousel{
+  min-width: 0;
+  width: 100%;
+}
+
+.question-row:has(#wizard-charger-carousel),
+.question-row__content:has(#wizard-charger-carousel){
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+.section-container__body:has(#wizard-charger-carousel){
+  grid-template-columns: minmax(0, 1fr);
+}
+
+#wizard-charger-carousel .texture-carousel__viewport{
+  min-width: 0;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-top: 2px;
+}
+
+#wizard-charger-carousel .option-cards--table-texture{
+  display: flex;
+  flex-wrap: nowrap;
+  width: max-content;
 }
 
 .charger-toggle{

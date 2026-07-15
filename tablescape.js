@@ -277,8 +277,8 @@ const builderSections = [
   },
   {
     id: "place-settings",
-    title: "Place Settings",
-    hint: "Design one place setting. We'll apply it to every guest.",
+    title: "Table Design",
+    hint: "Design one place setting. We’ll apply it to every guest.",
     rows: [5, 6, "napkin-decision", 8, 7],
   },
   {
@@ -1317,6 +1317,29 @@ function handleTableclothTextureSelection(value) {
   updateWizardControls();
 }
 
+function handleChargerSelection(value) {
+  if (state.selectedCharger === value && state.includeCharger) {
+    return;
+  }
+
+  state.includeCharger = true;
+  state.selectedCharger = value;
+  state.lastSelectedCharger = value;
+
+  refs.stepContent.querySelectorAll('input[name="selectedCharger"]').forEach((radio) => {
+    const isSelected = radio.value === value;
+    radio.checked = isSelected;
+    const card = radio.closest(".option-card--charger");
+    card?.classList.toggle("option-card--selected", isSelected);
+    card?.setAttribute("aria-selected", String(isSelected));
+  });
+
+  renderPreview();
+  renderSummary();
+  updatePreviewStatus();
+  updateWizardControls();
+}
+
 function renderNapkinTextureCards() {
   renderTextureCards({
     options: napkinTextureOptions,
@@ -2007,7 +2030,7 @@ function renderStepInto(stepNumber, container) {
             <span class="charger-toggle__label">No charger</span>
           </label>
         </div>
-        <div class="texture-carousel texture-carousel--wizard texture-carousel--charger ${state.includeCharger ? "" : "texture-carousel--disabled"}" ${state.includeCharger ? "" : "aria-disabled=\"true\""}>
+        <div id="wizard-charger-carousel" class="texture-carousel texture-carousel--wizard texture-carousel--charger ${state.includeCharger ? "" : "texture-carousel--disabled"}" ${state.includeCharger ? "" : "aria-disabled=\"true\""}>
           <button class="texture-carousel__arrow texture-carousel__arrow--left" type="button" data-texture-scroll="left" aria-label="Scroll charger options left">&#8249;</button>
           <div class="texture-carousel__viewport">
             <div class="option-cards option-cards--table-texture">
@@ -2044,10 +2067,13 @@ function renderStepInto(stepNumber, container) {
 
       refs.stepContent.querySelectorAll('input[name="selectedCharger"]').forEach((radio) => {
         radio.addEventListener("change", (event) => {
-          state.includeCharger = true;
-          state.selectedCharger = event.target.value;
-          state.lastSelectedCharger = event.target.value;
-          updateUI();
+          handleChargerSelection(event.target.value);
+        });
+      });
+
+      refs.stepContent.querySelectorAll("#wizard-charger-carousel .option-card--charger").forEach((card) => {
+        card.addEventListener("mousedown", (event) => {
+          if (event.button === 0) event.preventDefault();
         });
       });
 
@@ -2163,7 +2189,7 @@ function renderStepContent() {
         const inlineSummary = showTableSetupSummary ? getTableSectionSummary() : getPlaceSettingsSectionSummary();
         const statusText = showInlineSummary ? "Edit" : "";
         return `
-          <section class="section-container ${open ? "section-container--open" : ""} ${showInlineSummary ? "section-container--context" : ""} ${unlocked ? "" : "section-container--locked"}" data-section-index="${index}">
+          <section class="section-container ${open ? "section-container--open" : ""} ${index === 1 ? "section-container--table-design" : ""} ${showInlineSummary ? "section-container--context" : ""} ${unlocked ? "" : "section-container--locked"}" data-section-index="${index}">
             ${showSectionHeader ? `
               <button class="section-container__header" type="button" data-open-section="${index}" ${unlocked ? "" : "disabled"}>
                 <span>
@@ -2197,9 +2223,17 @@ function renderStepContent() {
   if (!openSection || !body) return;
 
   if (activeSectionIndex === 1) {
-    const tableContext = document.createElement("p");
-    tableContext.className = "section-context-summary";
-    tableContext.textContent = getTableSectionSummary();
+    const tableContext = document.createElement("button");
+    tableContext.type = "button";
+    tableContext.className = "section-context-summary section-context-summary--edit";
+    tableContext.setAttribute("aria-label", `Edit table selection: ${getTableSectionSummary()}`);
+    tableContext.innerHTML = `<span>${getTableSectionSummary().replace(/^Table:\s*/, "")}</span><span>Edit</span>`;
+    tableContext.addEventListener("click", () => {
+      activeSectionIndex = 0;
+      currentStepIndex = sectionStepMap[0];
+      pendingSectionScrollIndex = 0;
+      updateUI();
+    });
     body.appendChild(tableContext);
   }
 
