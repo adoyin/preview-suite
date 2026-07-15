@@ -664,6 +664,16 @@ body.wizard-layout .section-container--table-design.section-container--open .sec
   gap: 18px;
 }
 
+.section-container--design-options{
+  padding: 16px;
+  display: grid;
+  gap: 16px;
+}
+
+body.wizard-layout .section-container--design-options > .question-row + .question-row{
+  padding-top: 24px;
+}
+
 .section-context-summary--edit{
   width: 100%;
   padding: 0 0 16px;

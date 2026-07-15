@@ -118,6 +118,9 @@ const chargerOptions = [
   { value: "clear-goldrim", label: "Clear Gold Rim Charger", image: "./assets/chargers/charger-clear-goldrim.png" },
   { value: "goldbeaded", label: "Gold Beaded Charger", image: "./assets/chargers/charger-goldbeaded.png" },
 ];
+const dinnerwareOptions = [
+  { value: "dinner-plate", label: "Dinner Plate", image: "./assets/tablescape/dinner-plate.svg" },
+];
 // Note: some source PNGs may include a baked-in checkerboard pattern and should be re-exported with true transparency.
 
 const tableclothColorGroups = {
@@ -212,6 +215,7 @@ const initialState = {
   includeCharger: true,
   selectedCharger: null,
   lastSelectedCharger: null,
+  selectedDinnerware: null,
   includeNapkin: true,
   napkinType: null,
   napkinTexture: null,
@@ -279,7 +283,7 @@ const builderSections = [
     id: "place-settings",
     title: "Table Design",
     hint: "Design one place setting. We’ll apply it to every guest.",
-    rows: [5, 6, "napkin-decision", 8, 7],
+    rows: [5, 6, "dinnerware", "napkin-decision", 8, 7],
   },
   {
     id: "centerpiece",
@@ -994,10 +998,13 @@ function renderPlaceSettings(count) {
       setting.appendChild(createLayer("setting__charger", chargerAsset, `${state.selectedCharger} charger`));
     }
 
-    const plateWrap = document.createElement("div");
-    plateWrap.className = "setting__plate-wrap";
-    plateWrap.appendChild(createLayer("setting__plate", `${ASSET_BASE}/dinner-plate.svg`, "Dinner plate"));
-    setting.appendChild(plateWrap);
+    const dinnerware = dinnerwareOptions.find((option) => option.value === state.selectedDinnerware);
+    if (dinnerware) {
+      const plateWrap = document.createElement("div");
+      plateWrap.className = "setting__plate-wrap";
+      plateWrap.appendChild(createLayer("setting__plate", dinnerware.image, dinnerware.label));
+      setting.appendChild(plateWrap);
+    }
 
     if (state.includeNapkin && state.napkinType && napkinAsset) {
       setting.appendChild(createLayer("setting__napkin", napkinAsset, `${state.napkinType} napkin`));
@@ -1990,6 +1997,35 @@ function renderStepInto(stepNumber, container) {
   withScopedStepContent(container, () => {
     if (stepNumber === "napkin-decision") return renderNapkinDecisionStep();
 
+    if (stepNumber === "dinnerware") {
+      refs.stepContent.innerHTML = `
+        <div id="wizard-dinnerware-carousel" class="texture-carousel texture-carousel--wizard texture-carousel--charger">
+          <button class="texture-carousel__arrow texture-carousel__arrow--left" type="button" data-texture-scroll="left" aria-label="Scroll dinnerware options left">&#8249;</button>
+          <div class="texture-carousel__viewport">
+            <div class="option-cards option-cards--table-texture">
+              ${dinnerwareOptions.map((option) => `
+                <label class="option-card option-card--texture option-card--charger ${state.selectedDinnerware === option.value ? "option-card--selected" : ""}" aria-selected="${state.selectedDinnerware === option.value ? "true" : "false"}">
+                  <input type="radio" name="selectedDinnerware" value="${option.value}" ${state.selectedDinnerware === option.value ? "checked" : ""} />
+                  <div class="option-card__media option-card__media--texture option-card__media--charger">
+                    <img class="option-card__image option-card__image--texture option-card__image--charger" src="${option.image}" alt="${option.label}" loading="lazy" />
+                  </div>
+                  <span class="option-card__title option-card__title--texture">${option.label}</span>
+                </label>
+              `).join("")}
+            </div>
+          </div>
+          <button class="texture-carousel__arrow texture-carousel__arrow--right" type="button" data-texture-scroll="right" aria-label="Scroll dinnerware options right">&#8250;</button>
+        </div>`;
+      refs.stepContent.querySelectorAll('input[name="selectedDinnerware"]').forEach((radio) => {
+        radio.addEventListener("change", (event) => {
+          state.selectedDinnerware = event.target.value;
+          updateUI();
+        });
+      });
+      setupTextureCarousel();
+      return;
+    }
+
     if (stepNumber === 1) {
       renderVisualOptionCards({
         name: "tableOption",
@@ -2222,27 +2258,18 @@ function renderStepContent() {
   const body = refs.stepContent.querySelector(`.section-container[data-section-index="${activeSectionIndex}"] .section-container__body`);
   if (!openSection || !body) return;
 
-  if (activeSectionIndex === 1) {
-    const tableContext = document.createElement("button");
-    tableContext.type = "button";
-    tableContext.className = "section-context-summary section-context-summary--edit";
-    tableContext.setAttribute("aria-label", `Edit table selection: ${getTableSectionSummary()}`);
-    tableContext.innerHTML = `<span>${getTableSectionSummary().replace(/^Table:\s*/, "")}</span><span>Edit</span>`;
-    tableContext.addEventListener("click", () => {
-      activeSectionIndex = 0;
-      currentStepIndex = sectionStepMap[0];
-      pendingSectionScrollIndex = 0;
-      updateUI();
-    });
-    body.appendChild(tableContext);
-  }
+  const questionContainer = activeSectionIndex === 1
+    ? body.appendChild(Object.assign(document.createElement("div"), { className: "section-container section-container--open section-container--design-options" }))
+    : body;
 
   openSection.rows.forEach((stepNumber) => {
     if (!state.includeNapkin && (stepNumber === 7 || stepNumber === 8)) return;
     if (stepNumber === 10 && state.hasCenterpiece === false) return;
     const question = document.createElement("article");
     question.className = "question-row";
-    const meta = stepNumber === "napkin-decision"
+    const meta = stepNumber === "dinnerware"
+      ? { title: "Dinnerware", hint: "", value: "" }
+      : stepNumber === "napkin-decision"
       ? { title: "Napkin", hint: "", value: state.includeNapkin ? "Napkin included" : "No napkin" }
       : (() => {
           const previousIndex = currentStepIndex;
@@ -2260,7 +2287,7 @@ function renderStepContent() {
       <div class="question-row__content"></div>
     `;
 
-    body.appendChild(question);
+    questionContainer.appendChild(question);
     renderStepInto(stepNumber, question.querySelector(".question-row__content"));
   });
 
