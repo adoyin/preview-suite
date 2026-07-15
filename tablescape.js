@@ -83,7 +83,6 @@ const napkinTextureOptions = [
     name: "Polyester",
     label: "Polyester",
     thumbnail: "assets/textures/polyester-pearl.png",
-    helperText: "Crisp, structured event styling",
   },
   {
     id: "satin",
@@ -91,7 +90,6 @@ const napkinTextureOptions = [
     name: "Satin",
     label: "Satin",
     thumbnail: "assets/textures/satin-champagne.png",
-    helperText: "Soft sheen with a formal finish",
   },
   {
     id: "velvet",
@@ -99,7 +97,6 @@ const napkinTextureOptions = [
     name: "Velvet",
     label: "Velvet",
     thumbnail: "assets/textures/velvet-cream.png",
-    helperText: "Rich texture with a dramatic feel",
   },
   {
     id: "linen",
@@ -107,7 +104,13 @@ const napkinTextureOptions = [
     name: "Linen",
     label: "Linen",
     thumbnail: "assets/textures/linen-ivory.png",
-    helperText: "Natural weave, relaxed elegance",
+  },
+  {
+    id: "crinkle-taffeta",
+    value: "crinkle-taffeta",
+    name: "Crinkle",
+    label: "Crinkle",
+    thumbnail: "assets/textures/crinkle-taffeta-champagne.png",
   },
 ];
 
@@ -277,7 +280,7 @@ const TOTAL_STEPS = stepSequence.length;
 const builderSections = [
   {
     id: "table-setup",
-    title: "Table",
+    title: "Table Foundation",
     hint: "",
     rows: [1, 3, 4],
   },
@@ -1375,7 +1378,7 @@ function renderNapkinTextureCards() {
     options: napkinTextureOptions,
     selectedValue: state.napkinTexture,
     inputName: "napkinTexture",
-    tooltipPrefix: "napkinTextureTip",
+    showTooltips: false,
     leftArrowLabel: "Scroll napkin textures left",
     rightArrowLabel: "Scroll napkin textures right",
     onChange: (value) => {
@@ -1520,13 +1523,11 @@ function renderGroupedColorCards({
       });
     });
 
-    if (colorInputName === "tableclothColor") {
-      colorStepContent.querySelectorAll(".option-card--color").forEach((card) => {
-        card.addEventListener("mousedown", (event) => {
-          if (event.button === 0) event.preventDefault();
-        });
+    colorStepContent.querySelectorAll(".option-card--color").forEach((card) => {
+      card.addEventListener("mousedown", (event) => {
+        if (event.button === 0) event.preventDefault();
       });
-    }
+    });
   };
 
   colorStepContent.innerHTML = `
@@ -1539,7 +1540,7 @@ function renderGroupedColorCards({
         </select>
       </label>
     </div>
-    <div id="${colorInputName === "tableclothColor" ? "wizard-tablecloth-color-carousel" : "wizard-color-carousel"}" class="wizard-color-carousel ${carouselDisabled ? "wizard-color-carousel--disabled" : ""}" ${carouselDisabled ? "aria-disabled=\"true\"" : ""}>
+    <div id="${colorInputName === "tableclothColor" ? "wizard-tablecloth-color-carousel" : "wizard-napkin-color-carousel"}" class="wizard-color-carousel ${carouselDisabled ? "wizard-color-carousel--disabled" : ""}" ${carouselDisabled ? "aria-disabled=\"true\"" : ""}>
       <div class="wizard-color-carousel__viewport">
         <div class="option-cards option-cards--table-color">
           ${renderColorOptions(activeColorOptions)}
@@ -1548,23 +1549,25 @@ function renderGroupedColorCards({
     </div>
   `;
 
-  colorStepContent.querySelector(`#${groupSelectId}`)?.addEventListener("change", (event) => {
+  const handleGroupedColorGroupChange = (event) => {
     const group = event.target.value;
     onGroupChange(group);
 
-    if (colorInputName === "tableclothColor") {
-      const viewport = colorStepContent.querySelector(".wizard-color-carousel__viewport");
-      const cardTrack = colorStepContent.querySelector(".option-cards--table-color");
-      if (cardTrack) cardTrack.innerHTML = renderColorOptions(groups[group] || []);
-      attachColorChangeHandlers();
-      if (viewport) viewport.scrollLeft = 0;
-    }
-  });
+    const viewport = colorStepContent.querySelector(".wizard-color-carousel__viewport");
+    const cardTrack = colorStepContent.querySelector(".option-cards--table-color");
+    if (cardTrack) cardTrack.innerHTML = renderColorOptions(groups[group] || []);
+    attachColorChangeHandlers();
+    if (viewport) viewport.scrollLeft = 0;
+  };
+
+  colorStepContent.querySelector(`#${groupSelectId}`)?.addEventListener("change", handleGroupedColorGroupChange);
 
   attachColorChangeHandlers();
 
-  if (colorInputName === "tableclothColor") {
-    const carousel = colorStepContent.querySelector("#wizard-tablecloth-color-carousel");
+  if (colorInputName === "tableclothColor" || colorInputName === "napkinColor") {
+    const carousel = colorStepContent.querySelector(
+      colorInputName === "tableclothColor" ? "#wizard-tablecloth-color-carousel" : "#wizard-napkin-color-carousel"
+    );
     const viewport = carousel?.querySelector(".wizard-color-carousel__viewport");
 
     if (viewport) {
@@ -1582,6 +1585,19 @@ function updateTableclothColorSelection(value) {
 
   carousel.querySelectorAll(".option-card--color").forEach((card) => {
     const radio = card.querySelector('input[name="tableclothColor"]');
+    const isSelected = radio?.value === value;
+    if (radio) radio.checked = isSelected;
+    card.classList.toggle("option-card--selected", isSelected);
+    card.setAttribute("aria-selected", isSelected ? "true" : "false");
+  });
+}
+
+function updateNapkinColorSelection(value) {
+  const carousel = refs.stepContent.querySelector("#wizard-napkin-color-carousel");
+  if (!carousel) return;
+
+  carousel.querySelectorAll(".option-card--color").forEach((card) => {
+    const radio = card.querySelector('input[name="napkinColor"]');
     const isSelected = radio?.value === value;
     if (radio) radio.checked = isSelected;
     card.classList.toggle("option-card--selected", isSelected);
@@ -1632,7 +1648,6 @@ function renderNapkinColorCards() {
     colorInputName: "napkinColor",
     onGroupChange: (group) => {
       state.napkinColorGroup = group;
-      renderNapkinColorCards();
     },
     onColorChange: (value) => {
       const selectedOption = napkinColorOptions.find((option) => option.value === value);
@@ -1642,7 +1657,11 @@ function renderNapkinColorCards() {
       state.napkinColor = selectedOption.hex;
       state.lastSelectedNapkin = selectedOption.value;
       state.napkinColorGroup = selectedOption.group;
-      updateUI();
+      updateNapkinColorSelection(value);
+      renderPreview();
+      renderSummary();
+      updatePreviewStatus();
+      updateWizardControls();
     },
   });
 
@@ -1750,13 +1769,13 @@ function getStepMeta() {
   const currentStepNumber = currentStepIndex + 1;
 
   switch (currentStepNumber) {
-    case 1: return { title: "Table Style", hint: "", value: formatTableSelection(state.tableShape, state.tableSize) };
+    case 1: return { title: "Table Shape & Size", hint: "", value: formatTableSelection(state.tableShape, state.tableSize) };
     case 3: return { title: "Tablecloth Texture", hint: "", value: tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || "Not selected" };
     case 4: return { title: "Tablecloth color", hint: "", value: tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Not selected" };
     case 5: return { title: "Guests at this table", hint: "", value: state.placeSettingsCount == null ? "Not selected" : formatGuestLabel(state.placeSettingsCount) };
     case 6: return { title: "Charger", hint: "", value: getChargerStepValue() };
     case 7: return { title: "Napkin Color", hint: "", value: getNapkinStepValue() };
-    case 8: return { title: "Napkin Material", hint: "", value: getNapkinTextureStepValue() };
+    case 8: return { title: "Napkin Texture", hint: "", value: getNapkinTextureStepValue() };
     case 9: return { title: "Centerpiece", hint: "", value: getCenterpieceStepValue() };
     case 10: return { title: "Centerpiece", hint: "", value: state.hasCenterpiece ? (getCenterpieceStyleLabel(state.centerpieceStyle) || "Not selected") : "Skipped" };
     case 11: return { title: "Table styling", hint: "Add optional finishing touches.", value: getTableStylingStepValue() };
@@ -2003,7 +2022,10 @@ function isSectionComplete(sectionIndex) {
     case 1:
       return state.placeSettingsCount != null
         && (!state.includeCharger || Boolean(state.selectedCharger))
-        && (!state.includeNapkin || (Boolean(state.napkinType) && Boolean(state.napkinTexture)));
+        && (!state.includeNapkin || (
+          Boolean(state.napkinTexture)
+          && napkinColorGroups[state.napkinColorGroup]?.some((option) => option.value === state.napkinType)
+        ));
     case 2:
       return state.hasCenterpiece === false || (state.hasCenterpiece === true && state.centerpieceStyle);
     case 3:
