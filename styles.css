@@ -713,6 +713,7 @@ body.wizard-layout .section-container--context .section-container__header{
 .place-settings-pill{
   flex: 0 0 44px;
   min-width: 44px;
+  box-sizing: border-box;
   border: 1px solid rgba(198, 180, 153, 0.55);
   background: #f8f4ec;
   box-shadow: 0 2px 6px rgba(63, 52, 41, 0.08);
@@ -726,10 +727,10 @@ body.wizard-layout .section-container--context .section-container__header{
   box-shadow: 0 4px 12px rgba(63, 52, 41, 0.12);
 }
 
-.pill--selected{
-  border: 2px solid rgba(167, 132, 78, 0.78);
+.place-settings-pill.pill--selected{
+  border-color: rgba(167, 132, 78, 0.78);
   background: rgba(247, 240, 226, 0.7);
-  box-shadow: 0 2px 6px rgba(63, 52, 41, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(167, 132, 78, 0.78), 0 2px 6px rgba(63, 52, 41, 0.08);
 }
 
 .place-settings-panel__helper{

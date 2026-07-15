@@ -1885,7 +1885,16 @@ function renderPlaceSettingsStep() {
     button.addEventListener("click", () => {
       const count = Number(button.getAttribute("data-place-settings-value"));
       state.placeSettingsCount = Number.isNaN(count) ? null : count;
-      updateUI();
+
+      refs.stepContent.querySelectorAll("[data-place-settings-value]").forEach((guestButton) => {
+        const isSelected = guestButton === button;
+        guestButton.classList.toggle("pill--selected", isSelected);
+        guestButton.setAttribute("aria-pressed", String(isSelected));
+        guestButton.setAttribute("aria-selected", String(isSelected));
+      });
+
+      renderPreview();
+      updateWizardControls();
     });
   });
 }
