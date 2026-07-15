@@ -112,14 +112,16 @@ const napkinTextureOptions = [
 ];
 
 const chargerOptions = [
-  { value: "gold", label: "Gold Charger", image: "./assets/chargers/charger-gold.png" },
-  { value: "silver", label: "Silver Charger", image: "./assets/chargers/charger-silver.png" },
-  { value: "matte-black", label: "Matte Black Charger", image: "./assets/chargers/charger-matte-black.png" },
-  { value: "clear-goldrim", label: "Clear Gold Rim Charger", image: "./assets/chargers/charger-clear-goldrim.png" },
-  { value: "goldbeaded", label: "Gold Beaded Charger", image: "./assets/chargers/charger-goldbeaded.png" },
+  { value: "gold", label: "Gold", image: "./assets/chargers/charger-gold.png" },
+  { value: "silver", label: "Silver", image: "./assets/chargers/charger-silver.png" },
+  { value: "matte-black", label: "Matte Black", image: "./assets/chargers/charger-matte-black.png" },
+  { value: "clear-goldrim", label: "Clear Gold Rim", image: "./assets/chargers/charger-clear-goldrim.png" },
+  { value: "goldbeaded", label: "Gold Beaded", image: "./assets/chargers/charger-goldbeaded.png" },
 ];
 const dinnerwareOptions = [
-  { value: "dinner-plate", label: "Dinner Plate", image: "./assets/tablescape/dinner-plate.svg" },
+  { id: "classic-white", value: "classic-white", style: "classic-white", label: "Classic White", image: "./assets/tablescape/dinner-plate.svg" },
+  { id: "gold-rim", value: "gold-rim", style: "gold-rim", label: "Gold Rim", image: "./assets/tablescape/dinner-plate.svg" },
+  { id: "black", value: "black", style: "black", label: "Black", image: "./assets/tablescape/dinner-plate.svg" },
 ];
 // Note: some source PNGs may include a baked-in checkerboard pattern and should be re-exported with true transparency.
 
@@ -1347,6 +1349,27 @@ function handleChargerSelection(value) {
   updateWizardControls();
 }
 
+function handleDinnerwareSelection(value) {
+  if (state.selectedDinnerware === value) {
+    return;
+  }
+
+  state.selectedDinnerware = value;
+
+  refs.stepContent.querySelectorAll('input[name="selectedDinnerware"]').forEach((radio) => {
+    const isSelected = radio.value === value;
+    radio.checked = isSelected;
+    const card = radio.closest(".option-card--charger");
+    card?.classList.toggle("option-card--selected", isSelected);
+    card?.setAttribute("aria-selected", String(isSelected));
+  });
+
+  renderPreview();
+  renderSummary();
+  updatePreviewStatus();
+  updateWizardControls();
+}
+
 function renderNapkinTextureCards() {
   renderTextureCards({
     options: napkinTextureOptions,
@@ -1681,7 +1704,10 @@ function setupSizeCarousel() {
 }
 
 function getTextureCarouselScrollAmount(carousel) {
-  return getCarouselScrollAmount(carousel, ".texture-carousel__viewport", ".option-cards--table-texture");
+  const viewportSelector = carousel.querySelector(".dinnerware-scroll-viewport")
+    ? ".dinnerware-scroll-viewport"
+    : ".texture-carousel__viewport";
+  return getCarouselScrollAmount(carousel, viewportSelector, ".option-cards--table-texture");
 }
 
 function setupTextureCarousel() {
@@ -1690,7 +1716,8 @@ function setupTextureCarousel() {
     return;
   }
 
-  const viewport = carousel.querySelector(".texture-carousel__viewport");
+  const viewport = carousel.querySelector(".dinnerware-scroll-viewport")
+    || carousel.querySelector(".texture-carousel__viewport");
   const leftArrow = carousel.querySelector('[data-texture-scroll="left"]');
   const rightArrow = carousel.querySelector('[data-texture-scroll="right"]');
   if (!viewport || !leftArrow || !rightArrow) {
@@ -2002,7 +2029,7 @@ function renderStepInto(stepNumber, container) {
         <div id="wizard-dinnerware-carousel" class="texture-carousel texture-carousel--wizard texture-carousel--charger">
           <button class="texture-carousel__arrow texture-carousel__arrow--left" type="button" data-texture-scroll="left" aria-label="Scroll dinnerware options left">&#8249;</button>
           <div class="texture-carousel__viewport">
-            <div class="option-cards option-cards--table-texture">
+            <div class="option-cards option-cards--table-texture dinnerware-scroll-viewport">
               ${dinnerwareOptions.map((option) => `
                 <label class="option-card option-card--texture option-card--charger ${state.selectedDinnerware === option.value ? "option-card--selected" : ""}" aria-selected="${state.selectedDinnerware === option.value ? "true" : "false"}">
                   <input type="radio" name="selectedDinnerware" value="${option.value}" ${state.selectedDinnerware === option.value ? "checked" : ""} />
@@ -2018,10 +2045,21 @@ function renderStepInto(stepNumber, container) {
         </div>`;
       refs.stepContent.querySelectorAll('input[name="selectedDinnerware"]').forEach((radio) => {
         radio.addEventListener("change", (event) => {
-          state.selectedDinnerware = event.target.value;
-          updateUI();
+          handleDinnerwareSelection(event.target.value);
         });
       });
+
+      const dinnerwareRow = refs.stepContent.querySelector("#wizard-dinnerware-carousel .dinnerware-scroll-viewport");
+      dinnerwareRow?.addEventListener("wheel", (event) => {
+        if (Math.abs(event.deltaX) >= Math.abs(event.deltaY)) return;
+
+        const maxScroll = getMaxHorizontalScroll(dinnerwareRow);
+        const nextLeft = Math.max(0, Math.min(maxScroll, dinnerwareRow.scrollLeft + event.deltaY));
+        if (nextLeft === dinnerwareRow.scrollLeft) return;
+
+        event.preventDefault();
+        dinnerwareRow.scrollLeft = nextLeft;
+      }, { passive: false });
       setupTextureCarousel();
       return;
     }

@@ -1266,6 +1266,76 @@ body.wizard-layout .section-container--design-options > .question-row + .questio
   object-position: center;
 }
 
+#wizard-dinnerware-carousel{
+  min-width: 0;
+  width: 100%;
+}
+
+.question-row:has(#wizard-dinnerware-carousel),
+.question-row__content:has(#wizard-dinnerware-carousel){
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+.section-container__body:has(#wizard-dinnerware-carousel){
+  grid-template-columns: minmax(0, 1fr);
+}
+
+#wizard-dinnerware-carousel .texture-carousel__viewport{
+  min-width: 0;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  padding: 2px 0 0;
+}
+
+#wizard-dinnerware-carousel .dinnerware-scroll-viewport{
+  display: flex;
+  flex-wrap: nowrap;
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-right: 16px;
+  scroll-padding-right: 16px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+#wizard-dinnerware-carousel .dinnerware-scroll-viewport::-webkit-scrollbar{
+  display: none;
+}
+
+#wizard-dinnerware-carousel .option-card--charger{
+  box-sizing: border-box;
+  flex: 0 0 190px;
+  width: 190px;
+  min-width: 190px;
+  max-width: 190px;
+}
+
+#wizard-dinnerware-carousel .option-card__media--charger{
+  width: auto;
+  min-width: 0;
+  aspect-ratio: 1 / 1;
+}
+
+#wizard-dinnerware-carousel .option-card__image--charger{
+  object-fit: contain;
+  object-position: center;
+}
+
+.section-container--design-options:has(#wizard-dinnerware-carousel){
+  box-sizing: border-box;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+}
+
 .section-container--design-options:has(#wizard-charger-carousel){
   box-sizing: border-box;
   grid-template-columns: minmax(0, 1fr);
