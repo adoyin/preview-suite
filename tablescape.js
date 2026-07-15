@@ -1447,9 +1447,36 @@ function renderGroupedColorCards({
   onGroupChange,
   onColorChange,
 }) {
+  const colorStepContent = refs.stepContent;
   const activeColorOptions = groups[selectedGroup] || [];
 
-  refs.stepContent.innerHTML = `
+  const renderColorOptions = (options) => options.map((option) => `
+    <label class="option-card option-card--color ${selectedValue === option.value ? "option-card--selected" : ""}" aria-selected="${selectedValue === option.value ? "true" : "false"}">
+      <input type="radio" name="${colorInputName}" value="${option.value}" ${selectedValue === option.value ? "checked" : ""} />
+      <div class="option-card__media option-card__media--color">
+        <div class="option-card__swatch" style="background-color: ${option.hex};" aria-hidden="true"></div>
+      </div>
+      <span class="option-card__title option-card__title--color">${option.label}</span>
+    </label>
+  `).join("");
+
+  const attachColorChangeHandlers = () => {
+    colorStepContent.querySelectorAll(`input[name="${colorInputName}"]`).forEach((radio) => {
+      radio.addEventListener("change", (event) => {
+        onColorChange(event.target.value);
+      });
+    });
+
+    if (colorInputName === "tableclothColor") {
+      colorStepContent.querySelectorAll(".option-card--color").forEach((card) => {
+        card.addEventListener("mousedown", (event) => {
+          if (event.button === 0) event.preventDefault();
+        });
+      });
+    }
+  };
+
+  colorStepContent.innerHTML = `
     <div class="wizard-color-toolbar">
       ${extraToolbarControls}
       <label class="wizard-color-group" for="${groupSelectId}">
@@ -1462,39 +1489,30 @@ function renderGroupedColorCards({
     <div id="${colorInputName === "tableclothColor" ? "wizard-tablecloth-color-carousel" : "wizard-color-carousel"}" class="wizard-color-carousel ${carouselDisabled ? "wizard-color-carousel--disabled" : ""}" ${carouselDisabled ? "aria-disabled=\"true\"" : ""}>
       <div class="wizard-color-carousel__viewport">
         <div class="option-cards option-cards--table-color">
-          ${activeColorOptions.map((option) => `
-            <label class="option-card option-card--color ${selectedValue === option.value ? "option-card--selected" : ""}" aria-selected="${selectedValue === option.value ? "true" : "false"}">
-              <input type="radio" name="${colorInputName}" value="${option.value}" ${selectedValue === option.value ? "checked" : ""} />
-              <div class="option-card__media option-card__media--color">
-                <div class="option-card__swatch" style="background-color: ${option.hex};" aria-hidden="true"></div>
-              </div>
-              <span class="option-card__title option-card__title--color">${option.label}</span>
-            </label>
-          `).join("")}
+          ${renderColorOptions(activeColorOptions)}
         </div>
       </div>
     </div>
   `;
 
-  refs.stepContent.querySelector(`#${groupSelectId}`)?.addEventListener("change", (event) => {
-    onGroupChange(event.target.value);
+  colorStepContent.querySelector(`#${groupSelectId}`)?.addEventListener("change", (event) => {
+    const group = event.target.value;
+    onGroupChange(group);
+
+    if (colorInputName === "tableclothColor") {
+      const viewport = colorStepContent.querySelector(".wizard-color-carousel__viewport");
+      const cardTrack = colorStepContent.querySelector(".option-cards--table-color");
+      if (cardTrack) cardTrack.innerHTML = renderColorOptions(groups[group] || []);
+      attachColorChangeHandlers();
+      if (viewport) viewport.scrollLeft = 0;
+    }
   });
 
-  refs.stepContent.querySelectorAll(`input[name="${colorInputName}"]`).forEach((radio) => {
-    radio.addEventListener("change", (event) => {
-      onColorChange(event.target.value);
-    });
-  });
+  attachColorChangeHandlers();
 
   if (colorInputName === "tableclothColor") {
-    const carousel = refs.stepContent.querySelector("#wizard-tablecloth-color-carousel");
+    const carousel = colorStepContent.querySelector("#wizard-tablecloth-color-carousel");
     const viewport = carousel?.querySelector(".wizard-color-carousel__viewport");
-
-    carousel?.querySelectorAll(".option-card--color").forEach((card) => {
-      card.addEventListener("mousedown", (event) => {
-        if (event.button === 0) event.preventDefault();
-      });
-    });
 
     if (viewport) {
       const clampScrollLeft = () => {
@@ -1533,7 +1551,6 @@ function renderTableColorCards() {
     colorInputName: "tableclothColor",
     onGroupChange: (group) => {
       state.tableclothColorGroup = group;
-      renderTableColorCards();
     },
     onColorChange: (value) => {
       state.tableclothColor = value;
@@ -1911,7 +1928,12 @@ function renderNapkinDecisionStep() {
 function isSectionComplete(sectionIndex) {
   switch (sectionIndex) {
     case 0:
-      return Boolean(state.tableShape && state.tableSize && state.tableclothTexture && state.tableclothColor);
+      return Boolean(
+        state.tableShape
+        && state.tableSize
+        && state.tableclothTexture
+        && tableclothColorGroups[state.tableclothColorGroup]?.some((option) => option.value === state.tableclothColor)
+      );
     case 1:
       return state.placeSettingsCount != null
         && (!state.includeCharger || Boolean(state.selectedCharger))
