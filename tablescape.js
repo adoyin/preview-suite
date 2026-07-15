@@ -2113,6 +2113,18 @@ function renderStepInto(stepNumber, container) {
         });
       });
 
+      const chargerRow = refs.stepContent.querySelector("#wizard-charger-carousel .option-cards--table-texture");
+      chargerRow?.addEventListener("wheel", (event) => {
+        if (Math.abs(event.deltaX) >= Math.abs(event.deltaY)) return;
+
+        const maxScroll = getMaxHorizontalScroll(chargerRow);
+        const nextLeft = Math.max(0, Math.min(maxScroll, chargerRow.scrollLeft + event.deltaY));
+        if (nextLeft === chargerRow.scrollLeft) return;
+
+        event.preventDefault();
+        chargerRow.scrollLeft = nextLeft;
+      }, { passive: false });
+
       setupTextureCarousel();
       attachImageFallbacks(refs.stepContent);
       return;

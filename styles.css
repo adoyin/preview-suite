@@ -1223,15 +1223,55 @@ body.wizard-layout .section-container--design-options > .question-row + .questio
 #wizard-charger-carousel .texture-carousel__viewport{
   min-width: 0;
   width: 100%;
-  overflow-x: auto;
+  overflow-x: hidden;
   overflow-y: hidden;
-  padding-top: 2px;
+  padding: 2px 0 0;
 }
 
 #wizard-charger-carousel .option-cards--table-texture{
   display: flex;
   flex-wrap: nowrap;
-  width: max-content;
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-right: 16px;
+  scroll-padding-right: 16px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+#wizard-charger-carousel .option-cards--table-texture::-webkit-scrollbar{
+  display: none;
+}
+
+#wizard-charger-carousel .option-card--charger{
+  box-sizing: border-box;
+  flex: 0 0 190px;
+  width: 190px;
+  min-width: 190px;
+  max-width: 190px;
+}
+
+#wizard-charger-carousel .option-card__media--charger{
+  width: auto;
+  min-width: 0;
+  aspect-ratio: 1 / 1;
+}
+
+#wizard-charger-carousel .option-card__image--charger{
+  object-fit: contain;
+  object-position: center;
+}
+
+.section-container--design-options:has(#wizard-charger-carousel){
+  box-sizing: border-box;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
 }
 
 .charger-toggle{
@@ -2240,6 +2280,21 @@ body.wizard-layout .section-container--open .section-container__body{
 
 .section-container[data-section-index="0"] .option-card__title{
   min-height: 2.6em;
+}
+
+/* Keep place-setting option cards visually consistent with Section 1 cards. */
+.section-container[data-section-index="1"] .option-card{
+  background: var(--surface-strong);
+}
+
+.section-container[data-section-index="1"] .option-card:not(.option-card--selected):hover{
+  background: var(--surface-soft);
+}
+
+.section-container[data-section-index="1"] .option-card--selected,
+.section-container[data-section-index="1"] .option-card--selected:hover,
+.section-container[data-section-index="1"] .option-card--selected:focus-within{
+  background: rgba(247, 240, 226, 0.7);
 }
 
 .option-card__media--color{
