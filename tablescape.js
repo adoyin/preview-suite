@@ -374,6 +374,7 @@ let isJumpModalOpen = false;
 let activeSectionIndex = 0;
 let highestSectionReached = 0;
 let pendingSectionScrollIndex = 0;
+let pendingSectionScrollBehavior = "auto";
 
 const placeSettingsOptions = Array.from({ length: 9 }, (_, index) => index + 4);
 
@@ -389,6 +390,7 @@ const refs = {
   stepTitle: el("stepTitle"),
   stepHint: el("stepHint"),
   stepValue: el("stepValue"),
+  completedSections: el("completedSections"),
   stepContent: el("stepContent"),
   stepCard: el("wizardStepCard"),
   stepsPanel: document.querySelector(".steps"),
@@ -643,24 +645,31 @@ function getTableStylingStepValue() {
 }
 
 function getTableSectionSummary() {
-  if (!isSectionComplete(0)) {
-    return "Table: Not selected";
-  }
-
-  const shape = formatTableShape(state.tableShape);
+  const shape = state.tableShape ? formatTableShape(state.tableShape) : "";
   const size = typeof state.tableSize === "number" ? `${state.tableSize}"` : state.tableSize;
-  const material = tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || state.tableclothTexture;
-  return `Table: ${shape} · ${size} · ${material}`;
+  const color = tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "";
+  const texture = tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || "";
+  return [shape, size, color, texture].filter(Boolean).join(" · ");
 }
 
 function getPlaceSettingsSectionSummary() {
-  const guests = state.placeSettingsCount == null ? "Not selected" : `${state.placeSettingsCount} guests`;
-  const charger = state.includeCharger ? (getSelectedChargerLabel() || "Charger not selected") : "No charger";
-  const napkin = state.includeNapkin
-    ? `${getNapkinStepValue()} ${getNapkinTextureStepValue()} napkin`
-    : "No napkin";
+  const chargerLabel = getSelectedChargerLabel();
+  const dinnerwareLabel = dinnerwareOptions.find((option) => option.value === state.selectedDinnerware)?.label || "";
+  const napkinColorLabel = napkinColorOptions.find((option) => option.value === state.napkinType)?.label || "";
+  const napkinTextureLabel = napkinTextureOptions.find((option) => option.value === state.napkinTexture)?.label || "";
+  const parts = [
+    state.includeCharger ? (chargerLabel ? `${chargerLabel} Charger` : "") : "No Charger",
+    dinnerwareLabel ? `${dinnerwareLabel} Dinnerware` : "",
+  ];
 
-  return `Place Settings: ${guests} · ${charger} · ${napkin}`;
+  if (state.includeNapkin) {
+    if (napkinColorLabel) parts.push(`${napkinColorLabel} Napkin`);
+    if (napkinTextureLabel) parts.push(napkinTextureLabel);
+  } else {
+    parts.push("No Napkin");
+  }
+
+  return parts.filter(Boolean).join(" · ");
 }
 
 function getWizardScroller() {
@@ -1350,6 +1359,7 @@ function handleChargerSelection(value) {
   renderSummary();
   updatePreviewStatus();
   updateWizardControls();
+  refreshTableDesignNavigation();
 }
 
 function handleDinnerwareSelection(value) {
@@ -1371,6 +1381,7 @@ function handleDinnerwareSelection(value) {
   renderSummary();
   updatePreviewStatus();
   updateWizardControls();
+  refreshTableDesignNavigation();
 }
 
 function renderNapkinTextureCards() {
@@ -1407,6 +1418,7 @@ function handleNapkinTextureSelection(value) {
   renderSummary();
   updatePreviewStatus();
   updateWizardControls();
+  refreshTableDesignNavigation();
 }
 
 function renderTextureCards({
@@ -1690,6 +1702,7 @@ function renderNapkinColorCards() {
       renderSummary();
       updatePreviewStatus();
       updateWizardControls();
+      refreshTableDesignNavigation();
     },
   });
 
@@ -1999,6 +2012,7 @@ function renderPlaceSettingsStep() {
 
       renderPreview();
       updateWizardControls();
+      refreshTableDesignNavigation();
     });
   });
 }
@@ -2050,6 +2064,7 @@ function isSectionComplete(sectionIndex) {
     case 1:
       return state.placeSettingsCount != null
         && (!state.includeCharger || Boolean(state.selectedCharger))
+        && Boolean(state.selectedDinnerware)
         && (!state.includeNapkin || (
           Boolean(state.napkinTexture)
           && napkinColorGroups[state.napkinColorGroup]?.some((option) => option.value === state.napkinType)
@@ -2315,25 +2330,28 @@ function renderStepContent() {
   refs.stepContent.innerHTML = `
     <div class="sectioned-builder">
       ${builderSections.map((section, index) => {
-        const unlocked = index <= highestSectionReached;
+        const placeSettingReady = isSectionComplete(1);
         const open = index === activeSectionIndex;
+        const isCenterpieceInvitation = index === 2 && placeSettingReady && !open && !isSectionComplete(2);
+        const unlocked = index <= highestSectionReached || isCenterpieceInvitation;
         const sectionComplete = isSectionComplete(index);
         const showTableSetupSummary = index === 0 && sectionComplete && !open;
         const showPlaceSettingsSummary = index === 1 && sectionComplete && !open;
         const showInlineSummary = showTableSetupSummary || showPlaceSettingsSummary;
         const showSectionHeader = true;
         const inlineSummary = showTableSetupSummary ? getTableSectionSummary() : getPlaceSettingsSectionSummary();
-        const statusText = showInlineSummary ? "Edit" : "";
         return `
-          <section class="section-container ${open ? "section-container--open" : ""} ${index === 1 ? "section-container--table-design" : ""} ${showInlineSummary ? "section-container--context" : ""} ${unlocked ? "" : "section-container--locked"}" data-section-index="${index}">
+          <section class="section-container ${open ? "section-container--open" : ""} ${index === 1 ? "section-container--table-design" : ""} ${showInlineSummary ? "section-container--completed" : ""} ${isCenterpieceInvitation ? "section-container--invitation" : ""} ${unlocked ? "" : "section-container--locked"}" data-section-index="${index}">
             ${showSectionHeader ? `
               <button class="section-container__header" type="button" data-open-section="${index}" ${unlocked ? "" : "disabled"}>
-                <span>
-                  ${showInlineSummary || index === 0 ? "" : `<span class="section-container__title">${section.title}</span>`}
-                  ${showInlineSummary ? `<span class="section-container__hint">${inlineSummary}</span>` : ""}
+                <span class="section-container__copy">
+                  ${isCenterpieceInvitation ? '<span class="section-container__eyebrow">Next</span>' : ""}
+                  ${showInlineSummary || index !== 0 ? `<span class="section-container__title">${section.title}</span>` : ""}
+                  ${showInlineSummary ? `<span class="section-container__summary" title="${inlineSummary.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}">${inlineSummary}</span>` : ""}
+                  ${isCenterpieceInvitation ? '<span class="section-container__hint">Bring your table to life.</span>' : ""}
                   ${!showInlineSummary && section.hint && unlocked ? `<span class="section-container__hint">${section.hint}</span>` : ""}
                 </span>
-                ${statusText ? `<span class="section-container__status">${statusText}</span>` : ""}
+                ${isCenterpieceInvitation ? '<span class="section-container__cta">Start Styling <span aria-hidden="true">→</span></span>' : ""}
               </button>
             ` : ""}
             <div class="section-container__body" ${open ? "" : "hidden"}></div>
@@ -2343,13 +2361,25 @@ function renderStepContent() {
     </div>
   `;
 
-  refs.stepContent.querySelectorAll("[data-open-section]").forEach((button) => {
+  if (refs.completedSections) {
+    refs.completedSections.replaceChildren();
+    refs.stepContent.querySelectorAll(".section-container--completed").forEach((section) => {
+      const sectionIndex = Number(section.getAttribute("data-section-index"));
+      if (sectionIndex < activeSectionIndex) refs.completedSections.appendChild(section);
+    });
+  }
+
+  document.querySelectorAll("#completedSections [data-open-section], #stepContent [data-open-section]").forEach((button) => {
     button.addEventListener("click", () => {
       const nextSection = Number(button.getAttribute("data-open-section"));
       if (Number.isNaN(nextSection)) return;
       activeSectionIndex = nextSection;
+      highestSectionReached = Math.max(highestSectionReached, nextSection);
       currentStepIndex = sectionStepMap[nextSection] || 0;
       pendingSectionScrollIndex = nextSection;
+      if (nextSection === 2) {
+        pendingSectionScrollBehavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+      }
       updateUI();
     });
   });
@@ -2394,6 +2424,11 @@ function renderStepContent() {
   scrollPendingSectionIntoView();
 }
 
+function refreshTableDesignNavigation() {
+  if (activeSectionIndex !== 1 || !isSectionComplete(1)) return;
+  renderStepContent();
+}
+
 function exportMaterials() {
   const materials = generateMaterialsList();
   const lines = [
@@ -2423,14 +2458,19 @@ function updateWizardControls() {
   const controls = refs.btnNext?.closest(".wizard-controls");
   if (controls) controls.hidden = false;
   if (refs.btnBack) refs.btnBack.disabled = activeSectionIndex === 0;
-  if (refs.btnNext) refs.btnNext.disabled = !canAdvanceFromActiveSection();
+  if (refs.btnNext) {
+    refs.btnNext.hidden = activeSectionIndex === 1;
+    refs.btnNext.disabled = !canAdvanceFromActiveSection();
+  }
 }
 
 function scrollPendingSectionIntoView() {
   if (pendingSectionScrollIndex == null) return;
 
   const sectionIndex = pendingSectionScrollIndex;
+  const behavior = pendingSectionScrollBehavior;
   pendingSectionScrollIndex = null;
+  pendingSectionScrollBehavior = "auto";
 
   requestAnimationFrame(() => {
     const scroller = getWizardScroller();
@@ -2439,8 +2479,9 @@ function scrollPendingSectionIntoView() {
 
     const scrollerRect = scroller.getBoundingClientRect();
     const sectionRect = section.getBoundingClientRect();
+    if (sectionRect.top >= scrollerRect.top && sectionRect.bottom <= scrollerRect.bottom) return;
     const targetTop = scroller.scrollTop + sectionRect.top - scrollerRect.top;
-    scroller.scrollTo({ top: Math.max(0, targetTop), behavior: "auto" });
+    scroller.scrollTo({ top: Math.max(0, targetTop), behavior });
   });
 }
 
@@ -2513,6 +2554,7 @@ function nextStep() {
   highestSectionReached = Math.max(highestSectionReached, activeSectionIndex);
   currentStepIndex = sectionStepMap[activeSectionIndex] || 0;
   pendingSectionScrollIndex = activeSectionIndex;
+  pendingSectionScrollBehavior = "auto";
   updateUI();
 }
 
@@ -2520,6 +2562,7 @@ function prevStep() {
   activeSectionIndex = Math.max(0, activeSectionIndex - 1);
   currentStepIndex = sectionStepMap[activeSectionIndex] || 0;
   pendingSectionScrollIndex = activeSectionIndex;
+  pendingSectionScrollBehavior = "auto";
   updateUI();
 }
 
@@ -2565,6 +2608,7 @@ function resetWizard() {
   activeSectionIndex = 0;
   highestSectionReached = 0;
   pendingSectionScrollIndex = 0;
+  pendingSectionScrollBehavior = "auto";
   maxStepReached = 0;
   refs.exportNote.textContent = "";
   updateUI();

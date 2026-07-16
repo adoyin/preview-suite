@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=20260716-summary-polish" />
   <style>
     #wizard-shape-carousel.shape-carousel {
       position: relative;
@@ -232,6 +232,8 @@
 
       <div class="steps">
         <div class="step" id="wizardStepCard">
+          <div id="completedSections" class="completed-sections"></div>
+
           <div class="step__top">
             <div>
               <div class="step__title" id="stepTitle">Grouped Builder</div>
@@ -309,7 +311,7 @@
     <span class="subtle">Material export available in final review step</span>
   </footer>
 
-  <script src="tablescape.js"></script>
+  <script src="tablescape.js?v=20260716-summary-polish"></script>
   <script>
     (() => {
       const stepContent = document.getElementById("stepContent");

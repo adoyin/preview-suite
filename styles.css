@@ -531,6 +531,12 @@ body.wizard-layout .panel--wizard-preview .panel__header{
   padding-bottom: 96px;
 }
 
+.completed-sections:not(:empty){
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
 .step__top{
   display:flex;
   align-items:flex-start;
@@ -600,10 +606,113 @@ body.wizard-layout .section-container--context{
   gap: 10px;
   cursor: pointer;
 }
+.section-container__copy{ min-width: 0; }
 .section-container__eyebrow{ display:block; font-size:11px; letter-spacing:.08em; text-transform: uppercase; color: var(--text-faint); }
 .section-container__title{ display:block; font-family: 'Playfair Display', serif; font-size: 22px; margin-top: 4px; }
 .section-container__hint{ display:block; color: var(--text-soft); font-size: 12px; margin-top: 3px; }
 .section-container__status{ font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-soft); }
+.section-container__summary{
+  display: block;
+  min-width: 0;
+  margin-top: 4px;
+  overflow: hidden;
+  color: var(--text-soft);
+  font-size: 12px;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.section-container--completed{
+  border-color: rgba(116, 94, 65, .16);
+  background: #fff;
+  box-shadow: none;
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+.section-container--completed .section-container__header{
+  min-height: 0;
+  padding: 12px 14px 13px;
+  cursor: pointer;
+}
+.section-container--completed .section-container__title{
+  margin-top: 0;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+.section-container--completed .section-container__summary{
+  margin-top: 5px;
+  font-size: 12px;
+  line-height: 1.35;
+}
+.section-container--completed:hover{
+  border-color: rgba(162, 127, 66, .42);
+  box-shadow: 0 3px 10px rgba(64, 48, 27, .04);
+}
+.section-container--completed .section-container__header:focus-visible,
+.section-container--invitation .section-container__header:focus-visible{
+  outline: 2px solid rgba(162, 127, 66, .55);
+  outline-offset: -3px;
+}
+.section-container--invitation{
+  border-color: rgba(162, 127, 66, .34);
+  background: #fff;
+  transition: background-color .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+.section-container--invitation:hover{
+  border-color: rgba(162, 127, 66, .62);
+  background: #fffcf6;
+  box-shadow: 0 8px 18px rgba(64, 48, 27, .06);
+  transform: translateY(-1px);
+}
+.section-container--invitation:focus-within{
+  border-color: rgba(162, 127, 66, .62);
+  background: #fffcf6;
+}
+.section-container--invitation .section-container__header{
+  position: relative;
+  display: block;
+  min-height: 158px;
+  padding: 16px 18px 54px;
+}
+.section-container--invitation .section-container__copy{ display: block; }
+.section-container--invitation .section-container__eyebrow{
+  color: #a27f42;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .11em;
+}
+.section-container--invitation .section-container__title{
+  margin-top: 11px;
+  font-size: 25px;
+  font-weight: 600;
+  line-height: 1.12;
+}
+.section-container--invitation .section-container__hint{
+  margin-top: 9px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.section-container__cta{
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  color: #a27f42;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+@media (max-width: 520px){
+  .section-container--invitation .section-container__header{
+    min-height: 150px;
+    padding: 15px 16px 52px;
+  }
+  .section-container--invitation .section-container__cta{ right: 16px; bottom: 17px; }
+}
+@media (prefers-reduced-motion: reduce){
+  .section-container--invitation{ transition: background-color .18s ease, border-color .18s ease; }
+  .section-container--invitation:hover{ transform: none; }
+}
 .section-container--context .section-container__header{
   padding: 0 2px;
   align-items: center;
@@ -1923,6 +2032,19 @@ body.wizard-layout .footer .dot{
 
   body.wizard-layout .section-container__title{
     font-size: 17px;
+  }
+
+  body.wizard-layout .section-container--completed .section-container__header{
+    padding: 12px 14px 13px;
+  }
+
+  body.wizard-layout .section-container--completed .section-container__title{
+    font-size: 14px;
+  }
+
+  body.wizard-layout .section-container--invitation .section-container__header{
+    min-height: 158px;
+    padding: 16px 18px 54px;
   }
 
   body.wizard-layout .section-container__body{
