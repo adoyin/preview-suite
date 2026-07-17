@@ -978,6 +978,134 @@ body.wizard-layout .section-container--design-options > .question-row + .questio
   transition: background .12s ease, border-color .12s ease, box-shadow .12s ease;
 }
 
+.question-row:has(.centerpiece-style-carousel),
+.question-row__content:has(.centerpiece-style-carousel){
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+body.wizard-layout .question-row.question-row--centerpiece{
+  gap: 16px;
+}
+
+.centerpiece-style-carousel{
+  min-width: 0;
+  width: 100%;
+}
+
+.centerpiece-style-carousel__viewport{
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 3px 24px 4px 2px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+.centerpiece-style-carousel__viewport::-webkit-scrollbar{ display: none; }
+
+body.wizard-layout .option-cards.option-cards--centerpiece{
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 30px;
+  width: max-content;
+}
+
+.option-card--centerpiece{
+  box-sizing: border-box;
+  flex: 0 0 180px;
+  width: 180px;
+  height: 264px;
+  padding: 7px;
+  gap: 5px;
+  background: #fff;
+  text-align: left;
+  overflow: hidden;
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+
+.option-card--centerpiece:not(.option-card--selected):hover{
+  transform: translateY(-2px);
+  border-color: rgba(167, 132, 78, .78);
+  box-shadow: 0 12px 24px rgba(63, 52, 41, .13);
+  background: #fff;
+}
+
+.option-card--centerpiece.option-card--selected,
+.option-card--centerpiece.option-card--selected:hover,
+.option-card--centerpiece.option-card--selected:focus-visible{
+  transform: none;
+  border: 2px solid rgba(167, 132, 78, .78);
+  background: #fff;
+  box-shadow: 0 5px 14px rgba(63, 52, 41, .1);
+}
+
+body.wizard-layout .option-card--centerpiece.option-card--selected,
+body.wizard-layout .option-card--centerpiece.option-card--selected:hover,
+body.wizard-layout .option-card--centerpiece.option-card--selected:focus-visible{
+  padding: 6px;
+}
+
+.option-card--centerpiece .option-card__media--centerpiece{
+  min-height: 0;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  flex: 0 0 auto;
+  border-radius: 10px;
+  border: 0;
+  background: #eee8df;
+}
+
+.option-card--centerpiece .option-card__image--centerpiece{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform .24s ease;
+}
+
+.option-card__fallback--centerpiece{
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(145deg, #eee8df, #e5ddd1);
+}
+
+.option-card--centerpiece:not(.option-card--selected):hover .option-card__image--centerpiece{
+  transform: scale(1.015);
+}
+
+.option-card__copy{ display: grid; gap: 0; min-width: 0; padding: 0 2px 1px; }
+.option-card__title--centerpiece{
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: #4f3d2b;
+}
+.option-card__descriptor{
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.25;
+  color: var(--text-faint);
+}
+
+@media (max-width: 520px){
+  .option-card--centerpiece{
+    flex-basis: 180px;
+    width: 180px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .centerpiece-style-carousel__viewport{ scroll-behavior: auto; }
+  .option-card--centerpiece,
+  .option-card__image--centerpiece{ transition-duration: .01ms; }
+}
+
 .option-card:hover{ background: var(--surface-soft); }
 
 .option-card:focus-visible,

@@ -294,7 +294,7 @@ const builderSections = [
     id: "centerpiece",
     title: "Centerpiece",
     hint: "",
-    rows: [9, 10],
+    rows: [10],
   },
   {
     id: "review",
@@ -304,7 +304,7 @@ const builderSections = [
   },
 ];
 
-const sectionStepMap = [0, 4, STEP_INDEX.CENTERPIECE_DECISION, STEP_INDEX.FINAL_REVIEW];
+const sectionStepMap = [0, 4, STEP_INDEX.CENTERPIECE_STYLE, STEP_INDEX.FINAL_REVIEW];
 
 function shouldSkipNapkinTextureStep() {
   return !state.includeNapkin;
@@ -553,11 +553,13 @@ const centerpieceDecisionOptions = [
 ];
 
 const centerpieceStyleOptions = [
-  { value: "floralLow", label: "Floral (Low)", thumbnail: `${ASSET_BASE}/centerpiece-low-florals.svg` },
-  { value: "floralTall", label: "Floral (Tall)", thumbnail: `${ASSET_BASE}/centerpiece-tall-florals.svg` },
-  { value: "candleTrio", label: "Candle Trio", thumbnail: `${ASSET_BASE}/centerpiece-candles.svg` },
-  { value: "lantern", label: "Lantern", thumbnail: `${ASSET_BASE}/centerpiece-candles.svg` },
-  { value: "greeneryRunner", label: "Greenery Runner", thumbnail: `${ASSET_BASE}/centerpiece-minimal-greenery.svg` },
+  { id: "classic-floral", value: "classicFloral", label: "Classic Floral", description: "Timeless elegance", image: "./assets/centerpieces/classic-floral.webp" },
+  { id: "bud-vases", value: "budVases", label: "Bud Vases", description: "Light & airy", image: "./assets/centerpieces/bud-vases.webp" },
+  { id: "candle-glow", value: "candleGlow", label: "Candle Glow", description: "Warm & romantic", image: "./assets/centerpieces/candle-glow.webp" },
+  { id: "greenery", value: "greenery", label: "Greenery", description: "Organic & natural", image: "./assets/centerpieces/greenery.webp" },
+  { id: "modern-minimal", value: "modernMinimal", label: "Modern Minimal", description: "Clean & refined", image: "./assets/centerpieces/modern-minimal.webp" },
+  { id: "glam-luxury", value: "luxuryGlam", label: "Glam & Luxury", description: "Bold & luxurious", image: "./assets/centerpieces/glam-luxury.webp" },
+  { id: "no-centerpiece", value: "noCenterpiece", label: "No Centerpiece", description: "Keep the table clean and minimal", image: "./assets/centerpieces/no-centerpiece.webp" },
 ];
 
 
@@ -2276,22 +2278,24 @@ function renderStepInto(stepNumber, container) {
     }
 
     if (stepNumber === 10) {
-      if (state.hasCenterpiece === false) {
-        refs.stepContent.innerHTML = '<p class="subtle">Centerpiece style options appear when a centerpiece is selected.</p>';
-        return;
-      }
-
       refs.stepContent.innerHTML = `
-        <p class="centerpiece-style-helper">Not sure? Start with Floral (Low).</p>
-        <div class="option-cards">
+        <div class="centerpiece-style-carousel" role="radiogroup" aria-label="Centerpiece styles">
+          <div class="centerpiece-style-carousel__viewport">
+          <div class="option-cards option-cards--centerpiece">
           ${centerpieceStyleOptions.map((option) => `
-            <button class="option-card ${state.centerpieceStyle === option.value ? "option-card--selected" : ""}" type="button" data-centerpiece-style="${option.value}" aria-pressed="${state.centerpieceStyle === option.value ? "true" : "false"}" aria-selected="${state.centerpieceStyle === option.value ? "true" : "false"}">
-              <div class="option-card__media">
-                <img class="option-card__image" src="${option.thumbnail}" alt="${option.label} centerpiece" loading="lazy" />
+            <button class="option-card option-card--centerpiece ${state.centerpieceStyle === option.value ? "option-card--selected" : ""}" type="button" role="radio" data-centerpiece-style="${option.value}" aria-checked="${state.centerpieceStyle === option.value ? "true" : "false"}">
+              <div class="option-card__media option-card__media--centerpiece">
+                <img class="option-card__image option-card__image--centerpiece" src="${option.image}" data-fallback-text="true" alt="" loading="lazy" />
+                <span class="option-card__fallback option-card__fallback--centerpiece" data-fallback-text hidden aria-hidden="true"></span>
               </div>
-              <span class="option-card__title">${option.label}</span>
+              <span class="option-card__copy">
+                <span class="option-card__title option-card__title--centerpiece">${option.label}</span>
+                <span class="option-card__descriptor">${option.description}</span>
+              </span>
             </button>
           `).join("")}
+          </div>
+          </div>
         </div>
       `;
 
@@ -2303,6 +2307,7 @@ function renderStepInto(stepNumber, container) {
           updateUI();
         });
       });
+      attachImageFallbacks(refs.stepContent);
       return;
     }
 
@@ -2337,9 +2342,14 @@ function renderStepContent() {
         const sectionComplete = isSectionComplete(index);
         const showTableSetupSummary = index === 0 && sectionComplete && !open;
         const showPlaceSettingsSummary = index === 1 && sectionComplete && !open;
-        const showInlineSummary = showTableSetupSummary || showPlaceSettingsSummary;
-        const showSectionHeader = true;
-        const inlineSummary = showTableSetupSummary ? getTableSectionSummary() : getPlaceSettingsSectionSummary();
+        const showCenterpieceSummary = index === 2 && sectionComplete && !open;
+        const showInlineSummary = showTableSetupSummary || showPlaceSettingsSummary || showCenterpieceSummary;
+        const showSectionHeader = !(open && index === 2);
+        const inlineSummary = showTableSetupSummary
+          ? getTableSectionSummary()
+          : showPlaceSettingsSummary
+          ? getPlaceSettingsSectionSummary()
+          : `Centerpiece: ${getCenterpieceStyleLabel(state.centerpieceStyle)}`;
         return `
           <section class="section-container ${open ? "section-container--open" : ""} ${index === 1 ? "section-container--table-design" : ""} ${showInlineSummary ? "section-container--completed" : ""} ${isCenterpieceInvitation ? "section-container--invitation" : ""} ${unlocked ? "" : "section-container--locked"}" data-section-index="${index}">
             ${showSectionHeader ? `
@@ -2394,13 +2404,14 @@ function renderStepContent() {
 
   openSection.rows.forEach((stepNumber) => {
     if (!state.includeNapkin && (stepNumber === 7 || stepNumber === 8)) return;
-    if (stepNumber === 10 && state.hasCenterpiece === false) return;
     const question = document.createElement("article");
-    question.className = "question-row";
+    question.className = stepNumber === 10 ? "question-row question-row--centerpiece" : "question-row";
     const meta = stepNumber === "dinnerware"
       ? { title: "Dinnerware", hint: "", value: "" }
       : stepNumber === "napkin-decision"
       ? { title: "Napkin", hint: "", value: state.includeNapkin ? "Napkin included" : "No napkin" }
+      : stepNumber === 10
+      ? { title: "Choose a centerpiece style", hint: "", value: "" }
       : (() => {
           const previousIndex = currentStepIndex;
           currentStepIndex = stepNumber - 1;
@@ -2459,6 +2470,7 @@ function updateWizardControls() {
   if (controls) controls.hidden = false;
   if (refs.btnBack) refs.btnBack.disabled = activeSectionIndex === 0;
   if (refs.btnNext) {
+    refs.btnNext.textContent = activeSectionIndex === 2 ? "Continue" : "Next";
     refs.btnNext.hidden = activeSectionIndex === 1;
     refs.btnNext.disabled = !canAdvanceFromActiveSection();
   }
@@ -2592,9 +2604,9 @@ function resetCurrentStep() {
   }
 
   if (currentStepIndex + 1 === 10) {
-    if (state.hasCenterpiece) {
-      state.centerpieceStyle = getDefaultCenterpieceStyleForDecision();
-    }
+    state.hasCenterpiece = initialState.hasCenterpiece;
+    state.centerpieceDecision = initialState.centerpieceDecision;
+    state.centerpieceStyle = initialState.centerpieceStyle;
     updateUI();
     return;
   }
