@@ -883,6 +883,7 @@ function handleTableSizeSelection(shape, value) {
   refs.stepValue.textContent = meta.value;
 
   applyTableShape(state.tableShape, state.tableSize, { animate: true });
+  updateProductionPreview();
   renderSummary();
   updatePreviewStatus();
 }
@@ -1160,6 +1161,7 @@ function closeJumpModal() {
 }
 
 function renderPreview() {
+  updateProductionPreview();
   refs.table.classList.add("is-refreshing");
   requestAnimationFrame(() => refs.table.classList.remove("is-refreshing"));
 
@@ -1317,6 +1319,13 @@ function renderTableTextureCards() {
       handleTableclothTextureSelection(value);
     },
   });
+}
+
+function updateProductionPreview() {
+  const stageElement = document.querySelector("[data-preview-stage]");
+  const showRound60Table = state.tableShape === "round" && Number(state.tableSize) === 60;
+
+  stageElement?.previewStage?.setCompositionVisible("table", showRound60Table);
 }
 
 function handleTableclothTextureSelection(value) {

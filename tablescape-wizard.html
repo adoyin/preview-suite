@@ -274,12 +274,31 @@
       </div>
 
       <div class="preview">
-          <div id="previewStage" class="preview__stage">
-          <div id="table" class="table" aria-hidden="true">
-            <img id="tableclothLayer" class="table__cloth" src="./assets/tablescape/tablecloth-texture.svg" alt="Selected tablecloth" loading="lazy" />
-            <div id="centerpieceEl" class="centerpiece"></div>
-            <div id="settingsEl" class="settings"></div>
-            <div id="stylingEl" class="styling-overlays"></div>
+        <div class="preview__stage" data-preview-stage>
+          <div class="preview-stage__canvas">
+            <div class="preview-layer preview-layer--venue" data-preview-layer="venue">
+              <img class="preview-layer__image" src="assets/render-assets/venue/venue-v1.png" alt="Elegant event venue" />
+            </div>
+
+            <div class="preview-layer-group" data-preview-composition="table" aria-hidden="true">
+              <div class="preview-layer preview-layer--table" data-preview-layer="table">
+                <img class="preview-layer__image" src="assets/render-assets/tables/round-60.png" alt="" />
+              </div>
+              <div class="preview-layer preview-layer--tablecloth" data-preview-layer="tablecloth">
+                <img class="preview-layer__image" src="assets/render-assets/tablecloths/ivory-polyester.png" alt="" />
+              </div>
+            </div>
+
+            <div class="preview-stage__legacy-support" hidden>
+              <div id="previewStage" class="preview-stage__legacy-composition">
+                <div id="table" class="table" aria-hidden="true">
+                  <img id="tableclothLayer" class="table__cloth" src="./assets/tablescape/tablecloth-texture.svg" alt="Selected tablecloth" loading="lazy" />
+                  <div id="centerpieceEl" class="centerpiece"></div>
+                  <div id="settingsEl" class="settings"></div>
+                  <div id="stylingEl" class="styling-overlays"></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -311,7 +330,8 @@
     <span class="subtle">Material export available in final review step</span>
   </footer>
 
-  <script src="tablescape.js?v=20260716-centerpiece-copy"></script>
+  <script src="preview-stage.js?v=20260720-preview-stage"></script>
+  <script src="tablescape.js?v=20260720-preview-stage"></script>
   <script>
     (() => {
       const stepContent = document.getElementById("stepContent");
