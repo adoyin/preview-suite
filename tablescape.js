@@ -1324,8 +1324,10 @@ function renderTableTextureCards() {
 function updateProductionPreview() {
   const stageElement = document.querySelector("[data-preview-stage]");
   const showRound60Table = state.tableShape === "round" && Number(state.tableSize) === 60;
+  const showIvoryPolyesterTablecloth = showRound60Table && state.tableclothTexture === "polyester";
 
-  stageElement?.previewStage?.setCompositionVisible("table", showRound60Table);
+  stageElement?.previewStage?.setLayerVisible("table", showRound60Table && !showIvoryPolyesterTablecloth);
+  stageElement?.previewStage?.setLayerVisible("tablecloth", showIvoryPolyesterTablecloth);
 }
 
 function handleTableclothTextureSelection(value) {

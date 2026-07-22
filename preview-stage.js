@@ -81,6 +81,14 @@ class PreviewStage {
     return this.layers.get(name);
   }
 
+  setLayerVisible(name, isVisible) {
+    const layer = this.getLayer(name)?.element;
+    if (!layer) return;
+
+    layer.classList.toggle("is-visible", isVisible);
+    layer.setAttribute("aria-hidden", String(!isVisible));
+  }
+
   setCompositionVisible(name, isVisible) {
     const composition = this.element.querySelector(`[data-preview-composition="${name}"]`);
     if (!composition) return;
