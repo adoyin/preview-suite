@@ -1323,9 +1323,15 @@ function renderTableTextureCards() {
 
 function updateProductionPreview() {
   const stageElement = document.querySelector("[data-preview-stage]");
+  const emptyStateElement = stageElement?.querySelector("[data-preview-empty-state]");
+  const emptyStateLightElement = stageElement?.querySelector("[data-preview-empty-state-light]");
+  const showEmptyState = !state.tableShape;
   const showRound60Table = state.tableShape === "round" && Number(state.tableSize) === 60;
   const showIvoryPolyesterTablecloth = showRound60Table && state.tableclothTexture === "polyester";
 
+  emptyStateElement?.classList.toggle("is-visible", showEmptyState);
+  emptyStateElement?.setAttribute("aria-hidden", String(!showEmptyState));
+  emptyStateLightElement?.classList.toggle("is-visible", showEmptyState);
   stageElement?.previewStage?.setLayerVisible("table", showRound60Table && !showIvoryPolyesterTablecloth);
   stageElement?.previewStage?.setLayerVisible("tablecloth", showIvoryPolyesterTablecloth);
 }

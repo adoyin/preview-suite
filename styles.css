@@ -1935,6 +1935,89 @@ body.wizard-layout .option-card--centerpiece.option-card--selected:focus-visible
   mask-image: linear-gradient(to right, transparent 4%, #000 14%, #000 86%, transparent 96%);
 }
 
+.preview-empty-state-light{
+  position: absolute;
+  z-index: 4;
+  top: 49%;
+  left: 50%;
+  width: 122%;
+  height: 136%;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(244, 226, 204, .42) 0%,
+    rgba(237, 215, 191, .27) 36%,
+    rgba(225, 199, 171, .11) 68%,
+    rgba(225, 199, 171, .035) 86%,
+    rgba(225, 199, 171, 0) 100%
+  );
+  transition: opacity 275ms ease-in-out;
+}
+
+.preview-empty-state-light.is-visible{ opacity: 1; }
+
+.preview-empty-state{
+  position: absolute;
+  z-index: 5;
+  top: calc(49% - 28px);
+  left: 50%;
+  width: min(84%, 440px);
+  padding: 0;
+  background: transparent;
+  color: #62584f;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, -50%);
+  transition: opacity 275ms ease-in-out, visibility 0s linear 275ms;
+}
+
+.preview-empty-state.is-visible{
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 275ms ease-in-out;
+}
+
+.preview-empty-state__detail{
+  display: block;
+  margin: 0 auto clamp(28px, 3.6vh, 36px);
+  color: #b8955c;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(14px, 1.35vw, 18px);
+  font-weight: 400;
+  line-height: 1;
+}
+
+.preview-empty-state__title{
+  margin: 0;
+  color: inherit;
+  font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+  font-size: clamp(35px, 3.2vw, 44px);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -0.018em;
+}
+
+.preview-empty-state__divider{
+  display: block;
+  width: 34px;
+  height: 1px;
+  margin: clamp(30px, 4vh, 38px) auto clamp(20px, 2.7vh, 26px);
+  background: rgba(184, 149, 92, .78);
+}
+
+.preview-empty-state__copy{
+  margin: 0;
+  color: rgba(98, 88, 79, .7);
+  font-size: clamp(11px, 1.1vw, 14px);
+  font-weight: 400;
+  line-height: 1.6;
+  letter-spacing: .012em;
+}
+
 .preview-layer__image--entering,
 .preview-layer__image--leaving{ opacity: 0; }
 
