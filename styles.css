@@ -2031,10 +2031,57 @@ body.wizard-layout .option-card--centerpiece.option-card--selected:focus-visible
   transition: opacity 250ms ease-in-out;
 }
 
+.preview-layer--table,
+.preview-layer--tablecloth{
+  transition-duration: 280ms;
+}
+
 .preview-layer--table.is-visible,
 .preview-layer--tablecloth.is-visible,
 .preview-layer--table-shadow.is-visible,
 .preview-layer--table-reflection.is-visible{ opacity: 1; }
+
+.tablecloth__plane{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(100cqw, 80.03cqh);
+  height: auto;
+  aspect-ratio: 1122 / 1402;
+  transform: translate(-50%, -50%);
+}
+
+.preview-layer-group .tablecloth__plane .preview-layer__image{
+  top: 11.3%;
+  left: 50%;
+  width: auto;
+  height: 105.9%;
+  max-width: none;
+  object-fit: fill;
+  object-position: initial;
+  transform: translateX(-51.1%);
+}
+
+.preview-layer--tablecloth.is-settling .preview-layer__image{
+  animation: tablecloth-brightness-settle 150ms ease-in-out 280ms both;
+}
+
+@keyframes tablecloth-brightness-settle{
+  0%{ filter: brightness(1); }
+  42%{ filter: brightness(1.04); }
+  100%{ filter: brightness(1); }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .preview-layer--table,
+  .preview-layer--tablecloth{
+    transition-duration: 0ms;
+  }
+
+  .preview-layer--tablecloth.is-settling .preview-layer__image{
+    animation: none;
+  }
+}
 
 .table-shadow__plane,
 .table-reflection__plane{
@@ -2135,6 +2182,7 @@ body.wizard-layout .option-card--centerpiece.option-card--selected:focus-visible
   position: absolute;
   inset: 0;
   z-index: 10;
+  container-type: size;
   pointer-events: none;
 }
 

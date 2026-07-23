@@ -1354,6 +1354,12 @@ function handleTableclothTextureSelection(value) {
   });
 
   renderPreview();
+  if (value === "polyester") {
+    const tableclothLayer = document.querySelector('[data-preview-layer="tablecloth"]');
+    tableclothLayer?.classList.remove("is-settling");
+    requestAnimationFrame(() => tableclothLayer?.classList.add("is-settling"));
+    window.setTimeout(() => tableclothLayer?.classList.remove("is-settling"), 450);
+  }
   renderSummary();
   updatePreviewStatus();
   updateWizardControls();
