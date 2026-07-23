@@ -1332,6 +1332,8 @@ function updateProductionPreview() {
   emptyStateElement?.classList.toggle("is-visible", showEmptyState);
   emptyStateElement?.setAttribute("aria-hidden", String(!showEmptyState));
   emptyStateLightElement?.classList.toggle("is-visible", showEmptyState);
+  stageElement?.previewStage?.setLayerVisible("table-shadow", showRound60Table);
+  stageElement?.previewStage?.setLayerVisible("table-reflection", showRound60Table);
   stageElement?.previewStage?.setLayerVisible("table", showRound60Table && !showIvoryPolyesterTablecloth);
   stageElement?.previewStage?.setLayerVisible("tablecloth", showIvoryPolyesterTablecloth);
 }
