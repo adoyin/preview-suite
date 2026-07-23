@@ -288,7 +288,7 @@ const builderSections = [
     id: "place-settings",
     title: "Table Design",
     hint: "Design one place setting. We’ll apply it to every guest.",
-    rows: [5, 6, "dinnerware", "napkin-decision", 8, 7],
+    rows: [6, "dinnerware", "napkin-decision", 8, 7, 5],
   },
   {
     id: "centerpiece",
@@ -375,6 +375,8 @@ let activeSectionIndex = 0;
 let highestSectionReached = 0;
 let pendingSectionScrollIndex = 0;
 let pendingSectionScrollBehavior = "auto";
+let guestSectionRevealed = false;
+let guestSectionRevealTimer = null;
 
 const placeSettingsOptions = Array.from({ length: 9 }, (_, index) => index + 4);
 
@@ -1840,10 +1842,14 @@ function getStepMeta() {
     case 1: return { title: "Table Shape & Size", hint: "", value: formatTableSelection(state.tableShape, state.tableSize) };
     case 3: return { title: "Tablecloth Texture", hint: "", value: tableclothTextureOptions.find((option) => option.value === state.tableclothTexture)?.label || "Not selected" };
     case 4: return { title: "Tablecloth color", hint: "", value: tableclothColorOptions.find((option) => option.value === state.tableclothColor)?.label || "Not selected" };
-    case 5: return { title: "Guests at this table", hint: "", value: state.placeSettingsCount == null ? "Not selected" : formatGuestLabel(state.placeSettingsCount) };
+    case 5: return {
+      title: "Guests at This Table",
+      hint: "How many guests will be seated at this table? We'll apply this place setting to every guest.",
+      value: state.placeSettingsCount == null ? "Not selected" : formatGuestLabel(state.placeSettingsCount),
+    };
     case 6: return { title: "Charger", hint: "", value: getChargerStepValue() };
     case 7: return { title: "Napkin Color", hint: "", value: getNapkinStepValue() };
-    case 8: return { title: "Napkin Texture", hint: "", value: getNapkinTextureStepValue() };
+    case 8: return { title: "Napkin Material", hint: "", value: getNapkinTextureStepValue() };
     case 9: return { title: "Centerpiece", hint: "", value: getCenterpieceStepValue() };
     case 10: return { title: "Centerpiece", hint: "", value: state.hasCenterpiece ? (getCenterpieceStyleLabel(state.centerpieceStyle) || "Not selected") : "Skipped" };
     case 11: return { title: "Table styling", hint: "Add optional finishing touches.", value: getTableStylingStepValue() };
@@ -2103,6 +2109,28 @@ function isSectionComplete(sectionIndex) {
     default:
       return false;
   }
+}
+
+function isPlaceSettingComplete() {
+  return Boolean(
+    (!state.includeCharger || state.selectedCharger)
+    && state.selectedDinnerware
+    && (!state.includeNapkin || (
+      state.napkinTexture
+      && napkinColorGroups[state.napkinColorGroup]?.some((option) => option.value === state.napkinType)
+    ))
+  );
+}
+
+function scheduleGuestSectionReveal() {
+  if (guestSectionRevealed || guestSectionRevealTimer != null) return;
+
+  guestSectionRevealTimer = window.setTimeout(() => {
+    guestSectionRevealTimer = null;
+    if (!isPlaceSettingComplete()) return;
+    guestSectionRevealed = true;
+    if (activeSectionIndex === 1) renderStepContent();
+  }, 250);
 }
 
 function withScopedStepContent(container, renderFn) {
@@ -2426,11 +2454,41 @@ function renderStepContent() {
   const questionContainer = activeSectionIndex === 1
     ? body.appendChild(Object.assign(document.createElement("div"), { className: "section-container section-container--open section-container--design-options" }))
     : body;
+  const placeSettingComplete = isPlaceSettingComplete();
+
+  if (!placeSettingComplete) {
+    guestSectionRevealed = false;
+    if (guestSectionRevealTimer != null) {
+      window.clearTimeout(guestSectionRevealTimer);
+      guestSectionRevealTimer = null;
+    }
+  } else if (state.placeSettingsCount != null) {
+    guestSectionRevealed = true;
+  }
 
   openSection.rows.forEach((stepNumber) => {
     if (!state.includeNapkin && (stepNumber === 7 || stepNumber === 8)) return;
+    if (stepNumber === 5) {
+      if (!placeSettingComplete) return;
+
+      const completion = document.createElement("p");
+      completion.className = "place-setting-complete";
+      completion.setAttribute("role", "status");
+      completion.textContent = "✓ Place setting complete";
+      questionContainer.appendChild(completion);
+
+      if (!guestSectionRevealed) {
+        scheduleGuestSectionReveal();
+        return;
+      }
+    }
+
     const question = document.createElement("article");
-    question.className = stepNumber === 10 ? "question-row question-row--centerpiece" : "question-row";
+    question.className = stepNumber === 10
+      ? "question-row question-row--centerpiece"
+      : stepNumber === 5
+      ? "question-row question-row--guests-reveal"
+      : "question-row";
     const meta = stepNumber === "dinnerware"
       ? { title: "Dinnerware", hint: "", value: "" }
       : stepNumber === "napkin-decision"
@@ -2461,7 +2519,7 @@ function renderStepContent() {
 }
 
 function refreshTableDesignNavigation() {
-  if (activeSectionIndex !== 1 || !isSectionComplete(1)) return;
+  if (activeSectionIndex !== 1 || !isPlaceSettingComplete()) return;
   renderStepContent();
 }
 
@@ -2640,6 +2698,11 @@ function resetCurrentStep() {
 }
 
 function resetWizard() {
+  if (guestSectionRevealTimer != null) {
+    window.clearTimeout(guestSectionRevealTimer);
+    guestSectionRevealTimer = null;
+  }
+  guestSectionRevealed = false;
   Object.assign(state, initialState);
   currentStepIndex = 0;
   activeSectionIndex = 0;

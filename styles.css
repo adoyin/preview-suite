@@ -815,6 +815,19 @@ body.wizard-layout .section-container--design-options > .question-row + .questio
   border-top: 0;
 }
 
+.place-setting-complete{
+  margin: 2px 0 0;
+  color: var(--text-soft);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  animation: placeSettingCompleteIn .22s ease both;
+}
+
+.question-row--guests-reveal{
+  animation: guestSectionReveal .28s ease both;
+}
+
 @keyframes sectionReveal {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
@@ -822,6 +835,20 @@ body.wizard-layout .section-container--design-options > .question-row + .questio
 @keyframes questionIn {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
+}
+@keyframes placeSettingCompleteIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes guestSectionReveal {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce){
+  .place-setting-complete,
+  .question-row--guests-reveal{
+    animation: none;
+  }
 }
 .pill{
   font-size: 12px;
