@@ -2069,6 +2069,26 @@ body.wizard-layout .option-card--centerpiece.option-card--selected:focus-visible
   pointer-events: none;
 }
 
+.styling-workspace__layer--charger{
+  display: block;
+  height: auto;
+  object-fit: contain;
+  opacity: 0;
+  visibility: hidden;
+  transform-origin: center;
+  transition:
+    opacity 110ms ease-out,
+    visibility 0s linear 110ms;
+}
+
+.styling-workspace__layer--charger.is-visible{
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 130ms ease-out,
+    visibility 0s linear 0s;
+}
+
 .preview-stage__canvas::after{
   content: "";
   position: absolute;
@@ -2342,10 +2362,15 @@ body.wizard-layout .option-card--centerpiece.option-card--selected:focus-visible
   .preview-stage__canvas,
   .styling-workspace-mode,
   .styling-studio,
+  .styling-workspace__layer--charger,
   .preview-layer--table,
   .preview-layer--tablecloth{
     transition-duration: 0ms;
     transition-delay: 0ms;
+  }
+
+  .styling-workspace__layer--charger{
+    transition: none;
   }
 
   .preview-layer--tablecloth.is-settling .preview-layer__image{

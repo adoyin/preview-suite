@@ -226,11 +226,19 @@ const stylingWorkspaceTableclothAssets = Object.freeze({
   "crinkle-taffeta": Object.freeze({}),
 });
 
+const stylingAssetMap = Object.freeze({
+  charger: Object.freeze({
+    gold: "./assets/chargers/charger-gold.png",
+    silver: "./assets/chargers/charger-silver.png",
+    "matte-black": "./assets/chargers/charger-matte-black.png",
+  }),
+});
+
 const stylingWorkspaceLayout = Object.freeze({
   charger: Object.freeze({
     leftPercent: 50,
     topPercent: 55,
-    widthPercent: 36,
+    heightPercent: 68,
     translateXPercent: -50,
     translateYPercent: -50,
     zIndex: 20,
@@ -465,6 +473,7 @@ const refs = {
   stylingWorkspace: document.querySelector("[data-styling-workspace]"),
   stylingWorkspaceTablecloth: document.querySelector("[data-styling-workspace-tablecloth]"),
   stylingWorkspaceLayers: [...document.querySelectorAll("[data-styling-workspace-layer]")],
+  stylingWorkspaceCharger: document.querySelector('[data-styling-workspace-layer="charger"]'),
   previewSummary: el("previewSummary"),
   summary: {
     table: el("sumTable"),
@@ -2180,6 +2189,7 @@ function applyStylingWorkspaceLayout() {
     if (config.leftPercent != null) layer.style.left = `${config.leftPercent}%`;
     if (config.topPercent != null) layer.style.top = `${config.topPercent}%`;
     if (config.widthPercent != null) layer.style.width = `${config.widthPercent}%`;
+    if (config.heightPercent != null) layer.style.height = `${config.heightPercent}%`;
     if (config.translateXPercent != null || config.translateYPercent != null) {
       layer.style.transform = `translate(${config.translateXPercent || 0}%, ${config.translateYPercent || 0}%)`;
     }
@@ -2213,6 +2223,75 @@ function updateStylingWorkspaceSurface() {
   );
 }
 
+let chargerPreviewUpdateId = 0;
+
+function hideStylingCharger() {
+  if (!refs.stylingWorkspaceCharger) return;
+  refs.stylingWorkspaceCharger.classList.remove("is-visible");
+  refs.stylingWorkspaceCharger.removeAttribute("src");
+}
+
+function updateChargerLayer() {
+  const chargerLayer = refs.stylingWorkspaceCharger;
+  const selectedCharger = state.includeCharger ? state.selectedCharger : null;
+  const asset = selectedCharger ? stylingAssetMap.charger[selectedCharger] : null;
+  const updateId = ++chargerPreviewUpdateId;
+
+  if (!chargerLayer || !selectedCharger) {
+    hideStylingCharger();
+    return;
+  }
+
+  if (!asset) {
+    hideStylingCharger();
+    console.warn(`[Styling Studio] No approved transparent preview asset for charger "${selectedCharger}".`);
+    return;
+  }
+
+  if (chargerLayer.getAttribute("src") === asset && chargerLayer.classList.contains("is-visible")) {
+    return;
+  }
+
+  const showAsset = () => {
+    if (updateId !== chargerPreviewUpdateId) return;
+    chargerLayer.onload = () => {
+      if (updateId === chargerPreviewUpdateId) chargerLayer.classList.add("is-visible");
+    };
+    chargerLayer.onerror = () => {
+      if (updateId !== chargerPreviewUpdateId) return;
+      hideStylingCharger();
+      console.warn(`[Styling Studio] Failed to load charger preview asset "${asset}".`);
+    };
+    chargerLayer.src = asset;
+
+    if (chargerLayer.complete && chargerLayer.naturalWidth > 0) {
+      chargerLayer.classList.add("is-visible");
+    }
+  };
+
+  if (!chargerLayer.classList.contains("is-visible")) {
+    showAsset();
+    return;
+  }
+
+  chargerLayer.classList.remove("is-visible");
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    showAsset();
+  } else {
+    window.setTimeout(showAsset, 90);
+  }
+}
+
+function preloadStylingChargerAssets() {
+  Object.values(stylingAssetMap.charger).forEach((asset) => {
+    const image = new Image();
+    image.onerror = () => {
+      console.warn(`[Styling Studio] Failed to preload charger preview asset "${asset}".`);
+    };
+    image.src = asset;
+  });
+}
+
 function renderPreviewCanvasMode() {
   const mode = getPreviewCanvasMode();
   if (!refs.previewStageRoot) return;
@@ -2225,6 +2304,7 @@ function renderPreviewCanvasMode() {
   if (isStyling) {
     applyStylingWorkspaceLayout();
     updateStylingWorkspaceSurface();
+    updateChargerLayer();
   }
 }
 
@@ -2851,6 +2931,7 @@ function resetWizard() {
 
 function init() {
   refs.year.textContent = String(new Date().getFullYear());
+  preloadStylingChargerAssets();
 
   refs.btnBack?.addEventListener("click", prevStep);
   refs.btnNext?.addEventListener("click", nextStep);
