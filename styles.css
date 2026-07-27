@@ -1890,6 +1890,7 @@ body.wizard-layout .option-card--centerpiece.option-card--selected:focus-visible
   position:relative;
   overflow:hidden;
   isolation: isolate;
+  container-type: size;
 }
 
 .preview-stage__legacy-composition.is-size-transition{
@@ -1897,12 +1898,175 @@ body.wizard-layout .option-card--centerpiece.option-card--selected:focus-visible
 }
 
 .preview-stage__canvas{
+  --preview-camera-scale: 1;
+  --preview-camera-y: 0%;
   position: relative;
   width: 100%;
   height: 100%;
   aspect-ratio: auto;
   overflow: hidden;
   background: #f4ede2;
+  transform: translate3d(0, var(--preview-camera-y), 0) scale(var(--preview-camera-scale));
+  transform-origin: 50% 50%;
+  transition: transform 1050ms cubic-bezier(.25, .1, .25, 1);
+  will-change: transform;
+  z-index: 1;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 300ms ease-out,
+    visibility 0s linear 0s,
+    transform 1050ms cubic-bezier(.25, .1, .25, 1);
+}
+
+.preview-stage__canvas--camera-close{
+  --preview-camera-scale: 1.38;
+  --preview-camera-y: -1%;
+}
+
+.preview-stage__canvas--camera-initializing{
+  transition: none;
+}
+
+.preview__stage[data-preview-mode="styling"] .preview-stage__canvas{
+  opacity: 0;
+  visibility: hidden;
+  transform: none;
+  transition:
+    opacity 300ms ease-out,
+    visibility 0s linear 300ms;
+}
+
+.styling-workspace-mode{
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  padding: clamp(12px, 2.2vmin, 22px);
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(255, 253, 249, .4) 0%, rgba(255, 253, 249, 0) 62%),
+    #f1eee8;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 350ms ease-out,
+    visibility 0s linear 350ms;
+}
+
+.preview__stage[data-preview-mode="styling"] .styling-workspace-mode{
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 350ms ease-out 250ms,
+    visibility 0s linear 0s;
+}
+
+.styling-studio{
+  display: grid;
+  grid-template-rows: auto auto;
+  justify-items: center;
+  align-content: center;
+  gap: clamp(20px, 3.4cqh, 26px);
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  color: #685f55;
+  text-align: center;
+}
+
+.styling-studio__header{
+  min-width: 0;
+}
+
+.styling-studio__title{
+  margin: 0;
+  color: #4f4943;
+  font-family: inherit;
+  font-size: clamp(15px, 2.25cqh, 19px);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.styling-workspace{
+  --styling-studio-copy-space: clamp(64px, 11cqh, 82px);
+  position: relative;
+  width: min(
+    76cqw,
+    calc((100cqh - var(--styling-studio-copy-space)) * 4 / 3)
+  );
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border: 1px solid rgba(117, 94, 69, .1);
+  border-radius: clamp(12px, 1.2vw, 16px);
+  background: #f3ebdd;
+  box-shadow:
+    inset 0 0 28px rgba(76, 58, 39, .025),
+    0 11px 30px rgba(70, 57, 43, .105);
+  transform: translateY(7px);
+  isolation: isolate;
+}
+
+.styling-workspace__tablecloth{
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-color: var(--styling-tablecloth-color, #f3ebdd);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.styling-workspace__tablecloth.has-approved-asset{
+  background-image: var(--styling-tablecloth-image);
+}
+
+.styling-workspace__tablecloth:not(.has-approved-asset)[data-texture="polyester"]{
+  background-image:
+    repeating-linear-gradient(4deg, rgba(255,255,255,.024) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(94deg, rgba(38,28,18,.018) 0 1px, transparent 1px 5px),
+    linear-gradient(135deg, rgba(255,255,255,.045), transparent 46%, rgba(35,25,15,.018));
+}
+
+.styling-workspace__tablecloth:not(.has-approved-asset)[data-texture="satin"]{
+  background-image:
+    linear-gradient(112deg, transparent 10%, rgba(255,255,255,.11) 37%, rgba(255,255,255,.025) 48%, rgba(24,17,11,.035) 68%, transparent 88%),
+    radial-gradient(ellipse at 28% 20%, rgba(255,255,255,.07), transparent 54%),
+    linear-gradient(20deg, rgba(255,255,255,.025), rgba(28,20,13,.018));
+}
+
+.styling-workspace__tablecloth:not(.has-approved-asset)[data-texture="velvet"]{
+  background-image:
+    linear-gradient(116deg, rgba(255,255,255,.035), transparent 38%, rgba(22,15,10,.055) 62%, transparent 84%),
+    repeating-linear-gradient(104deg, rgba(255,255,255,.012) 0 1px, transparent 1px 7px),
+    radial-gradient(ellipse at 42% 32%, rgba(255,255,255,.045), rgba(22,15,10,.025) 74%);
+}
+
+.styling-workspace__tablecloth:not(.has-approved-asset)[data-texture="linen"]{
+  background-image:
+    repeating-linear-gradient(0deg, rgba(255,255,255,.045) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(90deg, rgba(31,22,14,.04) 0 1px, transparent 1px 5px),
+    repeating-linear-gradient(3deg, transparent 0 12px, rgba(255,255,255,.02) 12px 13px, transparent 13px 27px);
+}
+
+.styling-workspace__tablecloth:not(.has-approved-asset)[data-texture="crinkle-taffeta"]{
+  background-image:
+    linear-gradient(164deg, transparent 13%, rgba(255,255,255,.075) 27%, transparent 30% 57%, rgba(27,19,12,.035) 61%, transparent 66%),
+    linear-gradient(71deg, transparent 18%, rgba(29,20,13,.028) 31%, transparent 35% 68%, rgba(255,255,255,.065) 72%, transparent 77%),
+    radial-gradient(ellipse at 35% 25%, rgba(255,255,255,.065), transparent 58%),
+    linear-gradient(120deg, rgba(255,255,255,.02), rgba(27,19,12,.02));
+}
+
+.styling-workspace__layer{
+  position: absolute;
+  pointer-events: none;
 }
 
 .preview-stage__canvas::after{
@@ -2175,13 +2339,32 @@ body.wizard-layout .option-card--centerpiece.option-card--selected:focus-visible
 }
 
 @media (prefers-reduced-motion: reduce){
+  .preview-stage__canvas,
+  .styling-workspace-mode,
+  .styling-studio,
   .preview-layer--table,
   .preview-layer--tablecloth{
     transition-duration: 0ms;
+    transition-delay: 0ms;
   }
 
   .preview-layer--tablecloth.is-settling .preview-layer__image{
     animation: none;
+  }
+}
+
+@container (max-height: 520px){
+  .styling-workspace-mode{
+    padding-block: 8px;
+  }
+
+  .styling-studio{
+    gap: 12px;
+  }
+
+  .styling-workspace{
+    --styling-studio-copy-space: 58px;
+    transform: translateY(0);
   }
 }
 
@@ -2412,6 +2595,7 @@ body.wizard-layout .option-card--centerpiece.option-card--selected:focus-visible
 
 @media (prefers-reduced-motion: reduce) {
   .preview__stage,
+  .preview-stage__canvas,
   .preview-stage__legacy-composition.is-size-transition,
   .preview-layer__image,
   .option-card--size {

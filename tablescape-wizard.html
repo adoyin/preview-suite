@@ -270,7 +270,7 @@
     <section class="panel panel--wizard-preview" aria-label="Tablescape preview">
       <div class="preview">
         <div class="preview__stage" data-preview-stage>
-          <div class="preview-stage__canvas">
+          <div class="preview-stage__canvas" data-preview-experience>
             <div class="preview-layer preview-layer--venue" data-preview-layer="venue">
               <img class="preview-layer__image" src="assets/render-assets/venue/venue-v1.png" alt="Elegant event venue" />
             </div>
@@ -321,6 +321,27 @@
                   <div id="settingsEl" class="settings"></div>
                   <div id="stylingEl" class="styling-overlays"></div>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="styling-workspace-mode" data-styling-workspace-mode aria-hidden="true">
+            <div class="styling-studio">
+              <header class="styling-studio__header">
+                <h2 class="styling-studio__title">Table Styling Studio</h2>
+              </header>
+              <div
+                class="styling-workspace"
+                data-styling-workspace
+                role="img"
+                aria-label="Table styling workspace showing one place setting"
+              >
+                <div class="styling-workspace__tablecloth" data-styling-workspace-tablecloth aria-hidden="true"></div>
+                <div class="styling-workspace__layer styling-workspace__layer--charger" data-styling-workspace-layer="charger"></div>
+                <div class="styling-workspace__layer styling-workspace__layer--dinnerware" data-styling-workspace-layer="dinnerware"></div>
+                <div class="styling-workspace__layer styling-workspace__layer--flatware" data-styling-workspace-layer="flatware"></div>
+                <div class="styling-workspace__layer styling-workspace__layer--glassware" data-styling-workspace-layer="glassware"></div>
+                <div class="styling-workspace__layer styling-workspace__layer--napkin" data-styling-workspace-layer="napkin"></div>
               </div>
             </div>
           </div>

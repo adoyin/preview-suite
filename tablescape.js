@@ -209,6 +209,52 @@ const clothPalette = {
   black: "#111111",
 };
 
+const previewCanvasModes = Object.freeze({
+  FOUNDATION: "foundation",
+  STYLING: "styling",
+  CENTERPIECE: "centerpiece",
+  FINAL: "final",
+});
+
+// No production top-down tablecloth bases are present yet. Keep this centralized
+// so each normalized texture/color can receive an asset without changing render logic.
+const stylingWorkspaceTableclothAssets = Object.freeze({
+  polyester: Object.freeze({}),
+  satin: Object.freeze({}),
+  velvet: Object.freeze({}),
+  linen: Object.freeze({}),
+  "crinkle-taffeta": Object.freeze({}),
+});
+
+const stylingWorkspaceLayout = Object.freeze({
+  charger: Object.freeze({
+    leftPercent: 50,
+    topPercent: 55,
+    widthPercent: 36,
+    translateXPercent: -50,
+    translateYPercent: -50,
+    zIndex: 20,
+  }),
+  dinnerware: Object.freeze({
+    leftPercent: 50,
+    topPercent: 55,
+    widthPercent: 27,
+    translateXPercent: -50,
+    translateYPercent: -50,
+    zIndex: 30,
+  }),
+  napkin: Object.freeze({
+    leftPercent: 50,
+    topPercent: 55,
+    widthPercent: 13.5,
+    translateXPercent: -50,
+    translateYPercent: -50,
+    zIndex: 40,
+  }),
+  flatware: Object.freeze({ zIndex: 35 }),
+  glassware: Object.freeze({ zIndex: 35 }),
+});
+
 const initialState = {
   tableShape: "",
   tableSize: "",
@@ -377,6 +423,7 @@ let pendingSectionScrollIndex = 0;
 let pendingSectionScrollBehavior = "auto";
 let guestSectionRevealed = false;
 let guestSectionRevealTimer = null;
+let previewCameraInitialized = false;
 
 const placeSettingsOptions = Array.from({ length: 9 }, (_, index) => index + 4);
 
@@ -411,6 +458,13 @@ const refs = {
   previewStepText: el("previewStepText") || el("previewStatusLine"),
   previewNextText: el("previewNextText") || el("previewNextHint"),
   previewStage: el("previewStage"),
+  previewStageRoot: document.querySelector("[data-preview-stage]"),
+  previewCamera: document.querySelector(".preview-stage__canvas"),
+  previewExperience: document.querySelector("[data-preview-experience]"),
+  stylingWorkspaceMode: document.querySelector("[data-styling-workspace-mode]"),
+  stylingWorkspace: document.querySelector("[data-styling-workspace]"),
+  stylingWorkspaceTablecloth: document.querySelector("[data-styling-workspace-tablecloth]"),
+  stylingWorkspaceLayers: [...document.querySelectorAll("[data-styling-workspace-layer]")],
   previewSummary: el("previewSummary"),
   summary: {
     table: el("sumTable"),
@@ -1164,6 +1218,7 @@ function closeJumpModal() {
 
 function renderPreview() {
   updateProductionPreview();
+  renderPreviewCanvasMode();
   refs.table.classList.add("is-refreshing");
   requestAnimationFrame(() => refs.table.classList.remove("is-refreshing"));
 
@@ -2111,6 +2166,68 @@ function isSectionComplete(sectionIndex) {
   }
 }
 
+function getPreviewCanvasMode() {
+  if (activeSectionIndex === 0) return previewCanvasModes.FOUNDATION;
+  if (activeSectionIndex === 1) return previewCanvasModes.STYLING;
+  if (activeSectionIndex === 2) return previewCanvasModes.CENTERPIECE;
+  return previewCanvasModes.FINAL;
+}
+
+function applyStylingWorkspaceLayout() {
+  refs.stylingWorkspaceLayers.forEach((layer) => {
+    const config = stylingWorkspaceLayout[layer.dataset.stylingWorkspaceLayer];
+    if (!config) return;
+    if (config.leftPercent != null) layer.style.left = `${config.leftPercent}%`;
+    if (config.topPercent != null) layer.style.top = `${config.topPercent}%`;
+    if (config.widthPercent != null) layer.style.width = `${config.widthPercent}%`;
+    if (config.translateXPercent != null || config.translateYPercent != null) {
+      layer.style.transform = `translate(${config.translateXPercent || 0}%, ${config.translateYPercent || 0}%)`;
+    }
+    layer.style.zIndex = String(config.zIndex);
+  });
+}
+
+function updateStylingWorkspaceSurface() {
+  if (!refs.stylingWorkspaceTablecloth) return;
+
+  const texture = state.tableclothTexture;
+  const color = state.tableclothColor;
+  const asset = stylingWorkspaceTableclothAssets[texture]?.[color] || "";
+  const fallbackColor = clothPalette[color] || "#F3EBDD";
+  const textureLabel = tableclothTextureOptions.find((option) => option.value === texture)?.label || "neutral";
+  const colorLabel = tableclothColorOptions.find((option) => option.value === color)?.label || "Ivory";
+  const article = /^[aeiou]/i.test(colorLabel) ? "an" : "a";
+
+  // Temporary fallback: pair the selected color with a restrained material-specific
+  // CSS texture until a matching approved top-down production base exists.
+  refs.stylingWorkspaceTablecloth.dataset.texture = texture || "polyester";
+  refs.stylingWorkspaceTablecloth.classList.toggle("has-approved-asset", Boolean(asset));
+  refs.stylingWorkspaceTablecloth.style.setProperty("--styling-tablecloth-color", fallbackColor);
+  refs.stylingWorkspaceTablecloth.style.setProperty(
+    "--styling-tablecloth-image",
+    asset ? `url("${asset}")` : "none",
+  );
+  refs.stylingWorkspace?.setAttribute(
+    "aria-label",
+    `Table styling workspace showing one place setting on ${article} ${colorLabel} ${textureLabel.toLowerCase()} tablecloth`,
+  );
+}
+
+function renderPreviewCanvasMode() {
+  const mode = getPreviewCanvasMode();
+  if (!refs.previewStageRoot) return;
+
+  refs.previewStageRoot.dataset.previewMode = mode;
+  const isStyling = mode === previewCanvasModes.STYLING;
+  refs.previewExperience?.setAttribute("aria-hidden", String(isStyling));
+  refs.stylingWorkspaceMode?.setAttribute("aria-hidden", String(!isStyling));
+
+  if (isStyling) {
+    applyStylingWorkspaceLayout();
+    updateStylingWorkspaceSurface();
+  }
+}
+
 function isPlaceSettingComplete() {
   return Boolean(
     (!state.includeCharger || state.selectedCharger)
@@ -2580,6 +2697,23 @@ function scrollPendingSectionIntoView() {
   });
 }
 
+function updatePreviewCameraState() {
+  if (!refs.previewCamera) return;
+
+  const useCloseCamera = getPreviewCanvasMode() === previewCanvasModes.CENTERPIECE
+    || getPreviewCanvasMode() === previewCanvasModes.FINAL;
+  if (!previewCameraInitialized) {
+    refs.previewCamera.classList.add("preview-stage__canvas--camera-initializing");
+    refs.previewCamera.classList.toggle("preview-stage__canvas--camera-close", useCloseCamera);
+    void refs.previewCamera.offsetWidth;
+    refs.previewCamera.classList.remove("preview-stage__canvas--camera-initializing");
+    previewCameraInitialized = true;
+    return;
+  }
+
+  refs.previewCamera.classList.toggle("preview-stage__canvas--camera-close", useCloseCamera);
+}
+
 function updateUI() {
   const scroller = getWizardScroller();
   const shouldRestoreScroll = pendingSectionScrollIndex == null && scroller;
@@ -2597,6 +2731,7 @@ function updateUI() {
   refs.stepValue.hidden = true;
   if (refs.stickySectionLabel) refs.stickySectionLabel.textContent = activeSection.title;
 
+  updatePreviewCameraState();
   renderStepContent();
   renderPreview();
   updateWizardControls();
