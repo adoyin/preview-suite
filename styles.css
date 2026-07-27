@@ -1994,6 +1994,9 @@ body.wizard-layout .option-card--centerpiece.option-card--selected:focus-visible
 
 .styling-workspace{
   --styling-studio-copy-space: clamp(64px, 11cqh, 82px);
+  --charger-size: 68%;
+  --charger-inline-size: calc(var(--charger-size) * .75);
+  --dinnerware-size: calc(var(--charger-size) * .79);
   position: relative;
   width: min(
     76cqw,
@@ -2069,6 +2072,31 @@ body.wizard-layout .option-card--centerpiece.option-card--selected:focus-visible
   pointer-events: none;
 }
 
+.place-setting__contact-shadow{
+  position: absolute;
+  left: 50%;
+  top: calc(55% + (var(--charger-size) * .22));
+  width: calc(var(--charger-inline-size) * .78);
+  height: calc(var(--charger-size) * .16);
+  z-index: 10;
+  border-radius: 50%;
+  background: rgba(67, 50, 34, .16);
+  filter: blur(14px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.place-setting__contact-shadow.is-visible{
+  opacity: 1;
+  visibility: visible;
+}
+
+.styling-workspace[data-surface-tone="dark"] .place-setting__contact-shadow{
+  background: rgba(35, 27, 21, .22);
+}
+
 .styling-workspace__layer--charger{
   display: block;
   height: auto;
@@ -2086,6 +2114,29 @@ body.wizard-layout .option-card--centerpiece.option-card--selected:focus-visible
   visibility: visible;
   transition:
     opacity 130ms ease-out,
+    visibility 0s linear 0s;
+}
+
+.styling-workspace__layer--dinnerware{
+  display: block;
+  width: auto;
+  height: 53.72%;
+  height: var(--dinnerware-size);
+  object-fit: contain;
+  opacity: 0;
+  visibility: hidden;
+  transform-origin: center;
+  filter: drop-shadow(0 3px 3px rgba(61, 46, 31, .08));
+  transition:
+    opacity 100ms ease-out,
+    visibility 0s linear 100ms;
+}
+
+.styling-workspace__layer--dinnerware.is-visible{
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 120ms ease-out,
     visibility 0s linear 0s;
 }
 
@@ -2363,6 +2414,7 @@ body.wizard-layout .option-card--centerpiece.option-card--selected:focus-visible
   .styling-workspace-mode,
   .styling-studio,
   .styling-workspace__layer--charger,
+  .styling-workspace__layer--dinnerware,
   .preview-layer--table,
   .preview-layer--tablecloth{
     transition-duration: 0ms;

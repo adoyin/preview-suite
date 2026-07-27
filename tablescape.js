@@ -226,11 +226,16 @@ const stylingWorkspaceTableclothAssets = Object.freeze({
   "crinkle-taffeta": Object.freeze({}),
 });
 
+const darkStylingSurfaceColors = new Set(["black", "navy", "emerald", "burgundy"]);
+
 const stylingAssetMap = Object.freeze({
   charger: Object.freeze({
     gold: "./assets/chargers/charger-gold.png",
     silver: "./assets/chargers/charger-silver.png",
     "matte-black": "./assets/chargers/charger-matte-black.png",
+  }),
+  dinnerware: Object.freeze({
+    "classic-white": "./assets/render-assets/dinnerware/dinner-plate-classic-white-top-v1.png",
   }),
 });
 
@@ -246,7 +251,6 @@ const stylingWorkspaceLayout = Object.freeze({
   dinnerware: Object.freeze({
     leftPercent: 50,
     topPercent: 55,
-    widthPercent: 27,
     translateXPercent: -50,
     translateYPercent: -50,
     zIndex: 30,
@@ -472,8 +476,10 @@ const refs = {
   stylingWorkspaceMode: document.querySelector("[data-styling-workspace-mode]"),
   stylingWorkspace: document.querySelector("[data-styling-workspace]"),
   stylingWorkspaceTablecloth: document.querySelector("[data-styling-workspace-tablecloth]"),
+  stylingWorkspaceContactShadow: document.querySelector("[data-place-setting-contact-shadow]"),
   stylingWorkspaceLayers: [...document.querySelectorAll("[data-styling-workspace-layer]")],
   stylingWorkspaceCharger: document.querySelector('[data-styling-workspace-layer="charger"]'),
+  stylingWorkspaceDinnerware: document.querySelector('[data-styling-workspace-layer="dinnerware"]'),
   previewSummary: el("previewSummary"),
   summary: {
     table: el("sumTable"),
@@ -2217,6 +2223,7 @@ function updateStylingWorkspaceSurface() {
     "--styling-tablecloth-image",
     asset ? `url("${asset}")` : "none",
   );
+  refs.stylingWorkspace.dataset.surfaceTone = darkStylingSurfaceColors.has(color) ? "dark" : "light";
   refs.stylingWorkspace?.setAttribute(
     "aria-label",
     `Table styling workspace showing one place setting on ${article} ${colorLabel} ${textureLabel.toLowerCase()} tablecloth`,
@@ -2224,6 +2231,7 @@ function updateStylingWorkspaceSurface() {
 }
 
 let chargerPreviewUpdateId = 0;
+let dinnerwarePreviewUpdateId = 0;
 
 function hideStylingCharger() {
   if (!refs.stylingWorkspaceCharger) return;
@@ -2282,14 +2290,81 @@ function updateChargerLayer() {
   }
 }
 
-function preloadStylingChargerAssets() {
-  Object.values(stylingAssetMap.charger).forEach((asset) => {
+function hideStylingDinnerware() {
+  if (!refs.stylingWorkspaceDinnerware) return;
+  refs.stylingWorkspaceDinnerware.classList.remove("is-visible");
+  refs.stylingWorkspaceDinnerware.removeAttribute("src");
+}
+
+function updateDinnerwareLayer() {
+  const dinnerwareLayer = refs.stylingWorkspaceDinnerware;
+  const selectedDinnerware = state.selectedDinnerware;
+  const asset = selectedDinnerware ? stylingAssetMap.dinnerware[selectedDinnerware] : null;
+  const updateId = ++dinnerwarePreviewUpdateId;
+
+  if (!dinnerwareLayer || !selectedDinnerware) {
+    hideStylingDinnerware();
+    return;
+  }
+
+  if (!asset) {
+    hideStylingDinnerware();
+    console.warn(`[Styling Studio] No approved preview asset for dinnerware "${selectedDinnerware}".`);
+    return;
+  }
+
+  if (dinnerwareLayer.getAttribute("src") === asset && dinnerwareLayer.classList.contains("is-visible")) {
+    return;
+  }
+
+  const showAsset = () => {
+    if (updateId !== dinnerwarePreviewUpdateId) return;
+    dinnerwareLayer.onload = () => {
+      if (updateId === dinnerwarePreviewUpdateId) dinnerwareLayer.classList.add("is-visible");
+    };
+    dinnerwareLayer.onerror = () => {
+      if (updateId !== dinnerwarePreviewUpdateId) return;
+      hideStylingDinnerware();
+      console.warn(`[Styling Studio] Failed to load dinnerware preview asset "${asset}".`);
+    };
+    dinnerwareLayer.src = asset;
+
+    if (dinnerwareLayer.complete && dinnerwareLayer.naturalWidth > 0) {
+      dinnerwareLayer.classList.add("is-visible");
+    }
+  };
+
+  if (!dinnerwareLayer.classList.contains("is-visible")) {
+    showAsset();
+    return;
+  }
+
+  dinnerwareLayer.classList.remove("is-visible");
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    showAsset();
+  } else {
+    window.setTimeout(showAsset, 100);
+  }
+}
+
+function preloadStylingAssets() {
+  [...Object.values(stylingAssetMap.charger), ...Object.values(stylingAssetMap.dinnerware)].forEach((asset) => {
     const image = new Image();
     image.onerror = () => {
-      console.warn(`[Styling Studio] Failed to preload charger preview asset "${asset}".`);
+      console.warn(`[Styling Studio] Failed to preload preview asset "${asset}".`);
     };
     image.src = asset;
   });
+}
+
+function updatePlaceSettingContactShadow() {
+  if (!refs.stylingWorkspaceContactShadow) return;
+  const hasCharger = state.includeCharger
+    && Boolean(state.selectedCharger)
+    && Boolean(stylingAssetMap.charger[state.selectedCharger]);
+  const hasDinnerware = Boolean(state.selectedDinnerware)
+    && Boolean(stylingAssetMap.dinnerware[state.selectedDinnerware]);
+  refs.stylingWorkspaceContactShadow.classList.toggle("is-visible", hasCharger || hasDinnerware);
 }
 
 function renderPreviewCanvasMode() {
@@ -2305,6 +2380,8 @@ function renderPreviewCanvasMode() {
     applyStylingWorkspaceLayout();
     updateStylingWorkspaceSurface();
     updateChargerLayer();
+    updateDinnerwareLayer();
+    updatePlaceSettingContactShadow();
   }
 }
 
@@ -2931,7 +3008,7 @@ function resetWizard() {
 
 function init() {
   refs.year.textContent = String(new Date().getFullYear());
-  preloadStylingChargerAssets();
+  preloadStylingAssets();
 
   refs.btnBack?.addEventListener("click", prevStep);
   refs.btnNext?.addEventListener("click", nextStep);
