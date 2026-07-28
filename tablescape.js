@@ -126,6 +126,45 @@ const dinnerwareOptions = [
   { id: "gold-rim", value: "gold-rim", style: "gold-rim", label: "Gold Rim", image: "./assets/tablescape/dinner-plate.svg" },
   { id: "black", value: "black", style: "black", label: "Black", image: "./assets/tablescape/dinner-plate.svg" },
 ];
+const napkinStudioColors = [
+  { value: "White", hex: "#FFFFFF" }, { value: "Ivory", hex: "#F3EBDD" },
+  { value: "Champagne", hex: "#E8D8C6" }, { value: "Blush", hex: "#E9C6C9" },
+  { value: "Dusty Rose", hex: "#CFA5AA" }, { value: "Sage", hex: "#AEB8A6" },
+  { value: "Olive", hex: "#6F7A45" }, { value: "Terracotta", hex: "#B05A3C" },
+  { value: "Navy", hex: "#0F2340" }, { value: "Black", hex: "#111111" },
+].map((option) => ({ ...option, label: option.value }));
+const napkinStudioColorGroups = {
+  Neutrals: napkinStudioColors.filter((option) => ["White", "Ivory", "Champagne", "Black"].includes(option.value)),
+  Pinks: napkinStudioColors.filter((option) => ["Blush", "Dusty Rose"].includes(option.value)),
+  Greens: napkinStudioColors.filter((option) => ["Sage", "Olive"].includes(option.value)),
+  "Warm Tones": napkinStudioColors.filter((option) => option.value === "Terracotta"),
+  Blues: napkinStudioColors.filter((option) => option.value === "Navy"),
+};
+const napkinStudioColorGroupNames = Object.keys(napkinStudioColorGroups);
+const napkinFabricOptions = ["Polyester", "Satin", "Linen", "Velvet"];
+const napkinStudioFabricCards = ["polyester", "satin", "linen", "velvet"]
+  .map((value) => napkinTextureOptions.find((option) => option.value === value))
+  .filter(Boolean);
+const napkinFoldOptions = [
+  { value: "Classic Vertical" },
+  { value: "Pocket Fold" },
+  { value: "Knot" },
+  { value: "Rectangle" },
+  { value: "Bow" },
+];
+const napkinRingOptions = ["None", "Gold", "Silver", "Black"];
+const napkinFoldFabricCombinations = Object.freeze(
+  napkinFoldOptions
+    .flatMap((fold) => napkinFabricOptions.map((fabric) => Object.freeze({ fabric, fold: fold.value })))
+);
+// Production napkin assets will be registered as:
+// napkinPreviewAssetMap[color][fabric][fold] = "path/to/exact-asset.png".
+// Until then, the generic placeholder never misrepresents a selected fabric or fold.
+const napkinPreviewAssetMap = Object.freeze({});
+
+function getNapkinPreviewAsset(color, fabric, fold) {
+  return napkinPreviewAssetMap[color]?.[fabric]?.[fold] || PLACEHOLDER_ASSET;
+}
 // Note: some source PNGs may include a baked-in checkerboard pattern and should be re-exported with true transparency.
 
 const tableclothColorGroups = {
@@ -279,7 +318,7 @@ const initialState = {
   selectedCharger: null,
   lastSelectedCharger: null,
   selectedDinnerware: null,
-  includeNapkin: true,
+  includeNapkin: false,
   napkinType: null,
   napkinTexture: null,
   lastSelectedNapkin: null,
@@ -290,6 +329,7 @@ const initialState = {
   centerpieceStyle: null,
   napkinStyle: null,
   napkinColor: null,
+  napkin: { included: null, color: null, fabric: null, fold: null, ring: null },
   tableStyling: {
     menuCard: { enabled: false, style: null, placement: null },
     placeCard: { enabled: false, style: null, placement: null },
@@ -346,7 +386,7 @@ const builderSections = [
     id: "place-settings",
     title: "Table Design",
     hint: "Design one place setting. We’ll apply it to every guest.",
-    rows: [6, "dinnerware", "napkin-decision", 8, 7, 5],
+    rows: [6, "dinnerware", "napkin-studio", 5],
   },
   {
     id: "centerpiece",
@@ -425,7 +465,7 @@ function getDisplayedTotalSteps() {
   return TOTAL_STEPS - getSkippedStepCount();
 }
 
-const state = { ...initialState };
+const state = { ...initialState, napkin: { ...initialState.napkin } };
 let currentStepIndex = 0;
 let maxStepReached = 0;
 let isJumpModalOpen = false;
@@ -480,6 +520,7 @@ const refs = {
   stylingWorkspaceLayers: [...document.querySelectorAll("[data-styling-workspace-layer]")],
   stylingWorkspaceCharger: document.querySelector('[data-styling-workspace-layer="charger"]'),
   stylingWorkspaceDinnerware: document.querySelector('[data-styling-workspace-layer="dinnerware"]'),
+  stylingWorkspaceNapkin: document.querySelector('[data-styling-workspace-layer="napkin"]'),
   previewSummary: el("previewSummary"),
   summary: {
     table: el("sumTable"),
@@ -2132,6 +2173,242 @@ function restoreSelectedNapkin() {
   state.lastSelectedNapkin = fallbackNapkin.value;
 }
 
+function setNapkinDisclosure(name, open) {
+  const disclosure = refs.stepContent.querySelector(`[data-napkin-disclosure="${name}"]`);
+  if (!disclosure) return;
+  disclosure.classList.toggle("is-open", open);
+  disclosure.setAttribute("aria-hidden", String(!open));
+}
+
+function syncNapkinSelectionControls(key) {
+  if (key === "included") {
+    refs.stepContent.querySelectorAll("[data-napkin-included]").forEach((button) => {
+      const selected = (button.dataset.napkinIncluded === "true") === state.napkin.included;
+      button.classList.toggle("is-selected", selected);
+      button.setAttribute("aria-checked", String(selected));
+    });
+    return;
+  }
+
+  if (key === "color") {
+    updateNapkinColorSelection(state.napkin.color);
+    return;
+  }
+
+  if (key === "fabric") {
+    refs.stepContent.querySelectorAll('input[name="napkinTexture"]').forEach((radio) => {
+      const selected = radio.value === state.napkin.fabric?.toLowerCase();
+      radio.checked = selected;
+      const card = radio.closest(".option-card--texture");
+      card?.classList.toggle("option-card--selected", selected);
+      card?.setAttribute("aria-selected", String(selected));
+    });
+    return;
+  }
+
+  const selector = key === "fold" ? "[data-napkin-fold]" : "[data-napkin-ring]";
+  const dataKey = key === "fold" ? "napkinFold" : "napkinRing";
+  refs.stepContent.querySelectorAll(selector).forEach((button) => {
+    const selected = button.dataset[dataKey] === state.napkin[key];
+    button.classList.toggle("is-selected", selected);
+    button.setAttribute("aria-checked", String(selected));
+  });
+}
+
+function syncNapkinProgressiveDisclosure() {
+  const included = state.napkin.included === true;
+  const hasColor = included && Boolean(state.napkin.color);
+  const hasFabric = hasColor && Boolean(state.napkin.fabric);
+  setNapkinDisclosure("color", included);
+  setNapkinDisclosure("fabric", hasColor);
+  setNapkinDisclosure("fold", hasFabric);
+  setNapkinDisclosure("ring", hasFabric && state.napkin.fold === "Classic Vertical");
+}
+
+function syncNapkinCompletionUI() {
+  if (activeSectionIndex !== 1) return;
+  const questionContainer = refs.stepContent.querySelector(".section-container--design-options");
+  if (!questionContainer) return;
+
+  const completion = questionContainer.querySelector(".place-setting-complete");
+  const guestQuestion = questionContainer.querySelector(".question-row--guests-reveal");
+  if (!isPlaceSettingComplete()) {
+    completion?.remove();
+    guestQuestion?.remove();
+    guestSectionRevealed = false;
+    return;
+  }
+  if (completion || guestQuestion) return;
+
+  guestSectionRevealed = true;
+  const completionMessage = document.createElement("p");
+  completionMessage.className = "place-setting-complete";
+  completionMessage.setAttribute("role", "status");
+  completionMessage.textContent = "✓ Place setting complete";
+  questionContainer.appendChild(completionMessage);
+
+  const question = document.createElement("article");
+  question.className = "question-row question-row--guests-reveal";
+  question.innerHTML = `
+    <div class="question-row__head">
+      <h3>Guests at This Table</h3>
+      <p>How many guests will be seated at this table? We'll apply this place setting to every guest.</p>
+    </div>
+    <div class="question-row__content"></div>
+  `;
+  questionContainer.appendChild(question);
+  renderStepInto(5, question.querySelector(".question-row__content"));
+}
+
+function finishNapkinInteraction() {
+  console.log("[Styling Studio] Napkin state", { ...state.napkin });
+  renderPreview();
+  renderSummary();
+  updatePreviewStatus();
+  updateWizardControls();
+  syncNapkinCompletionUI();
+}
+
+function commitNapkinSelection(key, value) {
+  state.napkin[key] = value;
+
+  if (key === "color") {
+    const color = napkinStudioColors.find((option) => option.value === value);
+    state.napkinType = value;
+    state.napkinColor = color?.hex || null;
+    state.napkinColorGroup = getOptionGroup(napkinStudioColorGroups, value) || "Neutrals";
+  }
+  if (key === "fabric") {
+    state.napkinTexture = value.toLowerCase();
+  }
+  if (key === "fold") {
+    state.napkinStyle = value;
+  }
+
+  syncNapkinSelectionControls(key);
+  syncNapkinProgressiveDisclosure();
+  finishNapkinInteraction();
+}
+
+function commitNapkinInclusion(included) {
+  state.napkin.included = included;
+  state.includeNapkin = included;
+  syncNapkinSelectionControls("included");
+  syncNapkinProgressiveDisclosure();
+  finishNapkinInteraction();
+}
+
+function renderNapkinStudio() {
+  const selectedFabric = state.napkin.fabric;
+  const showColor = state.napkin.included === true;
+  const showFabric = showColor && Boolean(state.napkin.color);
+  const showFold = showFabric && Boolean(selectedFabric);
+  const showRing = showFold && state.napkin.fold === "Classic Vertical";
+  const selectedColorGroup = napkinStudioColorGroups[state.napkinColorGroup]
+    ? state.napkinColorGroup
+    : (getOptionGroup(napkinStudioColorGroups, state.napkin.color) || "Neutrals");
+  state.napkinColorGroup = selectedColorGroup;
+
+  refs.stepContent.innerHTML = `
+    <div class="napkin-studio">
+      <section class="napkin-stage napkin-stage--inclusion">
+        <h3 class="napkin-subsection-heading">NAPKIN</h3>
+        <div class="napkin-inclusion" role="radiogroup" aria-label="Include a napkin">
+          <button class="napkin-inclusion__option ${state.napkin.included === true ? "is-selected" : ""}" type="button"
+            role="radio" aria-checked="${state.napkin.included === true}" data-napkin-included="true">Add Napkin</button>
+          <button class="napkin-inclusion__option ${state.napkin.included === false ? "is-selected" : ""}" type="button"
+            role="radio" aria-checked="${state.napkin.included === false}" data-napkin-included="false">No Napkin</button>
+        </div>
+      </section>
+      <div class="napkin-disclosure ${showColor ? "is-open" : ""}" data-napkin-disclosure="color" aria-hidden="${!showColor}">
+        <div class="napkin-disclosure__inner">
+          <section class="napkin-stage">
+            <h3 class="napkin-subsection-heading">NAPKIN COLOR</h3>
+            <div data-napkin-color-selector></div>
+          </section>
+        </div>
+      </div>
+      <div class="napkin-disclosure ${showFabric ? "is-open" : ""}" data-napkin-disclosure="fabric" aria-hidden="${!showFabric}">
+        <div class="napkin-disclosure__inner">
+          <section class="napkin-stage">
+            <h3 class="napkin-subsection-heading">NAPKIN FABRIC</h3>
+            <div data-napkin-fabric-selector></div>
+          </section>
+        </div>
+      </div>
+      <div class="napkin-disclosure ${showFold ? "is-open" : ""}" data-napkin-disclosure="fold" aria-hidden="${!showFold}">
+        <div class="napkin-disclosure__inner">
+          <section class="napkin-stage">
+            <h3 class="napkin-subsection-heading">NAPKIN FOLD</h3>
+            <div class="napkin-folds" role="radiogroup" aria-label="Napkin fold">
+              ${napkinFoldOptions.map((fold) => `
+                <button class="napkin-fold-card ${state.napkin.fold === fold.value ? "is-selected" : ""}"
+                  type="button" role="radio" aria-checked="${state.napkin.fold === fold.value}" data-napkin-fold="${fold.value}">
+                  <img src="${PLACEHOLDER_ASSET}" alt="" />
+                  <span class="napkin-fold-card__copy"><span class="option-card__title option-card__title--texture">${fold.value}</span></span>
+                </button>
+              `).join("")}
+            </div>
+          </section>
+        </div>
+      </div>
+      <div class="napkin-disclosure ${showRing ? "is-open" : ""}" data-napkin-disclosure="ring" aria-hidden="${!showRing}">
+        <div class="napkin-disclosure__inner">
+          <section class="napkin-stage">
+            <h3 class="napkin-subsection-heading">NAPKIN RING</h3>
+            <div class="napkin-rings" role="radiogroup" aria-label="Napkin ring">
+              ${napkinRingOptions.map((ring) => `
+                <button class="napkin-ring-chip ${state.napkin.ring === ring ? "is-selected" : ""}" type="button"
+                  role="radio" aria-checked="${state.napkin.ring === ring}" data-napkin-ring="${ring}">${ring}</button>
+              `).join("")}
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  `;
+
+  refs.stepContent.querySelectorAll("[data-napkin-included]").forEach((button) => {
+    button.addEventListener("click", () => commitNapkinInclusion(button.dataset.napkinIncluded === "true"));
+  });
+
+  const colorSelector = refs.stepContent.querySelector("[data-napkin-color-selector]");
+  withScopedStepContent(colorSelector, () => {
+    renderGroupedColorCards({
+        groups: napkinStudioColorGroups,
+        groupNames: napkinStudioColorGroupNames,
+        selectedGroup: selectedColorGroup,
+        selectedValue: state.napkin.color,
+        groupSelectId: "napkinStudioColorGroup",
+        colorInputName: "napkinColor",
+        onGroupChange: (group) => {
+          state.napkinColorGroup = group;
+        },
+        onColorChange: (value) => commitNapkinSelection("color", value),
+    });
+  });
+
+  const fabricSelector = refs.stepContent.querySelector("[data-napkin-fabric-selector]");
+  withScopedStepContent(fabricSelector, () => {
+    renderTextureCards({
+        options: napkinStudioFabricCards,
+        selectedValue: selectedFabric?.toLowerCase() || null,
+        inputName: "napkinTexture",
+        tooltipPrefix: "napkinStudioFabricTooltip",
+        showTooltips: false,
+        leftArrowLabel: "Scroll napkin fabrics left",
+        rightArrowLabel: "Scroll napkin fabrics right",
+        onChange: (value) => {
+          const option = napkinStudioFabricCards.find((fabric) => fabric.value === value);
+          if (option) commitNapkinSelection("fabric", option.label);
+        },
+    });
+  });
+
+  refs.stepContent.querySelectorAll("[data-napkin-fold]").forEach((button) => button.addEventListener("click", () => commitNapkinSelection("fold", button.dataset.napkinFold)));
+  refs.stepContent.querySelectorAll("[data-napkin-ring]").forEach((button) => button.addEventListener("click", () => commitNapkinSelection("ring", button.dataset.napkinRing)));
+}
+
 function renderNapkinDecisionStep() {
   refs.stepContent.innerHTML = `
     <div class="charger-step__controls napkin-step__controls">
@@ -2168,10 +2445,16 @@ function isSectionComplete(sectionIndex) {
       return state.placeSettingsCount != null
         && (!state.includeCharger || Boolean(state.selectedCharger))
         && Boolean(state.selectedDinnerware)
-        && (!state.includeNapkin || (
-          Boolean(state.napkinTexture)
-          && napkinColorGroups[state.napkinColorGroup]?.some((option) => option.value === state.napkinType)
-        ));
+        && (
+          state.napkin.included === false
+          || (
+            state.napkin.included === true
+            && Boolean(state.napkin.color)
+            && Boolean(state.napkin.fabric)
+            && Boolean(state.napkin.fold)
+            && (state.napkin.fold !== "Classic Vertical" || Boolean(state.napkin.ring))
+          )
+        );
     case 2:
       return state.hasCenterpiece === false || (state.hasCenterpiece === true && state.centerpieceStyle);
     case 3:
@@ -2357,6 +2640,34 @@ function preloadStylingAssets() {
   });
 }
 
+function updateNapkinLayer() {
+  const layer = refs.stylingWorkspaceNapkin;
+  if (!layer) return;
+
+  if (state.napkin.included !== true || !state.napkin.fold) {
+    layer.replaceChildren();
+    layer.classList.remove("is-visible");
+    return;
+  }
+
+  const asset = getNapkinPreviewAsset(state.napkin.color, state.napkin.fabric, state.napkin.fold);
+  const existingImage = layer.querySelector("img");
+  layer.dataset.napkinColor = state.napkin.color || "";
+  layer.dataset.napkinFabric = state.napkin.fabric || "";
+  layer.dataset.napkinFold = state.napkin.fold || "";
+  if (existingImage?.getAttribute("src") === asset) {
+    layer.classList.add("is-visible");
+    return;
+  }
+
+  const image = document.createElement("img");
+  image.src = asset;
+  image.alt = "";
+  image.setAttribute("aria-hidden", "true");
+  layer.replaceChildren(image);
+  layer.classList.add("is-visible");
+}
+
 function updatePlaceSettingContactShadow() {
   if (!refs.stylingWorkspaceContactShadow) return;
   const hasCharger = state.includeCharger
@@ -2381,6 +2692,7 @@ function renderPreviewCanvasMode() {
     updateStylingWorkspaceSurface();
     updateChargerLayer();
     updateDinnerwareLayer();
+    updateNapkinLayer();
     updatePlaceSettingContactShadow();
   }
 }
@@ -2389,10 +2701,16 @@ function isPlaceSettingComplete() {
   return Boolean(
     (!state.includeCharger || state.selectedCharger)
     && state.selectedDinnerware
-    && (!state.includeNapkin || (
-      state.napkinTexture
-      && napkinColorGroups[state.napkinColorGroup]?.some((option) => option.value === state.napkinType)
-    ))
+    && (
+      state.napkin.included === false
+      || (
+        state.napkin.included === true
+        && state.napkin.color
+        && state.napkin.fabric
+        && state.napkin.fold
+        && (state.napkin.fold !== "Classic Vertical" || state.napkin.ring)
+      )
+    )
   );
 }
 
@@ -2416,6 +2734,7 @@ function withScopedStepContent(container, renderFn) {
 
 function renderStepInto(stepNumber, container) {
   withScopedStepContent(container, () => {
+    if (stepNumber === "napkin-studio") return renderNapkinStudio();
     if (stepNumber === "napkin-decision") return renderNapkinDecisionStep();
 
     if (stepNumber === "dinnerware") {
@@ -2741,7 +3060,6 @@ function renderStepContent() {
   }
 
   openSection.rows.forEach((stepNumber) => {
-    if (!state.includeNapkin && (stepNumber === 7 || stepNumber === 8)) return;
     if (stepNumber === 5) {
       if (!placeSettingComplete) return;
 
@@ -2762,9 +3080,13 @@ function renderStepContent() {
       ? "question-row question-row--centerpiece"
       : stepNumber === 5
       ? "question-row question-row--guests-reveal"
+      : stepNumber === "napkin-studio"
+      ? "question-row question-row--napkin"
       : "question-row";
     const meta = stepNumber === "dinnerware"
       ? { title: "Dinnerware", hint: "", value: "" }
+      : stepNumber === "napkin-studio"
+      ? { title: "Napkin", hint: "", value: "" }
       : stepNumber === "napkin-decision"
       ? { title: "Napkin", hint: "", value: state.includeNapkin ? "Napkin included" : "No napkin" }
       : stepNumber === 10
@@ -2778,10 +3100,12 @@ function renderStepContent() {
         })();
 
     question.innerHTML = `
-      <div class="question-row__head">
-        <h3>${meta.title}</h3>
-        ${meta.hint ? `<p>${meta.hint}</p>` : ""}
-      </div>
+      ${stepNumber === "napkin-studio" ? "" : `
+        <div class="question-row__head">
+          <h3>${meta.title}</h3>
+          ${meta.hint ? `<p>${meta.hint}</p>` : ""}
+        </div>
+      `}
       <div class="question-row__content"></div>
     `;
 
@@ -2995,7 +3319,7 @@ function resetWizard() {
     guestSectionRevealTimer = null;
   }
   guestSectionRevealed = false;
-  Object.assign(state, initialState);
+  Object.assign(state, initialState, { napkin: { ...initialState.napkin } });
   currentStepIndex = 0;
   activeSectionIndex = 0;
   highestSectionReached = 0;
