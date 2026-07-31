@@ -150,22 +150,42 @@ const napkinFoldOptions = [
   { value: "Pocket Fold" },
   { value: "Knot" },
   { value: "Rectangle" },
-  { value: "Bow" },
 ];
 const napkinRingOptions = ["None", "Gold", "Silver", "Black"];
 const napkinFoldFabricCombinations = Object.freeze(
   napkinFoldOptions
     .flatMap((fold) => napkinFabricOptions.map((fabric) => Object.freeze({ fabric, fold: fold.value })))
 );
-// Production napkin assets will be registered as:
-// napkinPreviewAssetMap[color][fabric][fold] = "path/to/exact-asset.png".
-// Until then, the generic placeholder never misrepresents a selected fabric or fold.
-const napkinPreviewAssetMap = Object.freeze({});
+const napkinRenderingProfiles = Object.freeze({
+  "Classic Vertical": Object.freeze({
+    asset: "./assets/render-assets/napkins/napkin-ring-polyester-gold.png",
+    scale: 1,
+    xOffsetPercent: 0,
+    yOffsetPercent: 0,
+  }),
+  Rectangle: Object.freeze({
+    asset: "./assets/render-assets/napkins/rectangle-polyester.png",
+    scale: 1,
+    xOffsetPercent: 0,
+    yOffsetPercent: 0,
+  }),
+  "Pocket Fold": Object.freeze({
+    asset: "./assets/render-assets/napkins/pocket-polyester.png",
+    scale: 1,
+    xOffsetPercent: 0,
+    yOffsetPercent: 0,
+  }),
+  Knot: Object.freeze({
+    asset: "./assets/render-assets/napkins/knot-polyester.png",
+    scale: 1,
+    xOffsetPercent: 0,
+    yOffsetPercent: 0,
+  }),
+});
 
-function getNapkinPreviewAsset(color, fabric, fold) {
-  return napkinPreviewAssetMap[color]?.[fabric]?.[fold] || PLACEHOLDER_ASSET;
+function getNapkinRenderingProfile(fold) {
+  return napkinRenderingProfiles[fold] || null;
 }
-// Note: some source PNGs may include a baked-in checkerboard pattern and should be re-exported with true transparency.
 
 const tableclothColorGroups = {
   Neutrals: [
@@ -297,13 +317,14 @@ const stylingWorkspaceLayout = Object.freeze({
   napkin: Object.freeze({
     leftPercent: 50,
     topPercent: 55,
-    widthPercent: 13.5,
+    widthPercent: 34,
+    heightPercent: 54,
     translateXPercent: -50,
     translateYPercent: -50,
     zIndex: 40,
   }),
-  flatware: Object.freeze({ zIndex: 35 }),
-  glassware: Object.freeze({ zIndex: 35 }),
+  flatware: Object.freeze({ zIndex: 50 }),
+  glassware: Object.freeze({ zIndex: 60 }),
 });
 
 const initialState = {
@@ -2631,7 +2652,11 @@ function updateDinnerwareLayer() {
 }
 
 function preloadStylingAssets() {
-  [...Object.values(stylingAssetMap.charger), ...Object.values(stylingAssetMap.dinnerware)].forEach((asset) => {
+  [
+    ...Object.values(stylingAssetMap.charger),
+    ...Object.values(stylingAssetMap.dinnerware),
+    ...Object.values(napkinRenderingProfiles).map((profile) => profile.asset),
+  ].forEach((asset) => {
     const image = new Image();
     image.onerror = () => {
       console.warn(`[Styling Studio] Failed to preload preview asset "${asset}".`);
@@ -2640,32 +2665,65 @@ function preloadStylingAssets() {
   });
 }
 
+let napkinPreviewUpdateId = 0;
+
 function updateNapkinLayer() {
   const layer = refs.stylingWorkspaceNapkin;
   if (!layer) return;
 
   if (state.napkin.included !== true || !state.napkin.fold) {
+    napkinPreviewUpdateId += 1;
     layer.replaceChildren();
     layer.classList.remove("is-visible");
     return;
   }
 
-  const asset = getNapkinPreviewAsset(state.napkin.color, state.napkin.fabric, state.napkin.fold);
-  const existingImage = layer.querySelector("img");
+  const profile = getNapkinRenderingProfile(state.napkin.fold);
+  if (!profile) {
+    napkinPreviewUpdateId += 1;
+    layer.replaceChildren();
+    layer.classList.remove("is-visible");
+    console.warn(`[Styling Studio] No production napkin rendering profile for "${state.napkin.fold}".`);
+    return;
+  }
+
+  const updateId = ++napkinPreviewUpdateId;
+  const existingImage = layer.querySelector("img.is-active");
   layer.dataset.napkinColor = state.napkin.color || "";
   layer.dataset.napkinFabric = state.napkin.fabric || "";
   layer.dataset.napkinFold = state.napkin.fold || "";
-  if (existingImage?.getAttribute("src") === asset) {
+  if (existingImage?.getAttribute("src") === profile.asset) {
     layer.classList.add("is-visible");
     return;
   }
 
   const image = document.createElement("img");
-  image.src = asset;
+  image.className = "napkin-render";
   image.alt = "";
   image.setAttribute("aria-hidden", "true");
-  layer.replaceChildren(image);
-  layer.classList.add("is-visible");
+  image.onload = () => {
+    if (updateId !== napkinPreviewUpdateId) return;
+
+    layer.style.setProperty("--napkin-scale", String(profile.scale));
+    layer.style.setProperty("--napkin-x-offset", `${profile.xOffsetPercent}%`);
+    layer.style.setProperty("--napkin-y-offset", `${profile.yOffsetPercent}%`);
+    layer.querySelectorAll("img.is-active").forEach((currentImage) => {
+      currentImage.classList.remove("is-active");
+      currentImage.classList.add("is-leaving");
+    });
+    layer.appendChild(image);
+    layer.classList.add("is-visible");
+    window.requestAnimationFrame(() => image.classList.add("is-active"));
+
+    window.setTimeout(() => {
+      layer.querySelectorAll("img.is-leaving").forEach((oldImage) => oldImage.remove());
+    }, 220);
+  };
+  image.onerror = () => {
+    if (updateId !== napkinPreviewUpdateId) return;
+    console.warn(`[Styling Studio] Failed to load napkin preview asset "${profile.asset}".`);
+  };
+  image.src = profile.asset;
 }
 
 function updatePlaceSettingContactShadow() {

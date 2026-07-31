@@ -2243,9 +2243,31 @@ body.wizard-layout .option-card--centerpiece.option-card--selected:focus-visible
 }
 
 .styling-workspace__layer--napkin{
+  --napkin-scale: 1;
+  --napkin-x-offset: 0%;
+  --napkin-y-offset: 0%;
   opacity: 0;
   visibility: hidden;
+  transform-origin: center;
   transition: opacity 165ms ease, visibility 0s linear 165ms;
+}
+
+.styling-workspace__layer--napkin::before{
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 57%;
+  width: 62%;
+  height: 24%;
+  border-radius: 50%;
+  background: rgba(61, 46, 31, .1);
+  filter: blur(12px);
+  opacity: 0;
+  transform: translate(
+      calc(-50% + var(--napkin-x-offset)),
+      calc(-50% + var(--napkin-y-offset))
+    ) scale(var(--napkin-scale));
+  transition: opacity 180ms ease;
 }
 
 .styling-workspace__layer--napkin.is-visible{
@@ -2254,11 +2276,29 @@ body.wizard-layout .option-card--centerpiece.option-card--selected:focus-visible
   transition: opacity 165ms ease, visibility 0s linear 0s;
 }
 
-.styling-workspace__layer--napkin img{
+.styling-workspace__layer--napkin.is-visible::before{
+  opacity: 1;
+}
+
+.styling-workspace__layer--napkin .napkin-render{
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
-  height: auto;
-  filter: drop-shadow(0 3px 4px rgba(61,46,31,.12));
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transform: translate(var(--napkin-x-offset), var(--napkin-y-offset)) scale(var(--napkin-scale));
+  transform-origin: center;
+  transition: opacity 180ms ease;
+}
+
+.styling-workspace__layer--napkin .napkin-render.is-active{
+  opacity: 1;
+}
+
+.styling-workspace__layer--napkin .napkin-render.is-leaving{
+  opacity: 0;
 }
 
 .place-setting__contact-shadow{
@@ -2604,6 +2644,9 @@ body.wizard-layout .option-card--centerpiece.option-card--selected:focus-visible
   .styling-studio,
   .styling-workspace__layer--charger,
   .styling-workspace__layer--dinnerware,
+  .styling-workspace__layer--napkin,
+  .styling-workspace__layer--napkin::before,
+  .styling-workspace__layer--napkin .napkin-render,
   .preview-layer--table,
   .preview-layer--tablecloth{
     transition-duration: 0ms;
