@@ -181,26 +181,51 @@ const napkinFoldFabricCombinations = Object.freeze(
 );
 const napkinRenderingProfiles = Object.freeze({
   "Classic Vertical": Object.freeze({
-    asset: "./assets/render-assets/napkins/napkin-ring-polyester-gold v2.png",
-    scale: 1.05,
+    asset: "./assets/render-assets/napkins/napkin-ring-polyester-gold-v2.png",
+    scale: 1.3,
     xOffsetPercent: 0,
     yOffsetPercent: 0,
+    shadowProfile: "alpha-layered",
+    contactShadows: Object.freeze([
+      Object.freeze({ xOffset: 0, yOffset: 2, blur: 2, spread: 0, color: "76, 60, 45", opacity: 0.16 }),
+      Object.freeze({ xOffset: 0, yOffset: 7, blur: 10, spread: 0, color: "76, 60, 45", opacity: 0.065 }),
+    ]),
+    localizedShadows: Object.freeze({
+      channels: Object.freeze([
+        Object.freeze({
+          side: "left", leftPercent: 42.25, topPercent: 31, widthPercent: 2.3,
+          heightPercent: 19.5, rotation: -18, opacity: 0.165, blur: 1.8,
+        }),
+        Object.freeze({
+          side: "right", leftPercent: 55.25, topPercent: 31, widthPercent: 2.3,
+          heightPercent: 19.5, rotation: 18, opacity: 0.165, blur: 1.8,
+        }),
+      ]),
+      hem: Object.freeze({
+        leftPercent: 37.5, topPercent: 77.7, widthPercent: 25,
+        heightPercent: 4.6, opacity: 0.225, blur: 1.5,
+      }),
+      pinch: Object.freeze({
+        leftPercent: 45, topPercent: 49.5, widthPercent: 10,
+        heightPercent: 4.2, opacity: 0.18, blur: 2,
+      }),
+    }),
   }),
   Rectangle: Object.freeze({
-    asset: "./assets/render-assets/napkins/rectangle-polyester v2 .png",
-    scale: 1.05,
+    asset: "./assets/render-assets/napkins/rectangle-polyester-v2 .png",
+    scale: 1.22,
     xOffsetPercent: 0,
     yOffsetPercent: 0,
   }),
   "Pocket Fold": Object.freeze({
-    asset: "./assets/render-assets/napkins/pocket-polyester v2.png",
-    scale: 1.05,
+    asset: "./assets/render-assets/napkins/pocket-polyester-v2.png",
+    scale: 1.22,
     xOffsetPercent: 0,
     yOffsetPercent: 0,
   }),
   Knot: Object.freeze({
-    asset: "./assets/render-assets/napkins/knot-polyester v2.png",
-    scale: 1.05,
+    asset: "./assets/render-assets/napkins/knot-polyester-v2.png",
+    scale: 1.22,
     xOffsetPercent: 0,
     yOffsetPercent: 0,
   }),
@@ -208,6 +233,59 @@ const napkinRenderingProfiles = Object.freeze({
 
 function getNapkinRenderingProfile(fold) {
   return napkinRenderingProfiles[fold] || null;
+}
+
+function getNapkinVisualFilter(color, fabric, profile) {
+  const materialFilter = `${napkinColorFilters[color] || ""}${napkinFabricFilters[fabric] || ""}`.trim();
+  const contactShadows = profile.contactShadows?.map((shadow) => (
+    `drop-shadow(${shadow.xOffset}px ${shadow.yOffset}px ${shadow.blur}px rgba(${shadow.color}, ${shadow.opacity}))`
+  )) || [];
+  return [materialFilter, ...contactShadows].filter(Boolean).join(" ") || "none";
+}
+
+function createNapkinLocalizedShadows(profile) {
+  if (!profile.localizedShadows) return null;
+
+  const shadows = document.createElement("div");
+  shadows.className = "napkin-localized-shadows";
+  shadows.setAttribute("aria-hidden", "true");
+
+  profile.localizedShadows.channels.forEach((channel) => {
+    const shadow = document.createElement("span");
+    shadow.className = `napkin-channel-shadow napkin-channel-shadow--${channel.side}`;
+    shadow.style.setProperty("--shadow-left", `${channel.leftPercent}%`);
+    shadow.style.setProperty("--shadow-top", `${channel.topPercent}%`);
+    shadow.style.setProperty("--shadow-width", `${channel.widthPercent}%`);
+    shadow.style.setProperty("--shadow-height", `${channel.heightPercent}%`);
+    shadow.style.setProperty("--shadow-rotation", `${channel.rotation}deg`);
+    shadow.style.setProperty("--shadow-opacity", String(channel.opacity));
+    shadow.style.setProperty("--shadow-blur", `${channel.blur}px`);
+    shadows.appendChild(shadow);
+  });
+
+  const hemProfile = profile.localizedShadows.hem;
+  const hem = document.createElement("span");
+  hem.className = "napkin-hem-shadow";
+  hem.style.setProperty("--shadow-left", `${hemProfile.leftPercent}%`);
+  hem.style.setProperty("--shadow-top", `${hemProfile.topPercent}%`);
+  hem.style.setProperty("--shadow-width", `${hemProfile.widthPercent}%`);
+  hem.style.setProperty("--shadow-height", `${hemProfile.heightPercent}%`);
+  hem.style.setProperty("--shadow-opacity", String(hemProfile.opacity));
+  hem.style.setProperty("--shadow-blur", `${hemProfile.blur}px`);
+  shadows.appendChild(hem);
+
+  const pinchProfile = profile.localizedShadows.pinch;
+  const pinch = document.createElement("span");
+  pinch.className = "napkin-pinch-shadow";
+  pinch.style.setProperty("--shadow-left", `${pinchProfile.leftPercent}%`);
+  pinch.style.setProperty("--shadow-top", `${pinchProfile.topPercent}%`);
+  pinch.style.setProperty("--shadow-width", `${pinchProfile.widthPercent}%`);
+  pinch.style.setProperty("--shadow-height", `${pinchProfile.heightPercent}%`);
+  pinch.style.setProperty("--shadow-opacity", String(pinchProfile.opacity));
+  pinch.style.setProperty("--shadow-blur", `${pinchProfile.blur}px`);
+  shadows.appendChild(pinch);
+
+  return shadows;
 }
 
 const tableclothColorGroups = {
@@ -2730,7 +2808,7 @@ function updateNapkinLayer() {
   layer.dataset.napkinColor = state.napkin.color || "";
   layer.dataset.napkinFabric = state.napkin.fabric || "";
   layer.dataset.napkinFold = state.napkin.fold || "";
-  const visualFilter = `${napkinColorFilters[state.napkin.color] || ""}${napkinFabricFilters[state.napkin.fabric] || ""}`.trim() || "none";
+  const visualFilter = getNapkinVisualFilter(state.napkin.color, state.napkin.fabric, profile);
   if (existingImage?.getAttribute("src") === profile.asset) {
     existingImage.style.filter = visualFilter;
     layer.classList.add("is-visible");
@@ -2738,6 +2816,7 @@ function updateNapkinLayer() {
   }
 
   const image = document.createElement("img");
+  const localizedShadows = createNapkinLocalizedShadows(profile);
   image.className = "napkin-render";
   image.style.filter = visualFilter;
   image.alt = "";
@@ -2748,16 +2827,21 @@ function updateNapkinLayer() {
     layer.style.setProperty("--napkin-scale", String(profile.scale));
     layer.style.setProperty("--napkin-x-offset", `${profile.xOffsetPercent}%`);
     layer.style.setProperty("--napkin-y-offset", `${profile.yOffsetPercent}%`);
-    layer.querySelectorAll("img.is-active").forEach((currentImage) => {
-      currentImage.classList.remove("is-active");
-      currentImage.classList.add("is-leaving");
+    layer.dataset.napkinShadowProfile = profile.shadowProfile || "standard";
+    layer.querySelectorAll(".is-active").forEach((currentElement) => {
+      currentElement.classList.remove("is-active");
+      currentElement.classList.add("is-leaving");
     });
+    if (localizedShadows) layer.appendChild(localizedShadows);
     layer.appendChild(image);
     layer.classList.add("is-visible");
-    window.requestAnimationFrame(() => image.classList.add("is-active"));
+    window.requestAnimationFrame(() => {
+      localizedShadows?.classList.add("is-active");
+      image.classList.add("is-active");
+    });
 
     window.setTimeout(() => {
-      layer.querySelectorAll("img.is-leaving").forEach((oldImage) => oldImage.remove());
+      layer.querySelectorAll(".is-leaving").forEach((oldElement) => oldElement.remove());
     }, 220);
   };
   image.onerror = () => {

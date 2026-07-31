@@ -2246,6 +2246,9 @@ body.wizard-layout .option-card--centerpiece.option-card--selected:focus-visible
   --napkin-scale: 1;
   --napkin-x-offset: 0%;
   --napkin-y-offset: 0%;
+  --napkin-local-grounding-opacity: .1;
+  --napkin-local-grounding-blur: 12px;
+  --napkin-local-grounding-y-offset: 0%;
   opacity: 0;
   visibility: hidden;
   transform-origin: center;
@@ -2260,14 +2263,83 @@ body.wizard-layout .option-card--centerpiece.option-card--selected:focus-visible
   width: 62%;
   height: 24%;
   border-radius: 50%;
-  background: rgba(61, 46, 31, .1);
-  filter: blur(12px);
+  background: rgba(61, 46, 31, var(--napkin-local-grounding-opacity));
+  filter: blur(var(--napkin-local-grounding-blur));
   opacity: 0;
   transform: translate(
       calc(-50% + var(--napkin-x-offset)),
-      calc(-50% + var(--napkin-y-offset))
+      calc(-50% + var(--napkin-y-offset) + var(--napkin-local-grounding-y-offset))
     ) scale(var(--napkin-scale));
   transition: opacity 180ms ease;
+}
+
+.styling-workspace__layer--napkin[data-napkin-shadow-profile="alpha-layered"]::before{
+  display: none;
+}
+
+.napkin-localized-shadows{
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0;
+  transform: translate(var(--napkin-x-offset), var(--napkin-y-offset)) scale(var(--napkin-scale));
+  transform-origin: center;
+  transition: opacity 180ms ease;
+}
+
+.napkin-localized-shadows.is-active{
+  opacity: 1;
+}
+
+.napkin-localized-shadows.is-leaving{
+  opacity: 0;
+}
+
+.napkin-channel-shadow,
+.napkin-hem-shadow,
+.napkin-pinch-shadow{
+  position: absolute;
+  left: var(--shadow-left);
+  top: var(--shadow-top);
+  width: var(--shadow-width);
+  height: var(--shadow-height);
+  pointer-events: none;
+}
+
+.napkin-channel-shadow{
+  border-radius: 50%;
+  background: linear-gradient(
+    to bottom,
+    rgba(76, 60, 45, 0) 18%,
+    rgba(76, 60, 45, calc(var(--shadow-opacity) * .2)) 48%,
+    rgba(76, 60, 45, calc(var(--shadow-opacity) * .78)) 79%,
+    rgba(76, 60, 45, var(--shadow-opacity)) 100%
+  );
+  filter: blur(var(--shadow-blur));
+  transform: rotate(var(--shadow-rotation));
+  transform-origin: 50% 100%;
+}
+
+.napkin-hem-shadow{
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at 50% 32%,
+    rgba(76, 60, 45, var(--shadow-opacity)) 0 34%,
+    rgba(76, 60, 45, calc(var(--shadow-opacity) * .48)) 54%,
+    rgba(76, 60, 45, 0) 82%
+  );
+  filter: blur(var(--shadow-blur));
+}
+
+.napkin-pinch-shadow{
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at 50% 42%,
+    rgba(76, 60, 45, var(--shadow-opacity)) 0 28%,
+    rgba(76, 60, 45, calc(var(--shadow-opacity) * .5)) 48%,
+    rgba(76, 60, 45, 0) 78%
+  );
+  filter: blur(var(--shadow-blur));
 }
 
 .styling-workspace__layer--napkin.is-visible{
@@ -2287,6 +2359,7 @@ body.wizard-layout .option-card--centerpiece.option-card--selected:focus-visible
   width: 100%;
   height: 100%;
   object-fit: contain;
+  z-index: 1;
   opacity: 0;
   transform: translate(var(--napkin-x-offset), var(--napkin-y-offset)) scale(var(--napkin-scale));
   transform-origin: center;
