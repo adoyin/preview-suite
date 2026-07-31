@@ -181,26 +181,26 @@ const napkinFoldFabricCombinations = Object.freeze(
 );
 const napkinRenderingProfiles = Object.freeze({
   "Classic Vertical": Object.freeze({
-    asset: "./assets/render-assets/napkins/napkin-ring-polyester-gold.png",
-    scale: 1.12,
+    asset: "./assets/render-assets/napkins/napkin-ring-polyester-gold v2.png",
+    scale: 1.05,
     xOffsetPercent: 0,
     yOffsetPercent: 0,
   }),
   Rectangle: Object.freeze({
-    asset: "./assets/render-assets/napkins/rectangle-polyester.png",
-    scale: 1.12,
+    asset: "./assets/render-assets/napkins/rectangle-polyester v2 .png",
+    scale: 1.05,
     xOffsetPercent: 0,
     yOffsetPercent: 0,
   }),
   "Pocket Fold": Object.freeze({
-    asset: "./assets/render-assets/napkins/pocket-polyester.png",
-    scale: 1.12,
+    asset: "./assets/render-assets/napkins/pocket-polyester v2.png",
+    scale: 1.05,
     xOffsetPercent: 0,
     yOffsetPercent: 0,
   }),
   Knot: Object.freeze({
-    asset: "./assets/render-assets/napkins/knot-polyester.png",
-    scale: 1.12,
+    asset: "./assets/render-assets/napkins/knot-polyester v2.png",
+    scale: 1.05,
     xOffsetPercent: 0,
     yOffsetPercent: 0,
   }),
