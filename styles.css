@@ -2290,7 +2290,7 @@ body.wizard-layout .option-card--centerpiece.option-card--selected:focus-visible
   opacity: 0;
   transform: translate(var(--napkin-x-offset), var(--napkin-y-offset)) scale(var(--napkin-scale));
   transform-origin: center;
-  transition: opacity 180ms ease;
+  transition: opacity 180ms ease, filter 180ms ease;
 }
 
 .styling-workspace__layer--napkin .napkin-render.is-active{

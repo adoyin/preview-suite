@@ -152,6 +152,29 @@ const napkinFoldOptions = [
   { value: "Rectangle" },
 ];
 const napkinRingOptions = ["None", "Gold", "Silver", "Black"];
+const defaultNapkinSelection = Object.freeze({
+  color: "Ivory",
+  fabric: "Polyester",
+  fold: "Rectangle",
+});
+const napkinColorFilters = Object.freeze({
+  White: "grayscale(1) brightness(1.08)",
+  Ivory: "",
+  Champagne: "sepia(.16) saturate(.86) brightness(.95)",
+  Blush: "sepia(.25) saturate(1.35) hue-rotate(300deg) brightness(.94)",
+  "Dusty Rose": "sepia(.35) saturate(1.7) hue-rotate(300deg) brightness(.82)",
+  Sage: "sepia(.2) saturate(.72) hue-rotate(52deg) brightness(.8)",
+  Olive: "sepia(.55) saturate(1.45) hue-rotate(35deg) brightness(.55)",
+  Terracotta: "sepia(.7) saturate(2.1) hue-rotate(325deg) brightness(.68)",
+  Navy: "sepia(.8) saturate(3) hue-rotate(175deg) brightness(.31)",
+  Black: "grayscale(1) brightness(.16)",
+});
+const napkinFabricFilters = Object.freeze({
+  Polyester: "",
+  Satin: " contrast(1.08) brightness(1.04)",
+  Linen: " contrast(1.12) saturate(.82)",
+  Velvet: " contrast(1.2) brightness(.82) saturate(1.08)",
+});
 const napkinFoldFabricCombinations = Object.freeze(
   napkinFoldOptions
     .flatMap((fold) => napkinFabricOptions.map((fabric) => Object.freeze({ fabric, fold: fold.value })))
@@ -159,25 +182,25 @@ const napkinFoldFabricCombinations = Object.freeze(
 const napkinRenderingProfiles = Object.freeze({
   "Classic Vertical": Object.freeze({
     asset: "./assets/render-assets/napkins/napkin-ring-polyester-gold.png",
-    scale: 1,
+    scale: 1.12,
     xOffsetPercent: 0,
     yOffsetPercent: 0,
   }),
   Rectangle: Object.freeze({
     asset: "./assets/render-assets/napkins/rectangle-polyester.png",
-    scale: 1,
+    scale: 1.12,
     xOffsetPercent: 0,
     yOffsetPercent: 0,
   }),
   "Pocket Fold": Object.freeze({
     asset: "./assets/render-assets/napkins/pocket-polyester.png",
-    scale: 1,
+    scale: 1.12,
     xOffsetPercent: 0,
     yOffsetPercent: 0,
   }),
   Knot: Object.freeze({
     asset: "./assets/render-assets/napkins/knot-polyester.png",
-    scale: 1,
+    scale: 1.12,
     xOffsetPercent: 0,
     yOffsetPercent: 0,
   }),
@@ -2314,7 +2337,22 @@ function commitNapkinSelection(key, value) {
 function commitNapkinInclusion(included) {
   state.napkin.included = included;
   state.includeNapkin = included;
+  if (included) {
+    state.napkin.color ||= defaultNapkinSelection.color;
+    state.napkin.fabric ||= defaultNapkinSelection.fabric;
+    state.napkin.fold ||= defaultNapkinSelection.fold;
+    state.napkinType = state.napkin.color;
+    state.napkinColor = napkinStudioColors.find((option) => option.value === state.napkin.color)?.hex || null;
+    state.napkinTexture = state.napkin.fabric.toLowerCase();
+    state.napkinStyle = state.napkin.fold;
+    state.napkinColorGroup = getOptionGroup(napkinStudioColorGroups, state.napkin.color) || "Neutrals";
+  }
   syncNapkinSelectionControls("included");
+  if (included) {
+    syncNapkinSelectionControls("color");
+    syncNapkinSelectionControls("fabric");
+    syncNapkinSelectionControls("fold");
+  }
   syncNapkinProgressiveDisclosure();
   finishNapkinInteraction();
 }
@@ -2692,13 +2730,16 @@ function updateNapkinLayer() {
   layer.dataset.napkinColor = state.napkin.color || "";
   layer.dataset.napkinFabric = state.napkin.fabric || "";
   layer.dataset.napkinFold = state.napkin.fold || "";
+  const visualFilter = `${napkinColorFilters[state.napkin.color] || ""}${napkinFabricFilters[state.napkin.fabric] || ""}`.trim() || "none";
   if (existingImage?.getAttribute("src") === profile.asset) {
+    existingImage.style.filter = visualFilter;
     layer.classList.add("is-visible");
     return;
   }
 
   const image = document.createElement("img");
   image.className = "napkin-render";
+  image.style.filter = visualFilter;
   image.alt = "";
   image.setAttribute("aria-hidden", "true");
   image.onload = () => {
